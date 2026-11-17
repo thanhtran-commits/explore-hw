@@ -93,7 +93,7 @@ window.LESSON = {
             { scene: "sc-bill-ice-cream", strip: "He's <b class='m'>eating</b> ice cream.", line: { text: "Eating! He's eating ice cream." } },
             { scene: "sc-tony-cake", strip: "He's <b class='m'>eating</b> cake.", line: { text: "He's eating cake." } },
             { scene: "sc-pat-juice", strip: "She's <b>drinking</b> juice.", line: { text: "She's drinking juice." } },
-            { scene: "scene-street5", dim: true, actors: [{ img: "@i1/img/g-girl-plate", x: 20, y: 30, w: 34 }, { img: "item-water", x: 33, y: 57, w: 8 }],
+            { scene: "scene-street5", dim: true, actors: [{ img: "@i1/img/g-girl-plate", x: 20, y: 30, w: 34 }, { img: "item-water", x: 31, y: 53, w: 11 }],
               bubble: { text: "I'm drinking water!", x: 52, y: 42 }, strip: "I'm <b>drinking</b> water.", line: { text: "I'm drinking water!", who: "kim" } },
             { scene: "scene-street5", strip: "drinks → <b>drinking</b><br>desserts → <b class='m'>eating</b>",
               line: { text: "Drinks… drinking. Desserts… eating! Now tap and listen!" } }

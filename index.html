@@ -694,6 +694,8 @@ body.framed.kim-intro .kim .bub{left:calc(100% + 10px);bottom:50%;transform:tran
 .copt:active{transform:translateY(3px)}
 .copt.pic{width:clamp(96px,min(26vw,24vh),210px);aspect-ratio:1;display:grid;place-items:center;padding:8px}
 .copt.pic img{width:100%;height:100%;object-fit:contain}
+/* keep picture cards square: a tall picture must not stretch its card (that made every picture a different size) */
+.copt.pic{position:relative;overflow:hidden}.copt.pic img:only-child{position:absolute;inset:8px;width:calc(100% - 16px);height:calc(100% - 16px)}
 .copt.txt{min-width:min(78vw,240px);padding:12px 22px;font-size:clamp(20px,3.4vh,30px);text-align:center}
 .lay-stack .copts{flex-direction:column;align-items:center}
 .lay-stack .copt.txt{width:min(92vw,560px)}
