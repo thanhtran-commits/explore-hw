@@ -1,0 +1,477 @@
+{
+ "lesson": "I1",
+ "lines": [
+  {
+   "who": "narrator",
+   "text": "Welcome to Food Street!"
+  },
+  {
+   "who": "narrator",
+   "text": "Look! The bread cart…"
+  },
+  {
+   "who": "narrator",
+   "text": "the burger cart…"
+  },
+  {
+   "who": "narrator",
+   "text": "and the rice stall."
+  },
+  {
+   "who": "narrator",
+   "text": "This is the bread cart. What food is here?"
+  },
+  {
+   "who": "narrator",
+   "text": "This is the burger cart."
+  },
+  {
+   "who": "narrator",
+   "text": "This is the rice stall."
+  },
+  {
+   "who": "narrator",
+   "text": "Look! A chicken. It's an animal…"
+  },
+  {
+   "who": "narrator",
+   "text": "…and it's food, too!"
+  },
+  {
+   "who": "narrator",
+   "text": "A fish. It's an animal…"
+  },
+  {
+   "who": "narrator",
+   "text": "Now it's your turn. Tap a cart!"
+  },
+  {
+   "who": "kim",
+   "text": "Tap a cart. Then tap the food and listen."
+  },
+  {
+   "who": "kim",
+   "text": "Listen. Pop the right bubble!"
+  },
+  {
+   "who": "kim",
+   "text": "Let's play! Listen to the word. Then pop the right bubble!"
+  },
+  {
+   "who": "kim",
+   "text": "What's this? Say it!"
+  },
+  {
+   "who": "kim",
+   "text": "Now it's your turn to talk! Look at the food and say its name. I'm listening!"
+  },
+  {
+   "who": "kim",
+   "text": "What's this?"
+  },
+  {
+   "who": "narrator",
+   "text": "Look! This is Bill."
+  },
+  {
+   "who": "narrator",
+   "text": "He is eating a burger."
+  },
+  {
+   "who": "narrator",
+   "text": "He… is… He's! He's eating a burger."
+  },
+  {
+   "who": "narrator",
+   "text": "And this is Sue."
+  },
+  {
+   "who": "narrator",
+   "text": "She is eating chicken."
+  },
+  {
+   "who": "narrator",
+   "text": "She… is… She's! She's eating chicken."
+  },
+  {
+   "who": "kim",
+   "text": "I am eating meatballs!"
+  },
+  {
+   "who": "kim",
+   "text": "I… am… I'm! I'm eating meatballs!"
+  },
+  {
+   "who": "narrator",
+   "text": "He's eating. She's eating. I'm eating. Now tap and listen!"
+  },
+  {
+   "who": "kim",
+   "text": "Tap a card and listen."
+  },
+  {
+   "who": "narrator",
+   "text": "He's eating a burger."
+  },
+  {
+   "who": "narrator",
+   "text": "She's eating chicken."
+  },
+  {
+   "who": "kim",
+   "text": "I am eating meatballs."
+  },
+  {
+   "who": "kim",
+   "text": "I'm eating meatballs."
+  },
+  {
+   "who": "kim",
+   "text": "Listen to the sentence. Who is it? Tap the right picture!"
+  },
+  {
+   "who": "narrator",
+   "text": "She's eating meatballs."
+  },
+  {
+   "who": "narrator",
+   "text": "She's eating fish."
+  },
+  {
+   "who": "narrator",
+   "text": "He's eating rice."
+  },
+  {
+   "who": "narrator",
+   "text": "She's eating an egg."
+  },
+  {
+   "who": "narrator",
+   "text": "He's eating chicken."
+  },
+  {
+   "who": "kim",
+   "text": "Look at the shadow on the plate. What is it? Say the full sentence. Then the lid opens!"
+  },
+  {
+   "who": "narrator",
+   "text": "He's eating chips."
+  },
+  {
+   "who": "narrator",
+   "text": "He's eating an egg."
+  },
+  {
+   "who": "narrator",
+   "text": "He's eating meatballs."
+  },
+  {
+   "who": "narrator",
+   "text": "He's eating fish."
+  },
+  {
+   "who": "narrator",
+   "text": "He's eating a sausage."
+  },
+  {
+   "who": "narrator",
+   "text": "He's eating bread."
+  },
+  {
+   "who": "narrator",
+   "text": "She's eating chips."
+  },
+  {
+   "who": "narrator",
+   "text": "She's eating rice."
+  },
+  {
+   "who": "narrator",
+   "text": "She's eating a sausage."
+  },
+  {
+   "who": "narrator",
+   "text": "She's eating bread."
+  },
+  {
+   "who": "kim",
+   "text": "I'm eating chips."
+  },
+  {
+   "who": "kim",
+   "text": "I'm eating an egg."
+  },
+  {
+   "who": "kim",
+   "text": "I'm eating rice."
+  },
+  {
+   "who": "kim",
+   "text": "I'm eating fish."
+  },
+  {
+   "who": "kim",
+   "text": "I'm eating a sausage."
+  },
+  {
+   "who": "kim",
+   "text": "I'm eating bread."
+  },
+  {
+   "who": "kim",
+   "text": "I'm eating chicken."
+  },
+  {
+   "who": "kim",
+   "text": "Grammar done!"
+  },
+  {
+   "who": "narrator",
+   "text": "Look! This is Tony."
+  },
+  {
+   "who": "narrator",
+   "text": "What is he eating?"
+  },
+  {
+   "who": "kim",
+   "text": "He's eating chips."
+  },
+  {
+   "who": "narrator",
+   "text": "And this is Pat."
+  },
+  {
+   "who": "narrator",
+   "text": "What is she eating?"
+  },
+  {
+   "who": "kim",
+   "text": "She's eating an egg."
+  },
+  {
+   "who": "narrator",
+   "text": "And you? What are you eating?"
+  },
+  {
+   "who": "kim",
+   "text": "I'm eating rice!"
+  },
+  {
+   "who": "narrator",
+   "text": "Ask with what. Answer with a full sentence. Now tap and listen!"
+  },
+  {
+   "who": "kim",
+   "text": "Tap a card. Listen to the question and the answer."
+  },
+  {
+   "who": "narrator",
+   "text": "What are you eating?"
+  },
+  {
+   "who": "kim",
+   "text": "Listen. Who is it? Tap the right friend. The name goes there!"
+  },
+  {
+   "who": "narrator",
+   "text": "What is Nick eating?"
+  },
+  {
+   "who": "kim",
+   "text": "He's eating a sausage."
+  },
+  {
+   "who": "narrator",
+   "text": "What is Ann eating?"
+  },
+  {
+   "who": "kim",
+   "text": "She's eating a burger."
+  },
+  {
+   "who": "narrator",
+   "text": "What is Tom eating?"
+  },
+  {
+   "who": "kim",
+   "text": "He's eating meatballs."
+  },
+  {
+   "who": "narrator",
+   "text": "What is May eating?"
+  },
+  {
+   "who": "kim",
+   "text": "She's eating meat."
+  },
+  {
+   "who": "narrator",
+   "text": "What is Sam eating?"
+  },
+  {
+   "who": "kim",
+   "text": "He's eating fish."
+  },
+  {
+   "who": "kim",
+   "text": "Kim asks you a question. Answer with a full sentence!"
+  },
+  {
+   "who": "kim",
+   "text": "What is he eating?"
+  },
+  {
+   "who": "narrator",
+   "text": "He's eating a burger and chips."
+  },
+  {
+   "who": "kim",
+   "text": "What is she eating?"
+  },
+  {
+   "who": "narrator",
+   "text": "She's eating rice and fish."
+  },
+  {
+   "who": "kim",
+   "text": "What are you eating?"
+  },
+  {
+   "who": "narrator",
+   "text": "I'm eating meatballs."
+  },
+  {
+   "who": "narrator",
+   "text": "I'm eating bread."
+  },
+  {
+   "who": "kim",
+   "text": "Let's Talk done!"
+  },
+  {
+   "who": "kim",
+   "text": "Hooray! You finished Food Street!"
+  },
+  {
+   "who": "kim",
+   "text": "Great! Now tap “I'm ready!”"
+  },
+  {
+   "who": "kim",
+   "text": "Super listening!"
+  },
+  {
+   "who": "kim",
+   "text": "Good job!"
+  },
+  {
+   "who": "kim",
+   "text": "Great!"
+  },
+  {
+   "who": "kim",
+   "text": "Well done!"
+  },
+  {
+   "who": "kim",
+   "text": "Yes!"
+  },
+  {
+   "who": "kim",
+   "text": "Super!"
+  },
+  {
+   "who": "kim",
+   "text": "Listen!"
+  },
+  {
+   "who": "kim",
+   "text": "Say it with me next time!"
+  },
+  {
+   "who": "kim",
+   "text": "Hmm… try again!"
+  },
+  {
+   "who": "kim",
+   "text": "Say it out loud. Then tap Check!"
+  },
+  {
+   "who": "kim",
+   "text": "I can't hear you. Say it again!"
+  },
+  {
+   "who": "kim",
+   "text": "What's this? Say it out loud!"
+  },
+  {
+   "who": "kim",
+   "text": "Well done! You said all the food words!"
+  },
+  {
+   "who": "kim",
+   "text": "Tap a food and listen again!"
+  },
+  {
+   "who": "kim",
+   "text": "Look at the shadow again. Try again!"
+  },
+  {
+   "who": "kim",
+   "text": "Say it out loud. Then lift the lid!"
+  },
+  {
+   "who": "kim",
+   "text": "Look at him!"
+  },
+  {
+   "who": "kim",
+   "text": "Look at her!"
+  },
+  {
+   "who": "kim",
+   "text": "Look! It's you!"
+  },
+  {
+   "who": "kim",
+   "text": "Well done! Great sentences!"
+  },
+  {
+   "who": "kim",
+   "text": "Great answer!"
+  },
+  {
+   "who": "kim",
+   "text": "Well done! You can ask and answer!"
+  },
+  {
+   "who": "kim",
+   "text": "Don't forget “is”! Say the full sentence."
+  },
+  {
+   "who": "kim",
+   "text": "Don't forget “am”! Say the full sentence."
+  },
+  {
+   "who": "kim",
+   "text": "Full sentence, please! I'm eating…"
+  },
+  {
+   "who": "kim",
+   "text": "Full sentence, please! He's eating…"
+  },
+  {
+   "who": "kim",
+   "text": "Full sentence, please! She's eating…"
+  },
+  {
+   "who": "kim",
+   "text": "Good! Say all the food on the plate!"
+  },
+  {
+   "who": "kim",
+   "text": "Look at the picture again. Try again!"
+  }
+ ]
+}

@@ -1,0 +1,1212 @@
+[
+ {
+  "voice": "kim",
+  "text": "Super reading!",
+  "id": "u001"
+ },
+ {
+  "voice": "kim",
+  "text": "Super spelling!",
+  "id": "u002"
+ },
+ {
+  "voice": "kim",
+  "text": "Great sentences!",
+  "id": "u003"
+ },
+ {
+  "voice": "kim",
+  "text": "Eating or drinking? Try again!",
+  "id": "u004"
+ },
+ {
+  "voice": "kim",
+  "text": "Yes or no? Look again!",
+  "id": "u005"
+ },
+ {
+  "voice": "kim",
+  "text": "Say: Yes, he is!",
+  "id": "u006"
+ },
+ {
+  "voice": "kim",
+  "text": "Say: Yes, she is!",
+  "id": "u007"
+ },
+ {
+  "voice": "kim",
+  "text": "Say: No, he isn't!",
+  "id": "u008"
+ },
+ {
+  "voice": "kim",
+  "text": "Say: No, she isn't!",
+  "id": "u009"
+ },
+ {
+  "voice": "kim",
+  "text": "Hooray! You can read and write the food words!",
+  "id": "u010"
+ },
+ {
+  "voice": "narrator",
+  "text": "Let's read the food words on Food Street!",
+  "id": "u011"
+ },
+ {
+  "voice": "narrator",
+  "text": "The bread cart.",
+  "id": "u012"
+ },
+ {
+  "voice": "narrator",
+  "text": "Look! E and A together in bread.",
+  "id": "u013"
+ },
+ {
+  "voice": "narrator",
+  "text": "Egg has two Gs.",
+  "id": "u014"
+ },
+ {
+  "voice": "narrator",
+  "text": "Meatballs. Meat… and balls!",
+  "id": "u015"
+ },
+ {
+  "voice": "narrator",
+  "text": "Sausage. Look at A and U.",
+  "id": "u016"
+ },
+ {
+  "voice": "narrator",
+  "text": "The burger cart.",
+  "id": "u017"
+ },
+ {
+  "voice": "narrator",
+  "text": "Burger. Look at U and R.",
+  "id": "u018"
+ },
+ {
+  "voice": "narrator",
+  "text": "Chips starts with C and H.",
+  "id": "u019"
+ },
+ {
+  "voice": "narrator",
+  "text": "The rice stall.",
+  "id": "u020"
+ },
+ {
+  "voice": "narrator",
+  "text": "Rice. C and E at the end.",
+  "id": "u021"
+ },
+ {
+  "voice": "narrator",
+  "text": "Chicken. C and H at the start. C and K in the middle.",
+  "id": "u022"
+ },
+ {
+  "voice": "narrator",
+  "text": "Fish ends with S and H.",
+  "id": "u023"
+ },
+ {
+  "voice": "narrator",
+  "text": "Meat has E and A, too. Listen: bread… meat. Different sounds!",
+  "id": "u024"
+ },
+ {
+  "voice": "narrator",
+  "text": "Now tap a cart. Read and listen!",
+  "id": "u025"
+ },
+ {
+  "voice": "kim",
+  "text": "Tap a cart. Read the word, then tap and listen.",
+  "id": "u026"
+ },
+ {
+  "voice": "kim",
+  "text": "Read the word. Tap the right picture!",
+  "id": "u027"
+ },
+ {
+  "voice": "kim",
+  "text": "Look at the gap. Tap the missing letters!",
+  "id": "u028"
+ },
+ {
+  "voice": "kim",
+  "text": "The letters are mixed up. Tap them in the right order!",
+  "id": "u029"
+ },
+ {
+  "voice": "narrator",
+  "text": "Let's read the sentences! This is Bill.",
+  "id": "u030"
+ },
+ {
+  "voice": "narrator",
+  "text": "Eating. E, A, T… then I, N, G.",
+  "id": "u031"
+ },
+ {
+  "voice": "narrator",
+  "text": "She is… she's. You can write both!",
+  "id": "u032"
+ },
+ {
+  "voice": "narrator",
+  "text": "I is always a big letter!",
+  "id": "u033"
+ },
+ {
+  "voice": "narrator",
+  "text": "He is eating. She is eating. I am eating. Now tap and listen!",
+  "id": "u034"
+ },
+ {
+  "voice": "kim",
+  "text": "Look and read. Is it right? Tap tick or cross!",
+  "id": "u035"
+ },
+ {
+  "voice": "narrator",
+  "text": "He is eating rice.",
+  "id": "u036"
+ },
+ {
+  "voice": "narrator",
+  "text": "She is eating meat.",
+  "id": "u037"
+ },
+ {
+  "voice": "narrator",
+  "text": "She is eating fish.",
+  "id": "u038"
+ },
+ {
+  "voice": "narrator",
+  "text": "He is eating bread.",
+  "id": "u039"
+ },
+ {
+  "voice": "narrator",
+  "text": "She is eating an egg.",
+  "id": "u040"
+ },
+ {
+  "voice": "narrator",
+  "text": "He is eating a sausage.",
+  "id": "u041"
+ },
+ {
+  "voice": "kim",
+  "text": "Look at the picture. Build the burger sentence!",
+  "id": "u042"
+ },
+ {
+  "voice": "kim",
+  "text": "An egg!",
+  "id": "u043"
+ },
+ {
+  "voice": "kim",
+  "text": "He is!",
+  "id": "u044"
+ },
+ {
+  "voice": "kim",
+  "text": "Eating!",
+  "id": "u045"
+ },
+ {
+  "voice": "narrator",
+  "text": "He is eating meatballs.",
+  "id": "u046"
+ },
+ {
+  "voice": "kim",
+  "text": "She is!",
+  "id": "u047"
+ },
+ {
+  "voice": "narrator",
+  "text": "She is eating a burger.",
+  "id": "u048"
+ },
+ {
+  "voice": "kim",
+  "text": "I is always a big letter!",
+  "id": "u049"
+ },
+ {
+  "voice": "kim",
+  "text": "I am eating chips.",
+  "id": "u050"
+ },
+ {
+  "voice": "narrator",
+  "text": "He is eating fish.",
+  "id": "u051"
+ },
+ {
+  "voice": "kim",
+  "text": "Tap a card. Read the question and the answer.",
+  "id": "u052"
+ },
+ {
+  "voice": "kim",
+  "text": "Read the question. Tap the right answer!",
+  "id": "u053"
+ },
+ {
+  "voice": "narrator",
+  "text": "He is eating chicken.",
+  "id": "u054"
+ },
+ {
+  "voice": "narrator",
+  "text": "She is eating meatballs.",
+  "id": "u055"
+ },
+ {
+  "voice": "kim",
+  "text": "I am eating a sausage.",
+  "id": "u056"
+ },
+ {
+  "voice": "narrator",
+  "text": "She is eating rice.",
+  "id": "u057"
+ },
+ {
+  "voice": "kim",
+  "text": "Great job! Now let's do Vocabulary!",
+  "id": "u058"
+ },
+ {
+  "voice": "kim",
+  "text": "Hooray! You know drinks and desserts!",
+  "id": "u059"
+ },
+ {
+  "voice": "narrator",
+  "text": "Look! Two new carts on Food Street!",
+  "id": "u060"
+ },
+ {
+  "voice": "narrator",
+  "text": "The drinks cart…",
+  "id": "u061"
+ },
+ {
+  "voice": "narrator",
+  "text": "and the dessert cart.",
+  "id": "u062"
+ },
+ {
+  "voice": "narrator",
+  "text": "This is the drinks cart. What drinks are here?",
+  "id": "u063"
+ },
+ {
+  "voice": "narrator",
+  "text": "From a cow. Moo!",
+  "id": "u064"
+ },
+ {
+  "voice": "narrator",
+  "text": "Oranges make…",
+  "id": "u065"
+ },
+ {
+  "voice": "narrator",
+  "text": "Lemon, water and sugar make…",
+  "id": "u066"
+ },
+ {
+  "voice": "narrator",
+  "text": "This is the dessert cart. Yummy!",
+  "id": "u067"
+ },
+ {
+  "voice": "narrator",
+  "text": "Clap two beats: choc… late!",
+  "id": "u068"
+ },
+ {
+  "voice": "narrator",
+  "text": "Lots of small…",
+  "id": "u069"
+ },
+ {
+  "voice": "kim",
+  "text": "Now it's your turn to talk! Say the word. Say the end of the word, too!",
+  "id": "u070"
+ },
+ {
+  "voice": "narrator",
+  "text": "Look! This is Sue.",
+  "id": "u071"
+ },
+ {
+  "voice": "narrator",
+  "text": "She's drinking milk.",
+  "id": "u072"
+ },
+ {
+  "voice": "narrator",
+  "text": "And this is Bill. Ice cream… eating or drinking?",
+  "id": "u073"
+ },
+ {
+  "voice": "narrator",
+  "text": "Eating! He's eating ice cream.",
+  "id": "u074"
+ },
+ {
+  "voice": "narrator",
+  "text": "He's eating cake.",
+  "id": "u075"
+ },
+ {
+  "voice": "narrator",
+  "text": "She's drinking juice.",
+  "id": "u076"
+ },
+ {
+  "voice": "kim",
+  "text": "I'm drinking water!",
+  "id": "u077"
+ },
+ {
+  "voice": "narrator",
+  "text": "Drinks… drinking. Desserts… eating! Now tap and listen!",
+  "id": "u078"
+ },
+ {
+  "voice": "narrator",
+  "text": "She is drinking milk.",
+  "id": "u079"
+ },
+ {
+  "voice": "narrator",
+  "text": "He is eating ice cream.",
+  "id": "u080"
+ },
+ {
+  "voice": "narrator",
+  "text": "He's eating ice cream.",
+  "id": "u081"
+ },
+ {
+  "voice": "kim",
+  "text": "I am drinking water.",
+  "id": "u082"
+ },
+ {
+  "voice": "kim",
+  "text": "I'm drinking water.",
+  "id": "u083"
+ },
+ {
+  "voice": "kim",
+  "text": "Listen to the sentence. Is it right, or silly? Tap tick or cross!",
+  "id": "u084"
+ },
+ {
+  "voice": "narrator",
+  "text": "He's drinking milk.",
+  "id": "u085"
+ },
+ {
+  "voice": "narrator",
+  "text": "She's drinking cake.",
+  "id": "u086"
+ },
+ {
+  "voice": "narrator",
+  "text": "She's eating cake.",
+  "id": "u087"
+ },
+ {
+  "voice": "narrator",
+  "text": "He's drinking juice.",
+  "id": "u088"
+ },
+ {
+  "voice": "narrator",
+  "text": "He's drinking lemonade.",
+  "id": "u089"
+ },
+ {
+  "voice": "narrator",
+  "text": "She's eating chocolate.",
+  "id": "u090"
+ },
+ {
+  "voice": "narrator",
+  "text": "He's drinking ice cream.",
+  "id": "u091"
+ },
+ {
+  "voice": "narrator",
+  "text": "She's drinking water.",
+  "id": "u092"
+ },
+ {
+  "voice": "narrator",
+  "text": "He's eating chocolate.",
+  "id": "u093"
+ },
+ {
+  "voice": "narrator",
+  "text": "He's eating sweets.",
+  "id": "u094"
+ },
+ {
+  "voice": "kim",
+  "text": "Spin the Snack Machine! Look and say the full sentence. Eating or drinking?",
+  "id": "u095"
+ },
+ {
+  "voice": "narrator",
+  "text": "He's drinking water.",
+  "id": "u096"
+ },
+ {
+  "voice": "narrator",
+  "text": "She's drinking lemonade.",
+  "id": "u097"
+ },
+ {
+  "voice": "narrator",
+  "text": "She's eating ice cream.",
+  "id": "u098"
+ },
+ {
+  "voice": "narrator",
+  "text": "She's eating sweets.",
+  "id": "u099"
+ },
+ {
+  "voice": "kim",
+  "text": "I'm drinking lemonade.",
+  "id": "u100"
+ },
+ {
+  "voice": "kim",
+  "text": "I'm eating ice cream.",
+  "id": "u101"
+ },
+ {
+  "voice": "kim",
+  "text": "I'm drinking milk.",
+  "id": "u102"
+ },
+ {
+  "voice": "kim",
+  "text": "I'm eating chocolate.",
+  "id": "u103"
+ },
+ {
+  "voice": "kim",
+  "text": "I'm drinking juice.",
+  "id": "u104"
+ },
+ {
+  "voice": "kim",
+  "text": "I'm eating cake.",
+  "id": "u105"
+ },
+ {
+  "voice": "kim",
+  "text": "I'm eating sweets.",
+  "id": "u106"
+ },
+ {
+  "voice": "narrator",
+  "text": "Look at Pat.",
+  "id": "u107"
+ },
+ {
+  "voice": "narrator",
+  "text": "Is she drinking juice?",
+  "id": "u108"
+ },
+ {
+  "voice": "kim",
+  "text": "Yes, she is.",
+  "id": "u109"
+ },
+ {
+  "voice": "narrator",
+  "text": "Is she drinking lemonade?",
+  "id": "u110"
+ },
+ {
+  "voice": "kim",
+  "text": "No, she isn't.",
+  "id": "u111"
+ },
+ {
+  "voice": "narrator",
+  "text": "Is he eating cake? Yes, he is.",
+  "id": "u112"
+ },
+ {
+  "voice": "narrator",
+  "text": "Is he drinking milk? No, he isn't.",
+  "id": "u113"
+ },
+ {
+  "voice": "narrator",
+  "text": "Answer with yes or no. Not just the food! Now tap and listen!",
+  "id": "u114"
+ },
+ {
+  "voice": "narrator",
+  "text": "Is he eating cake?",
+  "id": "u115"
+ },
+ {
+  "voice": "kim",
+  "text": "Yes, he is.",
+  "id": "u116"
+ },
+ {
+  "voice": "narrator",
+  "text": "Is he drinking milk?",
+  "id": "u117"
+ },
+ {
+  "voice": "kim",
+  "text": "No, he isn't.",
+  "id": "u118"
+ },
+ {
+  "voice": "kim",
+  "text": "Listen. Yes or no? Tap what he or she is eating or drinking!",
+  "id": "u119"
+ },
+ {
+  "voice": "narrator",
+  "text": "Is Sue drinking milk?",
+  "id": "u120"
+ },
+ {
+  "voice": "narrator",
+  "text": "Is she drinking water?",
+  "id": "u121"
+ },
+ {
+  "voice": "narrator",
+  "text": "Is Tony eating chocolate?",
+  "id": "u122"
+ },
+ {
+  "voice": "narrator",
+  "text": "Is he eating sweets?",
+  "id": "u123"
+ },
+ {
+  "voice": "narrator",
+  "text": "Is Pat drinking lemonade?",
+  "id": "u124"
+ },
+ {
+  "voice": "narrator",
+  "text": "Is Bill eating cake?",
+  "id": "u125"
+ },
+ {
+  "voice": "narrator",
+  "text": "Is he eating ice cream?",
+  "id": "u126"
+ },
+ {
+  "voice": "narrator",
+  "text": "Is May drinking water?",
+  "id": "u127"
+ },
+ {
+  "voice": "narrator",
+  "text": "Is she drinking milk?",
+  "id": "u128"
+ },
+ {
+  "voice": "kim",
+  "text": "Kim asks a question. Answer: Yes, she is… or No, she isn't!",
+  "id": "u129"
+ },
+ {
+  "voice": "kim",
+  "text": "Is he drinking milk?",
+  "id": "u130"
+ },
+ {
+  "voice": "narrator",
+  "text": "No, he isn't.",
+  "id": "u131"
+ },
+ {
+  "voice": "kim",
+  "text": "Is she eating cake?",
+  "id": "u132"
+ },
+ {
+  "voice": "narrator",
+  "text": "Yes, she is.",
+  "id": "u133"
+ },
+ {
+  "voice": "kim",
+  "text": "Is he drinking lemonade?",
+  "id": "u134"
+ },
+ {
+  "voice": "narrator",
+  "text": "Yes, he is.",
+  "id": "u135"
+ },
+ {
+  "voice": "kim",
+  "text": "Is she eating chocolate?",
+  "id": "u136"
+ },
+ {
+  "voice": "narrator",
+  "text": "No, she isn't.",
+  "id": "u137"
+ },
+ {
+  "voice": "kim",
+  "text": "Is he eating chocolate?",
+  "id": "u138"
+ },
+ {
+  "voice": "kim",
+  "text": "Is she drinking juice?",
+  "id": "u139"
+ },
+ {
+  "voice": "kim",
+  "text": "Hooray! You can read and write drinks and desserts!",
+  "id": "u140"
+ },
+ {
+  "voice": "narrator",
+  "text": "Let's read the drinks and desserts. No A, no AN!",
+  "id": "u141"
+ },
+ {
+  "voice": "narrator",
+  "text": "The drinks cart.",
+  "id": "u142"
+ },
+ {
+  "voice": "narrator",
+  "text": "Water ends with E and R.",
+  "id": "u143"
+ },
+ {
+  "voice": "narrator",
+  "text": "Milk ends with L and K.",
+  "id": "u144"
+ },
+ {
+  "voice": "narrator",
+  "text": "Juice. U and I… then C and E.",
+  "id": "u145"
+ },
+ {
+  "voice": "narrator",
+  "text": "Lemonade. Lemon… ade. The E at the end is quiet.",
+  "id": "u146"
+ },
+ {
+  "voice": "narrator",
+  "text": "The dessert cart.",
+  "id": "u147"
+ },
+ {
+  "voice": "narrator",
+  "text": "Cake. The E at the end is quiet, too.",
+  "id": "u148"
+ },
+ {
+  "voice": "narrator",
+  "text": "Ice cream is two words!",
+  "id": "u149"
+ },
+ {
+  "voice": "narrator",
+  "text": "Chocolate. Look at the two Os.",
+  "id": "u150"
+ },
+ {
+  "voice": "narrator",
+  "text": "Sweets. Two Es!",
+  "id": "u151"
+ },
+ {
+  "voice": "kim",
+  "text": "Look at the picture. Which word is right? Tap it!",
+  "id": "u152"
+ },
+ {
+  "voice": "kim",
+  "text": "Write the label. Tap the missing letters!",
+  "id": "u153"
+ },
+ {
+  "voice": "narrator",
+  "text": "Oh no! Something is missing!",
+  "id": "u154"
+ },
+ {
+  "voice": "narrator",
+  "text": "Is! She is drinking milk.",
+  "id": "u155"
+ },
+ {
+  "voice": "narrator",
+  "text": "Oh no! Something is missing again!",
+  "id": "u156"
+ },
+ {
+  "voice": "narrator",
+  "text": "I, N, G! He is eating ice cream.",
+  "id": "u157"
+ },
+ {
+  "voice": "narrator",
+  "text": "Is or am… and I, N, G. Always together!",
+  "id": "u158"
+ },
+ {
+  "voice": "kim",
+  "text": "Read the sick sentence. What's wrong? Build it the right way!",
+  "id": "u159"
+ },
+ {
+  "voice": "kim",
+  "text": "Something is missing! He is…",
+  "id": "u160"
+ },
+ {
+  "voice": "narrator",
+  "text": "He is drinking water.",
+  "id": "u161"
+ },
+ {
+  "voice": "kim",
+  "text": "Eating! I, N, G.",
+  "id": "u162"
+ },
+ {
+  "voice": "kim",
+  "text": "Cake… eating or drinking?",
+  "id": "u163"
+ },
+ {
+  "voice": "narrator",
+  "text": "She is eating cake.",
+  "id": "u164"
+ },
+ {
+  "voice": "kim",
+  "text": "No A! Just juice.",
+  "id": "u165"
+ },
+ {
+  "voice": "narrator",
+  "text": "He is drinking juice.",
+  "id": "u166"
+ },
+ {
+  "voice": "kim",
+  "text": "Ice cream… eating!",
+  "id": "u167"
+ },
+ {
+  "voice": "narrator",
+  "text": "She is eating ice cream.",
+  "id": "u168"
+ },
+ {
+  "voice": "kim",
+  "text": "I am eating sweets.",
+  "id": "u169"
+ },
+ {
+  "voice": "kim",
+  "text": "Drinking! I, N, G.",
+  "id": "u170"
+ },
+ {
+  "voice": "narrator",
+  "text": "He is drinking milk.",
+  "id": "u171"
+ },
+ {
+  "voice": "kim",
+  "text": "Look and read. Yes or no?",
+  "id": "u172"
+ },
+ {
+  "voice": "narrator",
+  "text": "Tony is drinking lemonade.",
+  "id": "u173"
+ },
+ {
+  "voice": "narrator",
+  "text": "Sue is eating chocolate.",
+  "id": "u174"
+ },
+ {
+  "voice": "narrator",
+  "text": "Bill is drinking juice.",
+  "id": "u175"
+ },
+ {
+  "voice": "narrator",
+  "text": "Pat is drinking milk.",
+  "id": "u176"
+ },
+ {
+  "voice": "narrator",
+  "text": "Sue is eating ice cream.",
+  "id": "u177"
+ },
+ {
+  "voice": "narrator",
+  "text": "Tony is eating cake.",
+  "id": "u178"
+ },
+ {
+  "voice": "kim",
+  "text": "Look at the picture. Read the question. Build the answer!",
+  "id": "u179"
+ },
+ {
+  "voice": "kim",
+  "text": "Yes, she is!",
+  "id": "u180"
+ },
+ {
+  "voice": "kim",
+  "text": "Yes, he is!",
+  "id": "u181"
+ },
+ {
+  "voice": "kim",
+  "text": "Hooray! You finished Unit I! Super job!",
+  "id": "u182"
+ },
+ {
+  "voice": "narrator",
+  "text": "Look at the sky. Morning… noon… and night.",
+  "id": "u183"
+ },
+ {
+  "voice": "narrator",
+  "text": "In the morning, we have breakfast.",
+  "id": "u184"
+ },
+ {
+  "voice": "narrator",
+  "text": "At noon, we have lunch.",
+  "id": "u185"
+ },
+ {
+  "voice": "narrator",
+  "text": "At night, we have dinner.",
+  "id": "u186"
+ },
+ {
+  "voice": "narrator",
+  "text": "Breakfast, lunch, dinner! Now let's sort the food, the drinks and the desserts.",
+  "id": "u187"
+ },
+ {
+  "voice": "kim",
+  "text": "Read the word. Tap it, then tap the right tray!",
+  "id": "u188"
+ },
+ {
+  "voice": "narrator",
+  "text": "Food!",
+  "id": "u189"
+ },
+ {
+  "voice": "narrator",
+  "text": "Drink!",
+  "id": "u190"
+ },
+ {
+  "voice": "narrator",
+  "text": "Dessert!",
+  "id": "u191"
+ },
+ {
+  "voice": "narrator",
+  "text": "Food and desserts… we eat them.",
+  "id": "u192"
+ },
+ {
+  "voice": "narrator",
+  "text": "Drinks… we drink them.",
+  "id": "u193"
+ },
+ {
+  "voice": "kim",
+  "text": "Spell the word to open the fridge!",
+  "id": "u194"
+ },
+ {
+  "voice": "kim",
+  "text": "Listen to Max's family. What do they have? Tap three pictures!",
+  "id": "u195"
+ },
+ {
+  "voice": "narrator",
+  "text": "It's breakfast time. Max's family is eating bread and an egg. They're drinking juice.",
+  "id": "u196"
+ },
+ {
+  "voice": "narrator",
+  "text": "It's lunch time. Max's family is eating rice and fish. They're drinking water.",
+  "id": "u197"
+ },
+ {
+  "voice": "narrator",
+  "text": "It's dinner time. Max's family is eating meatballs and chips. Then they're eating ice cream!",
+  "id": "u198"
+ },
+ {
+  "voice": "narrator",
+  "text": "Food and desserts… eating. Drinks… drinking.",
+  "id": "u199"
+ },
+ {
+  "voice": "narrator",
+  "text": "Look! Bill is having lunch.",
+  "id": "u200"
+ },
+ {
+  "voice": "narrator",
+  "text": "He's eating chicken. He's drinking juice.",
+  "id": "u201"
+ },
+ {
+  "voice": "narrator",
+  "text": "Rice and cake… both eating. One sentence with and! She's eating rice and cake.",
+  "id": "u202"
+ },
+ {
+  "voice": "narrator",
+  "text": "Rice and milk… eating and drinking. Two sentences! She's eating rice. She's drinking milk.",
+  "id": "u203"
+ },
+ {
+  "voice": "narrator",
+  "text": "Same verb, use and. Eating and drinking, say two sentences!",
+  "id": "u204"
+ },
+ {
+  "voice": "kim",
+  "text": "Look at the picture. Say what they're eating and drinking!",
+  "id": "u205"
+ },
+ {
+  "voice": "kim",
+  "text": "What is she eating and drinking?",
+  "id": "u206"
+ },
+ {
+  "voice": "narrator",
+  "text": "She's eating fish. She's drinking lemonade.",
+  "id": "u207"
+ },
+ {
+  "voice": "kim",
+  "text": "What are you eating and drinking?",
+  "id": "u208"
+ },
+ {
+  "voice": "narrator",
+  "text": "I'm eating meatballs. I'm drinking juice.",
+  "id": "u209"
+ },
+ {
+  "voice": "narrator",
+  "text": "She's eating chicken and chocolate.",
+  "id": "u210"
+ },
+ {
+  "voice": "kim",
+  "text": "What is he eating and drinking?",
+  "id": "u211"
+ },
+ {
+  "voice": "narrator",
+  "text": "He's eating an egg. He's drinking water.",
+  "id": "u212"
+ },
+ {
+  "voice": "narrator",
+  "text": "I'm eating bread and ice cream.",
+  "id": "u213"
+ },
+ {
+  "voice": "kim",
+  "text": "Read about Tom's day. Tap the word that fits the gap!",
+  "id": "u214"
+ },
+ {
+  "voice": "narrator",
+  "text": "It's breakfast time. Tom is eating bread. He is drinking milk.",
+  "id": "u215"
+ },
+ {
+  "voice": "narrator",
+  "text": "At lunch, Tom is eating rice. He is drinking lemonade.",
+  "id": "u216"
+ },
+ {
+  "voice": "narrator",
+  "text": "At dinner, he is eating a burger and chips. Then he is eating cake. Yummy!",
+  "id": "u217"
+ },
+ {
+  "voice": "kim",
+  "text": "Look at the picture. Eating or drinking? Build the sentence!",
+  "id": "u218"
+ },
+ {
+  "voice": "kim",
+  "text": "Lemonade… drinking!",
+  "id": "u219"
+ },
+ {
+  "voice": "kim",
+  "text": "I am drinking lemonade.",
+  "id": "u220"
+ },
+ {
+  "voice": "narrator",
+  "text": "She is drinking juice.",
+  "id": "u221"
+ },
+ {
+  "voice": "kim",
+  "text": "I am eating ice cream.",
+  "id": "u222"
+ },
+ {
+  "voice": "narrator",
+  "text": "He is eating a burger and chips.",
+  "id": "u223"
+ },
+ {
+  "voice": "narrator",
+  "text": "Look! Tony is having dinner.",
+  "id": "u224"
+ },
+ {
+  "voice": "narrator",
+  "text": "What is he eating? He's eating chicken.",
+  "id": "u225"
+ },
+ {
+  "voice": "narrator",
+  "text": "What is he drinking? He's drinking water.",
+  "id": "u226"
+ },
+ {
+  "voice": "narrator",
+  "text": "Is he eating chicken? Yes, he is.",
+  "id": "u227"
+ },
+ {
+  "voice": "narrator",
+  "text": "What… tell me the food. Is… say yes or no!",
+  "id": "u228"
+ },
+ {
+  "voice": "kim",
+  "text": "Listen to the question and the answer. Do they match? Tap tick or cross!",
+  "id": "u229"
+ },
+ {
+  "voice": "kim",
+  "text": "Milk.",
+  "id": "u230"
+ },
+ {
+  "voice": "narrator",
+  "text": "What is she drinking?",
+  "id": "u231"
+ },
+ {
+  "voice": "kim",
+  "text": "She's eating cake.",
+  "id": "u232"
+ },
+ {
+  "voice": "narrator",
+  "text": "Is he eating an egg?",
+  "id": "u233"
+ },
+ {
+  "voice": "narrator",
+  "text": "What are you drinking?",
+  "id": "u234"
+ },
+ {
+  "voice": "narrator",
+  "text": "Is she eating sweets?",
+  "id": "u235"
+ },
+ {
+  "voice": "narrator",
+  "text": "Is he drinking juice?",
+  "id": "u236"
+ },
+ {
+  "voice": "kim",
+  "text": "Yes, he's.",
+  "id": "u237"
+ },
+ {
+  "voice": "kim",
+  "text": "Read the question. Look and answer. Right answer? Move one step home!",
+  "id": "u238"
+ },
+ {
+  "voice": "kim",
+  "text": "What is he drinking?",
+  "id": "u239"
+ },
+ {
+  "voice": "kim",
+  "text": "Is she drinking milk?",
+  "id": "u240"
+ },
+ {
+  "voice": "kim",
+  "text": "What is she drinking?",
+  "id": "u241"
+ },
+ {
+  "voice": "kim",
+  "text": "Is he eating cake?",
+  "id": "u242"
+ }
+]
