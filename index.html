@@ -777,6 +777,326 @@ body.framed.kim-intro .kim .bub{left:calc(100% + 10px);bottom:50%;transform:tran
 .raceboard .sq.home{background:#fff3c9;border-color:var(--sun);font-size:22px}
 .raceboard .pawn{position:absolute;top:-22px;font-size:26px}
 .strip u,.food .lbl u,.caption u{text-decoration:none;color:var(--tomato);background:rgba(229,83,75,.12);border-radius:5px;padding:0 1px}
+
+/* =====================================================================
+   LAYOUT v2 (2026-11-17) — one layout system for every screen size.
+   Phone portrait · small phone · tablet · laptop · short laptop · phone held sideways.
+   Rules here override the older layers above; keep new layout rules in this section.
+   ===================================================================== */
+
+/* -- 0. never show an empty picture frame -- */
+img:not([src]),img[src=""]{visibility:hidden}
+
+/* -- 1. shared measures -- */
+:root{--topH:64px;--tbH:44px;--band:0px;--edge:14px}
+@media (max-height:520px){:root{--topH:56px}}
+/* the height a practice screen can really use: screen − task bar − Kim's band − paddings */
+body.framed{--avh:calc(100vh - var(--tbH) - var(--band) - 44px)}
+@supports (height:100dvh){body.framed{--avh:calc(100dvh - var(--tbH) - var(--band) - 44px)}}
+
+/* -- 2. scene screens (Watch / Explore) -- */
+body[data-view="watch"],body[data-view="explore"]{--av:clamp(60px,9vh,92px)}
+@media (max-height:520px){body[data-view="watch"],body[data-view="explore"]{--av:52px}}
+.canvas{container-type:size}
+body[data-view="watch"] .dock,body[data-view="explore"] .dock{left:max(var(--edge),env(safe-area-inset-left,0px));right:max(var(--edge),env(safe-area-inset-right,0px));
+  bottom:calc(env(safe-area-inset-bottom,0px) + var(--edge));padding:8px 12px;max-width:1240px;margin-inline:auto}
+@media (orientation:portrait){
+  body[data-view="watch"] .dock,body[data-view="explore"] .dock{left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px))}
+}
+.kimslot{flex:none;display:block;width:var(--av);height:var(--av);margin:-14px 2px -14px -4px;pointer-events:none}
+/* Kim, docked in the slot (JS copies the slot's box onto #kim) */
+body:is([data-view="watch"],[data-view="explore"]) .kim.slotted{position:fixed}
+body[data-view] .kim.bub-up .bub{left:0;right:auto;bottom:calc(100% + 12px);top:auto;transform:none;border-radius:18px 18px 18px 4px;
+  max-width:min(460px,calc(100vw - 64px))}
+body[data-view] .kim.bub-down .bub{left:0;right:auto;top:calc(100% + 12px);bottom:auto;transform:none;border-radius:4px 18px 18px 18px;
+  max-width:min(460px,calc(100vw - 64px))}
+body:is([data-view="watch"],[data-view="explore"]) .kim .bub{font-size:clamp(16px,2.2vh,20px);padding:8px 14px}
+
+/* watch: one wide caption bar — 🔊 · text · ➜ */
+body[data-view="watch"] .caption{position:relative;gap:12px;min-height:0}
+body[data-view="watch"] .caption .txt{font-size:clamp(19px,2.9vh,30px);line-height:1.2;text-wrap:pretty}
+body[data-view="watch"] .speak{width:clamp(44px,6.4vh,56px);height:clamp(44px,6.4vh,56px)}
+.bigarrow{min-width:clamp(64px,10vh,96px);height:clamp(48px,7vh,60px)}
+/* portrait: Kim hangs under the bar's left corner (empty space), so the text gets the full width */
+body[data-stage="tall"][data-view="watch"] .caption .kimslot{position:absolute;left:-6px;top:calc(100% + 8px);margin:0}
+body[data-stage="tall"][data-view="watch"] .caption{gap:10px}
+body[data-stage="tall"][data-view="watch"] .caption .txt{font-size:clamp(19px,min(5.2vw,3vh),30px)}
+body[data-stage="tall"][data-view="watch"] .bigarrow{min-width:clamp(60px,9vw,96px)}
+body[data-stage="tall"][data-view="watch"] .dock{padding:10px 12px}
+
+/* scene labels: sized to the picture, nudged back inside by JS (--nx/--ny) */
+.hot .name{width:max-content;font-size:clamp(11px,1.9cqw,20px);padding:2px clamp(7px,1.2cqw,14px);transform:translate(calc(-50% + var(--nx,0px)),calc(100% + var(--ny,0px)))}
+.food .lbl{width:max-content;font-size:clamp(11px,2.1cqw,24px);padding:1px clamp(6px,1.1cqw,12px);transform:translate(var(--nx,0px),var(--ny,0px))}
+.backbtn{min-height:44px;font-size:clamp(14px,2.4cqw,20px)}
+
+/* explore dock: words tray + count + I'm ready */
+body[data-view="explore"] .dock .controls{flex-wrap:nowrap;gap:12px}
+body[data-view="explore"] .tracker{flex-wrap:nowrap}
+body[data-view="explore"] .tracker span{width:clamp(40px,6vh,54px);height:clamp(40px,6vh,54px);border-radius:12px}
+body[data-view="explore"] .tracker img{width:78%;height:78%}
+body[data-view="explore"] .trackwrap .count{font-size:clamp(14px,2vh,18px)}
+.ctl{min-height:44px;height:auto;padding:0 16px;font-size:clamp(16px,2.2vh,19px);white-space:nowrap;justify-content:center}
+.ctl.go,.ctl.primary{min-height:clamp(48px,6.6vh,56px);padding:0 20px}
+/* portrait: the tray is a full-width row under the scene with big chips; Kim · count · I'm ready below */
+body[data-stage="tall"][data-view="explore"] .dock .controls{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"tr tr tr" "km ct rd";align-items:center;gap:10px 10px}
+body[data-stage="tall"][data-view="explore"] .trackwrap{display:contents}
+body[data-stage="tall"][data-view="explore"] .tracker{grid-area:tr;flex-wrap:wrap;justify-content:center;gap:8px}
+body[data-stage="tall"][data-view="explore"] .tracker span{width:clamp(48px,calc((100vw - 92px) / 5),68px);height:clamp(48px,calc((100vw - 92px) / 5),68px);border-radius:14px}
+body[data-stage="tall"][data-view="explore"] .trackwrap .count{grid-area:ct}
+body[data-stage="tall"][data-view="explore"] .kimslot{grid-area:km;margin:0}
+body[data-stage="tall"][data-view="explore"] .spacer{display:none}
+body[data-stage="tall"][data-view="explore"] .controls > .ctl{grid-area:rd}
+/* landscape scene with a narrow height: tray chips shrink before anything is cut */
+@media (max-height:520px){
+  body[data-view="explore"] .tracker{gap:4px}
+  body[data-view="explore"] .tracker span{width:36px;height:36px}
+  body[data-view="watch"] .dock{flex-direction:row}
+  .iconbtn{width:44px;height:44px}
+  .speak{width:44px;height:44px}
+}
+
+/* -- 3. practice / cards / recap / done: Kim's band at the bottom -- */
+body.framed:not([data-view="map"]){--av:clamp(56px,9vh,88px);--band:calc(var(--av) + 28px)}
+@media (orientation:portrait) and (max-width:560px){body.framed:not([data-view="map"]){--band:max(calc(var(--av) + 28px),132px)}}
+@media (orientation:portrait) and (max-width:560px) and (max-height:700px){body.framed:not([data-view="map"]){--band:max(calc(var(--av) + 28px),116px)}}
+@media (max-height:520px){body.framed:not([data-view="map"]){--av:52px;--band:76px}}
+/* the work area ends above the band, so Kim and her bubble never sit on top of anything */
+body.framed:not([data-view="map"]) main{bottom:var(--band);padding-bottom:6px}
+body.framed:not([data-view="map"]):not([data-view="units"]):not([data-view="unit"]):not([data-view="voices"]) #app{background:linear-gradient(180deg,#d6ecfa 0%,#eef7fd 45%,#fbf6ee 82%)}
+body.framed main{background:transparent!important}
+body.framed.kim-intro:not([data-view="units"]):not([data-view="unit"]):not([data-view="voices"]):not([data-view="map"]) .kim{--av:clamp(56px,9vh,88px)}
+@media (max-height:520px){body.framed.kim-intro .kim{--av:52px!important}}
+body.framed .kim .bub,body.framed.kim-intro .kim .bub{bottom:0!important;transform:none!important;top:auto}
+body.framed.kim-intro .kim .bub{font-size:clamp(15px,2.3vh,21px);max-width:min(640px,calc(100vw - var(--av) - 44px));padding:10px 16px;line-height:1.25}
+@media (max-width:380px){body.framed.kim-intro .kim .bub{font-size:15px;padding:8px 12px}}
+body:is([data-view="units"],[data-view="unit"],[data-view="voices"]) .kim .bub{left:calc(100% + 10px)}
+
+/* task bar: 44px touch targets */
+.tb-x,.tb-menu,.tb-aa{width:44px;height:44px;border-radius:14px;font-size:18px}
+.tb-aa{font-size:16px}
+.tray i{max-width:36px}
+body.framed .taskbar{max-width:1200px}
+
+/* content column: wider on landscape screens */
+@media (orientation:landscape){body.framed main > *:not(.taskbar){max-width:min(1140px,100%)}}
+@media (orientation:portrait) and (min-width:700px){body.framed main > *:not(.taskbar){max-width:min(920px,100%)}}
+
+
+/* -- 4. game pieces scale with the usable height (≈1.5–2× on laptops; phones unchanged) -- */
+.field,.sayfield{justify-content:safe center}
+.speak.big{width:clamp(56px,9vh,84px);height:clamp(56px,9vh,84px)}
+.speak.big svg{width:46%;height:46%}
+.turtle{width:clamp(44px,6vh,54px);height:clamp(44px,6vh,54px)}
+.bubble{--s:clamp(88px,min(27vw,calc(var(--avh) - 180px)),300px)}
+.reveal img{width:clamp(110px,calc(var(--avh) * .38),260px)}
+.reveal .w{font-size:clamp(26px,5vh,48px)}
+.psent{font-size:clamp(20px,min(5.6vw,3.6vh),34px)}
+.pcard{width:clamp(88px,min(31%,calc((var(--avh) - 170px) * .8)),300px)}
+.crowd{max-width:min(1200px,calc((var(--avh) - 150px) * 4.8 + 70px))}
+.nametag{font-size:clamp(26px,min(8vw,5vh),46px)}
+.sayfield .pic{width:clamp(110px,min(72vw,calc(var(--avh) - 250px)),400px)}
+.answer{font-size:clamp(22px,min(6.4vw,4.4vh),44px);text-align:center}
+.heardtxt{font-size:clamp(14px,2vh,18px)}
+.mic{width:clamp(64px,11vh,108px)}
+.lidkid{height:clamp(100px,calc(var(--avh) * .5),380px)}
+.lidkid.me{height:clamp(80px,calc(var(--avh) * .32),260px)}
+.plate{width:clamp(110px,min(42vw,calc(var(--avh) * .46)),340px)}
+.subj{font-size:clamp(20px,3.6vh,34px)}
+.apic .aimg{height:clamp(100px,calc(var(--avh) * .46),380px)}
+.apic.me .aimg{height:clamp(70px,calc(var(--avh) * .32),260px)}
+.aplate{width:clamp(110px,min(40vw,calc(var(--avh) * .36)),300px)}
+.sayfield:has(.raceboard) .apic .aimg{height:clamp(100px,calc(var(--avh) * .36),340px)}
+.cq.big{font-size:clamp(22px,min(6.4vw,4vh),38px)}
+/* choose */
+.cprompt .cpic,.spellfield .cpic{height:clamp(100px,calc(var(--avh) * .36),340px);max-width:min(80vw,640px)}
+/* the prompt picture shares the class name "cpic" with the explore-card frame: undo that frame's width/ratio */
+img.cpic{width:auto!important;aspect-ratio:auto!important;flex:none;display:block;object-fit:contain}
+.cpics img{height:clamp(84px,calc(var(--avh) * .3),280px)}
+.copt.pic{width:clamp(92px,min(27vw,calc(var(--avh) * .3)),270px)}
+.copts.many .copt.pic{width:clamp(72px,min(19vw,calc(var(--avh) * .2)),180px)}
+.lay-stack .cprompt .cpic{height:clamp(100px,calc(var(--avh) * .3),300px)}
+.choosefield:has(.copts.many) .cprompt .cpic{height:clamp(90px,calc(var(--avh) * .28),300px)}
+.copt.txt{font-size:clamp(19px,min(5.6vw,3.8vh),36px);min-height:56px;padding:10px 20px}
+.copt.mark{width:clamp(84px,calc(var(--avh) * .2),150px);font-size:clamp(40px,8vh,80px)}
+.ctext.big{font-size:clamp(22px,min(6.6vw,4.4vh),44px)}
+.ctext.q{font-size:clamp(20px,min(6vw,4vh),38px)}
+.cnote{font-size:clamp(15px,2.2vh,19px)}
+.cfix{font-size:clamp(18px,min(5.4vw,3.4vh),32px)}
+/* spell */
+.ltile{width:clamp(52px,min(16vw,calc(var(--avh) * .13)),88px);height:clamp(52px,min(16vw,calc(var(--avh) * .13)),88px);font-size:clamp(26px,min(9vw,calc(var(--avh) * .075)),48px)}
+.spword{gap:clamp(3px,1vw,8px);--len:5}
+.spword .given,.spword .slot{font-size:clamp(26px,min(8.4vw,calc(var(--avh) * .085)),58px);min-width:clamp(22px,min(calc((100vw - 60px) / var(--len) - 8px),calc(var(--avh) * .07)),52px)}
+.spword .slot{height:clamp(44px,min(13vw,calc(var(--avh) * .11)),74px)}
+.spword{flex-wrap:nowrap;max-width:100%}
+.bulb.small{width:48px;height:48px}
+/* build */
+.btile,.bslot{font-size:clamp(19px,min(5.4vw,3.8vh),34px)}
+.btile{min-height:48px}
+.bslot{min-height:clamp(48px,7.4vh,66px)}
+.sick{font-size:clamp(19px,min(5.4vw,3.6vh),32px)}
+/* sort */
+.strays{max-width:min(1140px,96vw)}
+.stray{min-height:clamp(110px,calc(var(--avh) * .38),300px)}
+@media (orientation:portrait){.stray{min-height:clamp(110px,calc(var(--avh) * .24),300px)}}
+.stray .tbox img{width:clamp(34px,calc(var(--avh) * .11),84px);height:clamp(34px,calc(var(--avh) * .11),84px)}
+.stray .tbox > img:first-child{width:clamp(44px,calc(var(--avh) * .16),110px);height:clamp(44px,calc(var(--avh) * .16),110px)}
+.stray .tname{font-size:clamp(17px,min(5vw,3.4vh),30px)}
+.scards{max-width:min(1100px,96vw)}
+.scard{width:clamp(60px,min(19vw,calc(var(--avh) * .19)),124px)}
+.scard span{font-size:clamp(12px,min(3.4vw,1.9vh),17px);line-height:1.1;text-align:center;white-space:nowrap}
+.scard img{height:0}
+/* gaptext */
+.gtext{font-size:clamp(18px,min(5vw,3.4vh),30px);max-width:min(900px,94vw);line-height:1.8}
+.gword{font-size:clamp(17px,min(4.8vw,3vh),26px);min-height:48px}
+.gword img{width:clamp(32px,6vh,56px);height:clamp(32px,6vh,56px)}
+.gtitle{font-size:clamp(22px,min(6vw,3.8vh),34px)}
+/* race home */
+.raceboard{gap:clamp(4px,1vh,10px);flex-wrap:nowrap}
+.raceboard .sq{flex:none;width:clamp(36px,min(11vw,calc(var(--avh) * .1)),72px);height:clamp(36px,min(11vw,calc(var(--avh) * .1)),72px);font-size:clamp(16px,2.6vh,26px)}
+.raceboard .sq.home{font-size:clamp(22px,3.6vh,36px)}
+.raceboard .pawn{font-size:clamp(26px,4.4vh,40px);top:calc(-.9 * clamp(26px,4.4vh,40px))}
+.raceboard{margin-top:clamp(18px,3vh,34px)}
+
+/* chunks / qa cards: one row with as many columns as cards on wide screens */
+@media (min-width:641px){
+  .chunkgrid{--n:3;grid-template-columns:repeat(var(--n),minmax(0,1fr));justify-self:center;width:100%;
+    max-width:min(1200px,calc((var(--avh) - 150px) * 1.25 * var(--n) + 14px * (var(--n) - 1)))!important;margin-inline:auto}
+  .chunkgrid:has(> :nth-child(4)){--n:4}
+  .csent{font-size:clamp(16px,min(2.8vw,2.8vh),28px)}
+  .cq{font-size:clamp(15px,min(2.6vw,2.6vh),26px)}
+}
+@media (orientation:portrait) and (min-width:641px){
+  .chunkgrid:has(> :nth-child(4)){--n:2}
+  /* upright tablet, 2–3 cards: one card per row, picture left, sentence right, filling the height */
+  .chunkgrid:not(:has(> :nth-child(4))){--n:1;max-width:min(780px,100%)!important;grid-auto-rows:minmax(0,1fr);align-content:stretch}
+  .chunkgrid:not(:has(> :nth-child(4))) .ccard{flex-direction:row;text-align:left;align-items:center;min-height:0}
+  .chunkgrid:not(:has(> :nth-child(4))) .cpic{width:52%;height:100%;aspect-ratio:auto;flex:none}
+  .chunkgrid:not(:has(> :nth-child(4))) :is(.csent,.cq){flex:1;font-size:clamp(20px,3.6vw,32px);padding:12px 18px}
+}
+/* upright phone: the cards share the height instead of leaving a gap above the dock */
+@media (orientation:portrait) and (max-width:640px){
+  body.framed main > .chunkgrid{grid-auto-rows:minmax(0,1fr);align-content:stretch}
+  body.framed .chunkgrid .ccard{min-height:0}
+  body.framed .chunkgrid .cpic{height:100%;aspect-ratio:auto}
+  body.framed .chunkgrid :is(.csent,.cq){flex:1;font-size:clamp(16px,4.8vw,22px)}
+}
+.tracker span.dot{min-height:40px;height:auto;font-size:clamp(14px,2vh,17px)}
+.chunkgrid + .dock .trackwrap .count{font-size:clamp(14px,2vh,17px)}
+
+/* recap */
+.recap{max-width:min(1140px,100%)!important}
+.recap h2{font-size:clamp(24px,4.4vh,40px)}
+.grid{grid-template-columns:repeat(auto-fill,minmax(clamp(100px,min(26vw,19vh),190px),1fr))}
+.tile{min-height:44px;padding:clamp(8px,1.4vh,14px)}
+.tile img{width:clamp(64px,min(20vw,15vh),140px);height:clamp(64px,min(20vw,15vh),140px)}
+.tile span{font-size:clamp(15px,min(4.2vw,2.8vh),26px);line-height:1.15;text-align:center;white-space:nowrap}
+.score div{font-size:clamp(14px,2vh,18px)}
+@media (max-width:420px){.recap .controls{gap:8px}.recap .controls .ctl{padding:0 12px;font-size:16px}}
+.recap:not(.donebox) > .controls{flex-wrap:nowrap;position:sticky;bottom:0;margin-top:auto;padding:12px 2px 2px;background:linear-gradient(rgba(251,246,238,0),#fbf6ee 40%);z-index:2}
+
+/* done: a centred finish card */
+.donebox{gap:clamp(10px,2.2vh,26px);text-align:center}
+.donebox h2{margin:0}
+.donebox .trophy{font-size:clamp(56px,15vh,150px)}
+.donebox h2{font-size:clamp(28px,6.4vh,56px)}
+.donebox .score{justify-content:center}
+.donebox .score div{background:#fff;box-shadow:0 4px 0 var(--line);padding:10px 18px;font-size:clamp(15px,2.8vh,24px)}
+.donebox .controls{justify-content:center;gap:12px;max-width:640px}
+.donebox .controls .spacer{display:none}
+.donebox .ctl{min-height:clamp(52px,8.4vh,68px);font-size:clamp(17px,3vh,24px);padding:0 24px;border-radius:18px}
+
+/* -- 5. home + map -- */
+.backlink{min-height:44px;display:inline-flex;align-items:center;padding:6px 16px}
+.maphead{padding-top:50px}
+.nbtn{--n:clamp(64px,12vh,150px)}
+@media (orientation:landscape) and (min-height:521px){
+  body[data-view="units"] main > *,body[data-view="unit"] main > *{max-width:min(1140px,100%)}
+  .unitgrid{--cw:clamp(140px,calc(((100vh - var(--band) - 200px) / 2 - 64px) / .625),230px);grid-template-columns:repeat(5,minmax(0,1fr));
+    max-width:calc(var(--cw) * 5 + 48px);margin-inline:auto;width:100%}
+  .utext b{font-size:clamp(18px,2.6vh,22px)}
+  .utext span{font-size:clamp(14px,2vh,17px)}
+  body[data-view="unit"] main > .lessonlist{max-width:900px;margin-inline:auto;width:100%;gap:clamp(8px,1.4vh,16px);margin-top:clamp(8px,1.6vh,16px)}
+  .lessoncard{padding:clamp(6px,1vh,14px) 20px}
+  .lessoncard .lnum{width:clamp(50px,7.4vh,72px);height:clamp(50px,7.4vh,72px);font-size:clamp(22px,3.2vh,28px)}
+  .lessoncard .ltext b{font-size:clamp(19px,2.9vh,26px)}
+  .lskill,.lstate{font-size:clamp(14px,2vh,18px)}
+}
+
+/* the result card floats over the game (an older ".field > *" rule had pushed it below the bubbles) */
+.field > .reveal{position:absolute;inset:0;z-index:3}
+
+/* tablets held upright: bigger unit cards and lesson rows */
+@media (orientation:portrait) and (min-width:700px){
+  .unitgrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+  .uletter{font-size:64px}
+  .utext b{font-size:22px}.utext span{font-size:17px}.utext em{font-size:14px}
+  .lessoncard{padding:16px 22px}
+  .lessoncard .lnum{width:76px;height:76px;font-size:30px}
+  .lessoncard .ltext b{font-size:26px}
+  .lskill,.lstate{font-size:18px}
+  .homehead h1{font-size:52px}
+}
+
+/* -- 6. intro preview: the first item is already there, dimmed, while Kim reads the instruction -- */
+.field > *,.sayfield > *{transition:opacity .45s ease,filter .45s ease}
+.field.pre,.sayfield.pre{pointer-events:none}
+.field.pre > *,.sayfield.pre > *{opacity:.5;filter:saturate(.55)}
+
+/* phone held sideways (short + wide): the prompt goes left, the answers right — nothing has to scroll */
+@media (orientation:landscape) and (max-height:520px){
+  .choosefield,.buildfield,.spellfield,.gapfield,.sayfield{display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr);grid-auto-flow:row dense;
+    align-content:safe center;align-items:center;justify-items:center;column-gap:clamp(16px,4vw,40px);row-gap:10px}
+  .choosefield > .row{grid-area:1/1}
+  .choosefield > .cprompt{grid-area:2/1}
+  .choosefield > .copts{grid-area:1/2/3/3}
+  .choosefield > .cfix{grid-area:3/1/4/3}
+  .buildfield > .cprompt,.spellfield > .picwrap{grid-area:1/1/3/2}
+  .buildfield > .bslots,.spellfield > .spline{grid-area:1/2}
+  .buildfield > .btiles,.spellfield > .tiles{grid-area:2/2}
+  .gapfield{grid-template-columns:minmax(0,1fr) auto}
+  .gapfield > .gtitle{grid-area:1/1}
+  .gapfield > .gtext{grid-area:2/1}
+  .gapfield > .gbox{grid-area:1/2/3/3}
+  .copt.txt{min-height:46px;font-size:18px;padding:6px 16px}
+  .scard{width:62px}.scards{gap:5px}.scard span{font-size:11px}
+  .stray{min-height:88px}
+  /* explore cards: fill the height, picture takes what the text leaves */
+  body.framed main > .chunkgrid{max-width:100%!important;grid-auto-rows:1fr;align-content:stretch}
+  .ccard{min-height:0}
+  .ccard .cpic{flex:1;min-height:0;aspect-ratio:auto}
+  .csent,.cq{font-size:15px;padding:6px 8px}
+  .donebox{gap:6px}
+  .donebox .trophy{font-size:52px}
+  .reveal img{width:min(28vh,110px)}
+  .reveal .w{font-size:24px}
+  .reveal .card{padding:8px 16px}
+  .sayfield > .pic,.sayfield > .lidscene,.sayfield > .apic{grid-column:1;grid-row:1 / span 6}
+  .sayfield > :not(.pic):not(.lidscene):not(.apic){grid-column:2}
+  .cprompt .cpic,.spellfield .cpic{height:min(40vh,200px)}
+  .cpics img{height:min(36vh,150px)}
+  .copt.pic{width:clamp(80px,min(18vw,34vh),150px)}
+  .copts.many .copt.pic{width:clamp(64px,min(12vw,24vh),110px)}
+  .lay-stack .copt.txt{width:100%}
+  .sayfield .pic{width:min(56vh,220px)}
+  .lidkid{height:min(48vh,190px)}.lidkid.me{height:min(36vh,150px)}
+  .plate{width:min(44vh,180px)}
+  .apic .aimg{height:min(44vh,180px)}.apic.me .aimg{height:min(34vh,140px)}
+  .aplate{width:min(30vh,120px)}
+  .gtext{font-size:17px;line-height:1.7;padding:10px 16px}
+  .gbox{flex-direction:column}
+  .mic{width:60px}
+  .ltile{width:48px;height:48px;font-size:26px}
+  .spword .slot{height:48px}
+  .stray{min-height:96px}
+  .sayfield:has(.raceboard) .apic .aimg{height:min(46vh,190px)}
+  .bubble{--s:clamp(80px,calc(var(--avh) - 112px),200px)}
+  .pcard{width:clamp(88px,calc((var(--avh) - 104px) * .8),200px)}
+  .crowd{max-width:calc((var(--avh) - 104px) * 4.8 + 60px)}
+  .st-burger .bslot,.bslot{min-height:40px;font-size:18px}
+  .st-burger .bslots{gap:4px;padding:6px}
+  .btile{min-height:42px;padding:6px 14px;font-size:18px}
+  .sick{font-size:17px;padding:6px 12px}
+}
 </style>
 
 <div id="bg" aria-hidden="true"></div>

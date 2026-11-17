@@ -92,9 +92,13 @@
         };
         row.append(b);
       });
-      await sleep(300); if (X.alive(run) && step.skill === "L") play();
+      await sleep(300); await intro; if (!X.alive(run)) return;
+      field.classList.remove("pre");
+      if (step.skill === "L") play();
     }
-    Kim.say(step.intro).then(() => X.alive(run) && round());
+    /* first item is on screen (dimmed, not tappable) while Kim reads the instruction */
+    const intro = Kim.say(step.intro);
+    field.classList.add("pre"); round();
   };
 
   /* ======================= SPELL (letter tiles) =======================
@@ -125,6 +129,7 @@
       if (form) line.append(h("span", { class: "form" }, form));
       const slots = [];
       const wordEl = h("span", { class: "spword" });
+      wordEl.style.setProperty("--len", Math.max(4, text.length + (form ? form.length + 1 : 0)));   /* slot width shrinks for long words */
       [...text].forEach((c, k) => {
         if (c === " ") { wordEl.append(h("span", { class: "sp" })); return; }
         if (gaps.includes(k)) { const s = h("span", { class: "slot" }); s.dataset.k = k; slots.push(s); wordEl.append(s); }
@@ -157,7 +162,8 @@
         };
       });
     }
-    Kim.say(step.intro).then(() => X.alive(run) && round());
+    const intro = Kim.say(step.intro);
+    field.classList.add("pre"); round(); intro.then(() => field.classList.remove("pre"));
   };
 
   /* ======================= BUILD (sentence tiles) =======================
@@ -211,7 +217,8 @@
         };
       });
     }
-    Kim.say(step.intro).then(() => X.alive(run) && round());
+    const intro = Kim.say(step.intro);
+    field.classList.add("pre"); round(); intro.then(() => field.classList.remove("pre"));
   };
 
   /* ======================= SORT (tap a card, then tap a tray) =======================

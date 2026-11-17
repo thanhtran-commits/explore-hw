@@ -128,6 +128,8 @@
     init() {
       this.btn.innerHTML = KIM_SVG + '<img class="kimimg" alt="" hidden><img class="kimhead" alt="" hidden>';
       this.btn.addEventListener("click", () => this.last && this.say(this.last));
+      /* any tap elsewhere puts the speech bubble away, so it never sits on what the child wants to touch */
+      document.addEventListener("pointerdown", (e) => { if (!this.el.contains(e.target)) this.bub.hidden = true; }, true);
       /* use drawn poses when the files exist */
       this.POSES.forEach((p) => { const im = new Image(); im.onload = () => { this.imgs[p] = im.src; if (this.poseNow) this.pose(this.poseNow, true); }; im.src = ver("assets/common/kim/kim-" + p + ".webp"); });
       this.pose("idle");
@@ -168,8 +170,18 @@
       if (this.imgs.wave) d.append(h("img", { src: this.imgs.wave, alt: "" })); else d.innerHTML = KIM_SVG;
       return d;
     },
-    hide() { this.bub.hidden = true; this.el.classList.remove("talking"); clearTimeout(this.backT); this.pose("idle"); }
+    hide() { this.bub.hidden = true; this.el.classList.remove("talking"); clearTimeout(this.backT); this.pose("idle"); this.dock(null); },
+    /* Layout v2: on scene screens Kim's head sits in a reserved slot at the left end of the dock */
+    slotEl: null,
+    dock(el) { this.slotEl = el; this.el.classList.toggle("slotted", !!el); if (!el) { ["left", "top", "bottom", "width", "height"].forEach((k) => (this.el.style[k] = "")); this.el.classList.remove("bub-up", "bub-down"); } else requestAnimationFrame(() => this.place()); },
+    place() {
+      const s = this.slotEl; if (!s) return;
+      if (!s.isConnected) return this.dock(null);
+      const r = s.getBoundingClientRect(); if (!r.width) return;
+      Object.assign(this.el.style, { left: r.left + "px", top: r.top + "px", bottom: "auto", width: r.width + "px", height: r.height + "px" });
+    }
   };
+  window.addEventListener("resize", () => Kim.place());
 
   /* ======================= Flow / progress ======================= */
   /* Steps of the open lesson. A practice step whose skill the lesson does not teach is skipped (and reported to the author). */
@@ -330,24 +342,57 @@
     const layer = h("div", { class: "layer" });
     canvas.append(a, b, layer); stage.append(fill, canvas); wrap.append(stage);
     let front = a, back = b, current = null;
+    /* Layout v2 (2026-11-17):
+       · cover   — little would be cropped: the scene fills the screen, the dock floats on its bottom edge.
+       · wide    — screen much wider than 16:9: whole scene between the top bar and the dock, blurred copy at the sides.
+       · tall    — portrait: scene full width; scene + dock form one group centred in the free height
+                   (leaving room under the dock for Kim's speech bubble when possible). */
     const fit = () => {
       const W = stage.clientWidth, H = stage.clientHeight, ar = 16 / 9; if (!W || !H) return;
-      let cw, ch;
+      const dock = main.querySelector(":scope > .dock");
+      const css = getComputedStyle(document.documentElement);
+      const sat = parseFloat(css.getPropertyValue("--sat")) || 0;
+      const topH = (parseFloat(css.getPropertyValue("--topH")) || 64) + sat;
+      const dockH = dock ? dock.offsetHeight : 0, gap = 12, edge = 14;
+      let cw, ch, left, top, mode;
       if (W / H > ar) { cw = W; ch = W / ar; } else { ch = H; cw = H * ar; }
       const crop = Math.max((cw - W) / cw, (ch - H) / ch);
-      const contain = crop > 0.12;
-      if (contain) { if (W / H > ar) { ch = H; cw = H * ar; } else { cw = W; ch = W / ar; } }
-      /* portrait: keep the picture near the top so the dock fits underneath */
-      const top = contain && W / H < ar ? Math.min((H - ch) / 2, 70 + (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--sat")) || 0)) : (H - ch) / 2;
-      Object.assign(canvas.style, { width: cw + "px", height: ch + "px", left: (W - cw) / 2 + "px", top: top + "px" });
+      if (crop <= 0.12) { mode = "cover"; left = (W - cw) / 2; top = (H - ch) / 2; }
+      else if (W / H > ar) {
+        mode = "wide";
+        const boxH = Math.max(120, H - topH - dockH - edge - gap);
+        ch = Math.min(boxH, W / ar); cw = ch * ar; left = (W - cw) / 2; top = topH + (boxH - ch) / 2;
+      } else {
+        mode = "tall";
+        const avail = H - topH - edge;
+        cw = W; ch = W / ar;
+        if (ch + gap + dockH > avail) { ch = Math.max(100, avail - gap - dockH); cw = Math.min(W, ch * ar); ch = cw / ar; }
+        const spare = avail - (ch + gap + dockH);
+        const bubRoom = 120;   /* Kim's bubble goes under the dock */
+        const lift = spare > 2 * bubRoom ? spare / 2 : Math.max(0, spare - bubRoom);
+        left = (W - cw) / 2; top = topH + Math.min(spare / 2, lift);
+      }
+      Object.assign(canvas.style, { width: cw + "px", height: ch + "px", left: left + "px", top: top + "px" });
+      stage.dataset.mode = mode;
+      const contain = mode !== "cover";
       stage.classList.toggle("contain", contain);
       document.body.classList.toggle("contain", contain);
+      document.body.dataset.stage = mode;
+      if (dock) {
+        if (mode === "tall") { dock.style.top = top + ch + gap + "px"; dock.style.bottom = "auto"; }
+        else { dock.style.top = ""; dock.style.bottom = ""; }
+      }
+      Kim.el.classList.toggle("bub-down", mode === "tall" && H - (top + ch + gap + dockH) > 90);
+      Kim.el.classList.toggle("bub-up", !(mode === "tall" && H - (top + ch + gap + dockH) > 90));
+      keepInside(canvas);
+      Kim.place();
     };
-    const ro = window.ResizeObserver ? new ResizeObserver(fit) : null;
-    if (ro) ro.observe(stage); else window.addEventListener("resize", fit);
+    const ro = window.ResizeObserver ? new ResizeObserver(() => fit()) : null;
+    if (ro) { ro.observe(stage); requestAnimationFrame(() => { const d = main.querySelector(":scope > .dock"); if (d) ro.observe(d); }); }
+    else window.addEventListener("resize", fit);
     requestAnimationFrame(fit);
     return {
-      wrap, stage, layer,
+      wrap, stage, layer, fit,
       set(name) {
         if (name === current) return; current = name;
         back.src = img(name); fill.style.backgroundImage = `url("${img(name)}")`;
@@ -356,6 +401,22 @@
       },
       get scene() { return current; }
     };
+  }
+  /* labels on a scene (cart names, food labels) must stay inside the picture: nudge them back in */
+  function keepInside(canvas) {
+    requestAnimationFrame(() => {
+      if (!canvas.isConnected) return;
+      const c = canvas.getBoundingClientRect(), pad = 4;
+      canvas.querySelectorAll(".hot .name, .food .lbl").forEach((el) => {
+        el.style.setProperty("--nx", "0px");
+        const r = el.getBoundingClientRect();
+        let dx = 0;
+        if (r.right > c.right - pad) dx = c.right - pad - r.right;
+        if (r.left + dx < c.left + pad) dx = c.left + pad - r.left;
+        el.style.setProperty("--nx", dx + "px");
+        if (r.bottom > c.bottom - pad) el.style.setProperty("--ny", (c.bottom - pad - r.bottom) + "px");
+      });
+    });
   }
   function setChrome(px) { document.documentElement.style.setProperty("--chrome", px + "px"); }
 
@@ -433,8 +494,11 @@
     const chips = h("div", { class: "chips", "aria-label": "Lines you heard" });
     bSkip.className = "ctl go bigarrow"; bSkip.innerHTML = "➜"; bSkip.setAttribute("aria-label", "Continue");
     caption.append(bSkip);
+    const slot = h("span", { class: "kimslot", "aria-hidden": "true" });
+    caption.prepend(slot);
     const dock = h("div", { class: "dock" }, caption, chips);
     main.append(st.wrap, dock);
+    Kim.dock(slot);
 
     const cues = step.cues;
     let i = 0, playing = true, token = 0;
@@ -467,6 +531,7 @@
         if (!(popLast && n === list.length - 1)) el.style.animation = "none";
         counter.append(el);
       });
+      st.fit();
     }
     function chip(k) {
       const c = cues[k], t = cueText(c);
@@ -529,8 +594,10 @@
     const tracker = h("div", { class: "tracker", "aria-label": "Words heard" });
     const count = h("span", { class: "count" });
     const ready = h("button", { class: "ctl go", disabled: true }, "I'm ready! ▶");
-    const dock = h("div", { class: "dock" }, h("div", { class: "controls" }, h("div", { class: "trackwrap" }, tracker, count), h("span", { class: "spacer" }), ready));
+    const slot = h("span", { class: "kimslot", "aria-hidden": "true" });
+    const dock = h("div", { class: "dock" }, h("div", { class: "controls" }, slot, h("div", { class: "trackwrap" }, tracker, count), h("span", { class: "spacer" }), ready));
     main.append(st.wrap, dock);
+    Kim.dock(slot);
 
     function drawTracker() {
       tracker.innerHTML = "";
@@ -547,6 +614,7 @@
         b.onclick = () => cartView(c);
         st.layer.append(b);
       });
+      st.fit();
     }
     async function cartView(c) {
       visited.add(c.id); Audio_.sfx("region-enter");
@@ -563,7 +631,7 @@
           await Audio_.word(f);
           if (!heard.has(f)) { heard.add(f); Results.put(step.id, { heard: [...heard] }); drawTracker(); if (!ready.disabled && heard.size === all.length) { ready.animate([{ transform: "scale(1)" }, { transform: "scale(1.12)" }, { transform: "scale(1)" }], { duration: 600, iterations: 2 }); Kim.say("Great! Now tap “I'm ready!”"); } }
         };
-        counter.append(el);
+        counter.append(el); st.fit();
         await sleep(160);
         if (!alive(run)) return;
       }
@@ -624,7 +692,8 @@
         };
         b.dataset.w = w; row.append(b);
       });
-      await sleep(350); if (alive(run)) playT();
+      await sleep(350); await intro; if (!alive(run)) return;
+      field.classList.remove("pre"); playT();
     }
     async function finish() {
       drawDots();
@@ -635,7 +704,9 @@
       await Kim.say(score >= targets.length - 1 ? "Super listening!" : "Good job!");
       await sleep(500); if (alive(run)) next();
     }
-    Kim.say(step.intro || step.instruction).then(() => alive(run) && round());
+    /* the first round is on screen (dimmed, not tappable) while Kim reads the instruction */
+    const intro = Kim.say(step.intro || step.instruction);
+    field.classList.add("pre"); round();
   };
 
   /* ---------- SAY: picture → student speaks → keyword check (template: Nghe & repeat) ---------- */
@@ -736,7 +807,7 @@
       if (r >= items.length) return finish();
       const tk = ++itemTok;
       tries = 0; quiet = 0; drawDots(); stopRec();
-      const w = items[r];
+      const w = items[r]; field.classList.remove("pre");
       pic.src = img(L.words[w].img); pic.animate([{ transform: "scale(.6)", opacity: 0 }, { transform: "scale(1)", opacity: 1 }], { duration: 350, easing: "ease-out" });
       ans.className = "answer"; ans.textContent = ""; heardTxt.textContent = "";
       hint.hidden = true; nxt.hidden = true; check.hidden = mode !== "self"; mic.hidden = mode !== "mic";
@@ -758,6 +829,8 @@
     }
     setMode(mode);
     mic.hidden = true;
+    /* first picture shows (dimmed) during Kim's intro — never an empty frame */
+    pic.src = img(L.words[items[0]].img); field.classList.add("pre");
     (async () => {
       await Kim.say(step.intro || step.instruction);
       await sleep(300);
@@ -867,7 +940,8 @@
         };
         row.append(b);
       });
-      await sleep(350); if (alive(run)) play();
+      await sleep(350); await intro; if (!alive(run)) return;
+      field.classList.remove("pre"); play();
     }
     async function finish() {
       drawDots(); row.innerHTML = ""; sent.textContent = "";
@@ -877,7 +951,8 @@
       await Kim.say(score >= items.length - 1 ? "Super listening!" : "Good job!");
       await sleep(500); if (alive(run)) next();
     }
-    Kim.say(step.intro).then(() => alive(run) && round());
+    const intro = Kim.say(step.intro);
+    field.classList.add("pre"); round();
   };
 
   /* ---------- LID (Speaking full sentence): shadow → mic opens → check BE + food → lid lifts ---------- */
@@ -986,16 +1061,19 @@
       setTimeout(() => { if (rec === R) { try { R.stop(); } catch (e) {} } }, 8000);
       try { R.start(); } catch (e) { (mic.classList.remove("listening"), Kim.poseNow === "listen" && Kim.pose("idle")); setSelf(); }
     }
-    async function show() {
-      if (r >= items.length) return finish();
-      const tk = ++tok; const it = items[r];
-      tries = 0; quiet = 0; drawDots(); stopRec();
+    function paint(it) {
       kid.src = img(it.kid); kid.classList.toggle("me", it.s === "i");
       tag.textContent = pron[it.s];
       food.src = img(L.words[it.f].img);
       if (step.style === "slot") { shadow.src = img(L.words[it.f].img); plate.classList.add("slot"); }
       else shadow.src = img("shadow-" + it.f);
       plate.classList.remove("open");
+    }
+    async function show() {
+      if (r >= items.length) return finish();
+      const tk = ++tok; const it = items[r];
+      tries = 0; quiet = 0; drawDots(); stopRec(); field.classList.remove("pre");
+      paint(it);
       bulb.hidden = false; bulb.classList.remove("used"); wordChip.hidden = true; wordChip.textContent = L.words[it.f].label;
       bulb.onclick = async () => {
         if (!bulb.classList.contains("used")) hints++;
@@ -1037,6 +1115,7 @@
       await Kim.say("Well done! Great sentences!"); await sleep(400); if (alive(run)) next();
     }
     mic.hidden = true;
+    paint(items[0]); field.classList.add("pre"); drawDots();
     (async () => { await Kim.say(step.intro); await sleep(300); if (alive(run)) show(); })();
     return () => { tok++; stopRec(); };
   };
@@ -1100,7 +1179,7 @@
       aaTxt.textContent = it.q + " — " + it.a; aaTxt.classList.remove("shown");
       tag.textContent = it.name; tag.animate([{ transform: "scale(.6)", opacity: 0 }, { transform: "scale(1)", opacity: 1 }], { duration: 300 });
       Object.values(kidEls).forEach((b) => b.classList.remove("hint"));
-      sleep(300).then(() => alive(run) && play());
+      sleep(300).then(() => intro).then(() => { if (!alive(run)) return; field.classList.remove("pre"); play(); });
     }
     Object.values(kidEls).forEach((b) => {
       b.onclick = async () => {
@@ -1127,7 +1206,8 @@
       await Kim.say(score >= rounds.length - 1 ? "Super listening!" : "Good job!");
       await sleep(500); if (alive(run)) next();
     }
-    Kim.say(step.intro).then(() => alive(run) && round());
+    const intro = Kim.say(step.intro);
+    field.classList.add("pre"); round();
   };
 
   /* ---------- ANSWER (FL speaking): Kim asks → mic opens → check BE + every food ---------- */
@@ -1233,10 +1313,8 @@
       if (r >= items.length) return finish();
       const tk = ++tok; const it = items[r];
       tries = 0; quiet = 0; drawDots(); stopRec();
-      pic.innerHTML = "";
-      pic.className = "apic" + (it.s === "i" ? " me" : "");
-      pic.append(h("img", { class: "aimg", src: img(it.img), alt: "" }));
-      if (it.plate) { const pl = h("div", { class: "aplate" }); it.plate.forEach((f) => pl.append(h("img", { src: img(L.words[f].img), alt: "" }))); pic.append(pl); }
+      field.classList.remove("pre");
+      paintPic(it);
       pic.animate([{ opacity: 0, transform: "scale(.9)" }, { opacity: 1, transform: "none" }], { duration: 300 });
       qtxt.textContent = it.q;
       ans.className = "answer"; ans.textContent = ""; heardTxt.textContent = "";
@@ -1255,7 +1333,14 @@
       ans.className = "answer"; ans.textContent = "⭐ " + score + " / " + items.length;
       await Kim.say("Well done! You can ask and answer!"); await sleep(400); if (alive(run)) next();
     }
+    function paintPic(it) {
+      pic.innerHTML = "";
+      pic.className = "apic" + (it.s === "i" ? " me" : "");
+      pic.append(h("img", { class: "aimg", src: img(it.img), alt: "" }));
+      if (it.plate) { const pl = h("div", { class: "aplate" }); it.plate.forEach((f) => pl.append(h("img", { src: img(L.words[f].img), alt: "" }))); pic.append(pl); }
+    }
     mic.hidden = true;
+    paintPic(items[0]); qtxt.textContent = items[0].q || ""; field.classList.add("pre"); drawDots();
     (async () => { await Kim.say(step.intro); await sleep(300); if (alive(run)) show(); })();
     return () => { tok++; stopRec(); };
   };
