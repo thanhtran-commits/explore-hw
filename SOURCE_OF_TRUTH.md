@@ -55,7 +55,8 @@ Web homework dẫn HV đi từ **ôn tập → luyện tập** cho 3 phạm vi n
 | 43 | Bản đồ I2–I5 (11-17) | Đã gửi Thanh, Thanh chọn: thẻ chữ + tải 3 HTML bài giảng (I2, I3, I5) để lấy hình. I4 dùng hình I3 | 11-17 |
 | 44 | Nguồn hình I3–I5 (11-17) | Tách từ HTML bài giảng DOL (Lesson 2, 3, 4-ppt, 5): 8 món Set 2, xe Drinks/Dessert, 32 cảnh Bill/Pat/Sue/Tony × món, hình bữa ăn I5, audio từ Set 2 + breakfast/lunch/dinner. Bài về nhà dùng câu & đáp án **mới**, không lặp đáp án trên lớp | 11-17 |
 | 45 | Giọng I2–I5 (11-17) | Mỗi lesson 1 file `lessons/<id>.voice.js`, nạp khi mở lesson: câu đã thu ở I1 trỏ tới mp3 cũ, câu mới **nhúng thẳng** (data URI, 64 kbps mono) để app không vượt giới hạn 512 file. Quy trình: `tools/collect-unit-lines.js` → Voice Pipeline (Chrome) → `tools/ingest-unit.py` → `tools/pack-voice.py i2 i3 i4 i5` | 11-17 |
-| 46 | Đưa lên web (11-17) | Publish Unit I lên **Dokploy** trước, rồi mới làm A → H (test mic thật, bỏ giới hạn 512 file của artifact, cho lớp thử sớm). Domain `explore-homework.dol.vn`. Repo GitHub của Thanh; `tools/build-site.sh` → `dist/` (commit kèm) → Dockerfile nginx, port 80, HTTPS (mic cần HTTPS) | 11-17 |
+| 46 | Đưa lên web (11-17) | Unit I đã **live** tại https://explore-homework.dol.vn. Repo **`thanhtran-commits/explore-hw`** (public, nhánh `main`; Claude GitHub App cài riêng cho repo này). Dokploy: project *EXPLORE Homework* › app `web` — nguồn **Git** (URL công khai), Build Type **Dockerfile**, registry **Harbor** (bắt buộc: không chọn thì swarm không nhận image mới), domain port 80 + HTTPS Let's Encrypt. DNS không cần thêm: `*.dol.vn` đã trỏ Cloudflare → server. Giọng ở bản web là file mp3 (`pack-voice.py --files`), bản artifact vẫn nhúng data URI | 11-17 |
+| 47 | Cập nhật bản web (11-17) | Sửa code → commit + push `main` → Dokploy › web › **Deploy** (chưa có webhook tự deploy). Cloudflare giữ file .js tới 30 phút → Dockerfile gắn `?v=<giờ build>` vào mọi script, `engine.js` gắn cùng số vào lesson pack nạp sau → deploy xong là thấy ngay. nginx: `charset utf-8` (thiếu thì chữ Việt/emoji vỡ), header mic `microphone=(self)` | 11-17 |
 | 41 | Bố cục màn thấp (11-17) | Kích thước bong bóng / thẻ / đĩa / hình tính theo **cả chiều cao màn** (vh), vùng làm bài cuộn được nếu vẫn không đủ | 11-17 |
 | 38 | Giọng đọc | ElevenLabs `eleven_multilingual_v2`. **Kim:** "Blondie – Dynamic Children's Storyteller" (tốc độ 0.95). **Người dẫn:** "Sally – Youthful Children's Storyteller" (0.88). I1: 118 câu (`lessons/i1.voice.js`, `assets/i1/vo/`); câu chung màn Unit/Map: 9 câu (`lessons/common.voice.js`, `assets/common/vo/`) | 11-16 |
 | 14 | Exercise library | Lấy **Template tổng hợp các dạng bài tập Kids** (DOL) làm nền; research (Duolingo ABC, Khan Kids, Lingokids) bổ sung | 11-09 |
@@ -107,9 +108,10 @@ Start → MAP → [VOCAB] Watch → Explore → Practice ×2 → Ôn lại từ
 | 4a | I1 khối Grammar | ✅ 2026-11-09 — chờ Thanh thử |
 | 4b | I1 khối FL + hoàn thành lesson | ✅ 2026-11-09 — chờ Thanh thử |
 | 6a | Màn Unit → Lesson + chặn sai kỹ năng | ✅ 2026-11-16 |
-| 6b | Dạng bài Đọc–Viết | |
-| 6c–e | I2, I3, I4, I5 | |
-| 6 | Gắn Firebase, hosting riêng (để micro chạy) | |
+| 6b | Dạng bài Đọc–Viết | ✅ 2026-11-17 |
+| 6c–e | I2, I3, I4, I5 | ✅ 2026-11-17 |
+| 6 | Hosting riêng (để micro chạy) | ✅ 2026-11-17 — Dokploy, explore-homework.dol.vn (Firebase/lưu điểm: chưa làm) |
+| 7 | Unit A → H | Kế tiếp — đề xuất plan trước |
 
 ## 7. Map I1 (bản 2)
 | Khối | Bước | Dạng bài | Nội dung |
@@ -125,7 +127,7 @@ Start → MAP → [VOCAB] Watch → Explore → Practice ×2 → Ôn lại từ
 | | P2 (S) | Kim hỏi → HV nói | he/she + 1–2 câu "you" |
 
 ## 8. Hạn chế đã biết
-- **Micro trong link claude.ai:** khung xem artifact không cho dùng micro → bài Say it tự chuyển sang chế độ "nói to rồi bấm Check". Nhận diện từ khoá chỉ chạy khi web được host riêng (CP6) hoặc mở file trên Chrome.
+- **Micro:** bản web (explore-homework.dol.vn) dùng được micro thật — cần thử trên máy HV. Riêng **link claude.ai:** khung xem artifact không cho dùng micro → bài Say it tự chuyển sang chế độ "nói to rồi bấm Check". Nhận diện từ khoá chỉ chạy khi web được host riêng (CP6) hoặc mở file trên Chrome.
 - **Kim** đang là hình tạm (SVG); cần designer vẽ Kim cùng style Unit I.
 - Giọng thoại là TTS trình duyệt → mỗi máy nghe khác nhau, cho tới khi có mp3 ElevenLabs. Audio 10 từ là mp3 thật (lấy từ HTML I1).
 
@@ -137,6 +139,9 @@ Start → MAP → [VOCAB] Watch → Explore → Practice ×2 → Ôn lại từ
 ## 10. Changelog
 | Ngày | Phần | Trước | Sau |
 |---|---|---|---|
+| 11-17 | Hosting | Chỉ có link artifact claude.ai | Live tại explore-homework.dol.vn (Dokploy, repo thanhtran-commits/explore-hw) |
+| 11-17 | Build Dokploy | Nixpacks (mặc định) + không registry → chữ vỡ, deploy mới không lên | Dockerfile + registry Harbor |
+| 11-17 | Cache JS | Cloudflare giữ bản cũ ≤30 phút | `?v=<build>` trên mọi script |
 | 11-09 | Tạo file | — | Chốt CP1 |
 | 11-09 | Exercise library | Danh sách tự đề xuất (v0) | Template DOL làm nền + research bổ sung |
 | 11-09 | Review | Kim dẫn + nút từ | Watch (animation tự chạy, nút nghe lại từng câu) → Explore |
