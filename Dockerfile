@@ -7,5 +7,9 @@ COPY index.html catalog.js engine.js types-rw.js ./
 COPY lessons ./lessons
 COPY assets ./assets
 # index.html is written as a page body (the claude.ai preview adds the document head itself) → give it a full head here
-RUN { printf '<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f8f5ef"></head><body>\n'; cat index.html; printf '\n</body></html>\n'; } > /tmp/i.html && mv /tmp/i.html index.html
+# Cloudflare keeps .js files at its edge for up to 30 min → stamp every script URL with this build's version,
+# so a new deploy shows up at once (engine.js adds the same ?v= to the lesson packs it loads later)
+RUN V=$(date +%Y%m%d%H%M%S) \
+ && sed -i -E "s#src=\"([^\"?]+\.js)\"#src=\"\1?v=$V\"#g" index.html \
+ && { printf '<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f8f5ef"><script>window.EXPLORE_BUILD="%s"</script></head><body>\n' "$V"; cat index.html; printf '\n</body></html>\n'; } > /tmp/i.html && mv /tmp/i.html index.html
 EXPOSE 80

@@ -1326,7 +1326,7 @@
     if (nextUp) list.querySelector(`[data-id="${nextUp}"]`).classList.add("current");
     Kim.say("Choose a lesson!");
   }
-  const loadScript = (src) => new Promise((res) => { const sc = document.createElement("script"); sc.src = src; sc.onload = () => res(true); sc.onerror = () => res(false); document.head.append(sc); });
+  const loadScript = (src) => new Promise((res) => { const sc = document.createElement("script"); sc.src = src + (window.EXPLORE_BUILD ? "?v=" + window.EXPLORE_BUILD : ""); sc.onload = () => res(true); sc.onerror = () => res(false); document.head.append(sc); });
   async function openLesson(lid, stepId) {
     const u = CAT.units.find((x) => (x.lessons || []).some((l) => l.id === lid));
     const meta = u && u.lessons.find((l) => l.id === lid);
