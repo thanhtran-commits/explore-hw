@@ -24,7 +24,10 @@
   /* "br[ea]d" → br<u>ea</u>d : tricky letters marked in reading lessons (word.spell) */
   const marked = (s) => String(s).replace(/\[(.+?)\]/g, "<u>$1</u>");
   const wlabel = (w) => marked(w.spell || w.label);
-  const img = (name) => (String(name).startsWith("@") ? "assets/" + name.slice(1) : L.img + name) + ".webp";   /* "@i1/img/x" = another lesson's picture */
+  /* ?v=<build> on every file: a picture or voice changed under the same name shows up right after a deploy (no stale browser/Cloudflare copy) */
+  const VER = window.EXPLORE_BUILD ? "?v=" + window.EXPLORE_BUILD : "";
+  const ver = (u) => (u && !/^(data|blob):/.test(u) && !u.includes("?") ? u + VER : u);
+  const img = (name) => ver((String(name).startsWith("@") ? "assets/" + name.slice(1) : L.img + name) + ".webp");   /* "@i1/img/x" = another lesson's picture */
   const ICON = {
     speaker: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 4V5L7 9H3z"/><path d="M15.5 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
     mic: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4M8 21h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
@@ -82,14 +85,14 @@
     file(src) {
       this.stop();
       return new Promise((res) => {
-        const a = new Audio(src); this.cur = a; a.playbackRate = this.rateMul;
+        const a = new Audio(ver(src)); this.cur = a; a.playbackRate = this.rateMul;
         const done = () => { if (this.cur === a) this.cur = null; res(); };
         a.onended = done; a.onerror = done;
         a.play().catch(done);
       });
     },
     word(id) { const a = L.words[id].audio; return this.file((a.startsWith("@") ? "assets/" + a.slice(1) : L.aud + a) + ".mp3"); },
-    sfx(name) { try { const a = new Audio("assets/i1/audio/sfx-" + name + ".mp3");   /* one shared set of sound effects */ a.volume = .6; a.play().catch(() => {}); } catch (e) {} },
+    sfx(name) { try { const a = new Audio(ver("assets/i1/audio/sfx-" + name + ".mp3"));   /* one shared set of sound effects */ a.volume = .6; a.play().catch(() => {}); } catch (e) {} },
     /* who: "narrator" | "kim" */
     speak(text, who = "narrator") {
       /* recorded voice first (Voice Studio → lessons/<id>.voice.js), browser TTS as fallback */
@@ -126,7 +129,7 @@
       this.btn.innerHTML = KIM_SVG + '<img class="kimimg" alt="" hidden><img class="kimhead" alt="" hidden>';
       this.btn.addEventListener("click", () => this.last && this.say(this.last));
       /* use drawn poses when the files exist */
-      this.POSES.forEach((p) => { const im = new Image(); im.onload = () => { this.imgs[p] = im.src; if (this.poseNow) this.pose(this.poseNow, true); }; im.src = "assets/common/kim/kim-" + p + ".webp"; });
+      this.POSES.forEach((p) => { const im = new Image(); im.onload = () => { this.imgs[p] = im.src; if (this.poseNow) this.pose(this.poseNow, true); }; im.src = ver("assets/common/kim/kim-" + p + ".webp"); });
       this.pose("idle");
     },
     /* idle · talk · cheer · listen · think · point */
@@ -139,7 +142,7 @@
       if (this.imgs[art]) { im.src = this.imgs[art]; im.hidden = false; this.btn.querySelector(".puppet").style.display = "none"; }
       /* head-only version, used where Kim just "talks" from the corner (scenes, home screens) */
       const hd = this.btn.querySelector(".kimhead");
-      if (this.imgs[art]) { hd.src = "assets/common/kim/kim-head-" + art + ".webp"; hd.hidden = false; }
+      if (this.imgs[art]) { hd.src = ver("assets/common/kim/kim-head-" + art + ".webp"); hd.hidden = false; }
     },
     moodOf(text) {
       if (/\b(great|well done|super|yes!|hooray|good job|good!)/i.test(text)) return "cheer";
