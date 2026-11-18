@@ -123,7 +123,7 @@ Start → MAP → [VOCAB] Watch → Explore → Practice ×2 → Ôn lại từ
 | 6 | Hosting riêng (để micro chạy) | ✅ 2026-11-17 — Dokploy, explore-homework.dol.vn (Firebase/lưu điểm: chưa làm) |
 | 8a | Giao diện v3 · mốc 1–2: nền tảng + 12 dạng bài luyện | ✅ 2026-11-18 |
 | 8b | Giao diện v3 · mốc 3–4: kể chuyện + điều hướng | ✅ 2026-11-18 |
-| 8c | Lên web bản 1 (mốc 1–4) | Đang làm |
+| 8c | Lên web bản 1 (mốc 1–4) | ✅ 2026-11-18 — build 20261118065359 |
 | 8d | Image Pipeline (nền không người, món thưởng, logo unit, dấu) | Chờ — cần Chrome của Thanh |
 | 8e | Phần thưởng: dấu chặng, chọn món, con phố, hộ chiếu | Chờ 8d |
 | 7 | Unit A → H | Kế tiếp — đề xuất plan trước |
