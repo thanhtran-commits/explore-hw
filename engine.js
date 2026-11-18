@@ -43,6 +43,46 @@
     put(stepId, payload) { this.data[stepId] = Object.assign({ at: new Date().toISOString() }, payload); Store.save(this.data); },
     get(stepId) { return this.data[stepId]; }
   };
+  /* Rewards (decision #57) — one record per child for every unit, kept apart from the lesson results.
+   * Prototype: localStorage key "explore-hw:rewards". Later: one Firebase document (swap load / save).
+   *   stamps["I1:grammar"] = { ink: "blue" | "silver" | "gold", pct, at }   a stage stamp; the ink only ever goes up
+   *   carts["I1"]          = { id, at }                                     the reward picked when lesson I1 was finished
+   *   logos["I"]           = { at, seen }                                   every lesson of the unit has its reward → unit logo */
+  const INKS = ["blue", "silver", "gold"];
+  const inkOf = (pct) => (pct == null ? "blue" : pct >= 90 ? "gold" : pct >= 70 ? "silver" : "blue");
+  const Rewards = {
+    key: "explore-hw:rewards", d: null,
+    load() {
+      let d = null; try { d = JSON.parse(localStorage.getItem(this.key)); } catch (e) {}
+      d = d && typeof d === "object" ? d : {};
+      d.v = 1; d.stamps = d.stamps || {}; d.carts = d.carts || {}; d.logos = d.logos || {};
+      return (this.d = d);
+    },
+    save() { try { localStorage.setItem(this.key, JSON.stringify(this.d)); } catch (e) {} },
+    get data() { return this.d || this.load(); },
+    stamp(lid, part) { return this.data.stamps[lid + ":" + part] || null; },
+    /* a finished stage: a new stamp, or a better ink; never lost or downgraded */
+    award(lid, part, pct) {
+      const k = lid + ":" + part, old = this.data.stamps[k] || null, ink = inkOf(pct);
+      const up = !old || INKS.indexOf(ink) > INKS.indexOf(old.ink);
+      if (up) this.data.stamps[k] = { ink, pct, at: new Date().toISOString() };
+      else if (pct != null && (old.pct == null || pct > old.pct)) old.pct = pct;
+      this.save();
+      return { rec: this.data.stamps[k], up, old };
+    },
+    cart(lid) { return this.data.carts[lid] || null; },
+    /* picking (or changing) a lesson's reward; returns true when this fills the unit's last spot → logo earned */
+    setCart(lid, id) {
+      this.data.carts[lid] = { id, at: new Date().toISOString() };
+      const meta = lessonMeta(lid), u = meta && meta.unit;
+      let won = false;
+      if (u && u.logo && !this.data.logos[u.id] && (u.lessons || []).every((l) => this.data.carts[l.id])) { this.data.logos[u.id] = { at: new Date().toISOString(), seen: false }; won = true; }
+      this.save();
+      return won;
+    },
+    logo(uid) { return this.data.logos[uid] || null; },
+    touched(lid) { return !!this.data.carts[lid] || Object.keys(this.data.stamps).some((k) => k.startsWith(lid + ":")); }
+  };
 
   /* ======================= Audio ======================= */
   const Audio_ = {
@@ -115,6 +155,8 @@
     play: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.2-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>',
     tap: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V11m0-1.5a1.5 1.5 0 0 1 3 0V11m0-.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-1a6 6 0 0 1-5-2.7L3.6 15a1.5 1.5 0 0 1 2.4-1.8L9 15"/></svg>',
     cards: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/></svg>',
+    stamp: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke-dasharray="3.2 2.4"/><path d="M8 12.3l2.7 2.7L16.2 9.4"/></svg>',
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 12.5l4.2 4.2L18.5 7.8"/></svg>',
     star: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z"/></svg>',
     ear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M7 9a5 5 0 0 1 10 0c0 3-3 3.5-3 6.5a3 3 0 0 1-5.5 1.6"/><path d="M10 9.5a2 2 0 0 1 4 0"/></svg>',
     mic: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="8.5" y="2" width="7" height="12.5" rx="3.5"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M12 17.5V21" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
@@ -170,6 +212,8 @@
       return this.blockSteps(b).filter((s) => s.skill).map((s) => Results.get(s.id)).filter((r) => r && r.total > 0)
         .map((r) => (r.firstTry != null ? r.firstTry : r.said) / r.total);
     },
+    /* CORRECT % of a part (null = nothing scored) — the Done screen shows it, the stamp's ink comes from it */
+    pct(b) { const rs = this.rates(b); return rs.length ? Math.round((rs.reduce((a, x) => a + x, 0) / rs.length) * 100) : null; },
     stars(b) {
       const rs = this.rates(b); if (!rs.length) return 0;
       const avg = rs.reduce((a, x) => a + x, 0) / rs.length;
@@ -196,7 +240,7 @@
   const SVGNS = "http://www.w3.org/2000/svg";
   const clampN = (a, x, b) => Math.max(a, Math.min(b, x));
   /* background of the nav screens: a people-free theme scene, blurred evenly + washed (configurable: catalog / lesson pack `bg`) */
-  const BG_FALLBACK = "assets/i1/img/cart-rice.webp";
+  const BG_FALLBACK = "assets/unit-i/bg-unit.webp";
   function navBg(src) {
     return h("div", { class: "nv-bg", "aria-hidden": "true" }, h("div", { class: "nv-bgimg", style: `background-image:url("${ver(src || BG_FALLBACK)}")` }), h("div", { class: "nv-wash" }));
   }
@@ -326,7 +370,9 @@
     try { history.replaceState(null, "", "#units"); } catch (e) {}
     const ready = CAT.units.filter((u) => u.ready), soon = CAT.units.filter((u) => !u.ready);
     const page = h("div", { class: "nv-units" });
-    const head = h("div", { class: "nv-uhead" }, h("h1", {}, "My units"), iconBtn("nv-ib nv-menu", UI.menu, "Teachers", openMenu));
+    const head = h("div", { class: "nv-uhead" }, h("h1", {}, "My units"),
+      h("button", { class: "rw-passbtn", type: "button", onclick: () => showPassport() }, h("span", { class: "e", "aria-hidden": "true" }, "🛂"), "Passport"),
+      iconBtn("nv-ib nv-menu", UI.menu, "Teachers", openMenu));
     const cards = h("div", { class: "nv-ucards" });
     ready.forEach((u) => {
       const ls = u.lessons || [];
@@ -365,7 +411,10 @@
       const btn = h("button", { class: "nv-lesson " + st, type: "button", "aria-label": `Lesson ${k + 1} · ${l.title}` + (done ? " · done" : ""), disabled: !l.ready },
         h("span", { class: "pic", style: `background-image:url("${ver(l.cover || u.cover)}")` }));
       btn.onclick = () => openLesson(l.id);
-      const el = h("div", { class: "nv-item" }, btn, label, done ? h("span", { class: "nv-star", html: UI.star }) : null, now ? h("span", { class: "nv-start" }, "START") : null);
+      /* the reward picked for this lesson (decision #57): a small badge on the node */
+      const rw = rewardOf(l.id);
+      const el = h("div", { class: "nv-item" }, btn, label, done ? h("span", { class: "nv-star", "aria-hidden": "true", html: UI.check }) : null, now ? h("span", { class: "nv-start" }, "START") : null,
+        rw ? h("span", { class: "rw-lcart", title: rw.name }, h("img", { src: ver(rw.img), alt: rw.name })) : null);
       return { el, label, id: l.id, now };
     });
     const R = road(scroller, items, {
@@ -414,7 +463,7 @@
       add(s.targets); add(s.items); add(s.foods); add(s.cards); add(s.kids); add(s.words);
       return c.filter(okPic);
     };
-    const kind = (s) => s.type === "watch" ? UI.play : ["explore", "chunks", "qa"].includes(s.type) ? UI.tap : s.type === "recap" ? UI.cards : s.type === "done" ? UI.star
+    const kind = (s) => s.type === "watch" ? UI.play : ["explore", "chunks", "qa"].includes(s.type) ? UI.tap : s.type === "recap" ? UI.cards : s.type === "done" ? UI.stamp
       : s.skill === "S" ? UI.mic : s.skill === "R" ? UI.book : s.skill === "W" ? UI.pen : UI.ear;
     steps.forEach((s) => {
       const pic = s.type === "done" || s.type === "recap" ? null : pool(s).find((n) => !used.has(n));
@@ -433,17 +482,28 @@
     const icons = stepIcons();
     const items = [];
     const allDone = plan.every((n) => { const b = blockOf(n.id); return b && Prog.complete(b); });
+    /* summary for the unit screen */
+    try {
+      const bl = plan.map((n) => blockOf(n.id)).filter(Boolean);
+      localStorage.setItem("explore-hw:sum:" + L.id, JSON.stringify({
+        stars: bl.reduce((t, b) => t + (Prog.complete(b) ? Prog.stars(b) : 0), 0), max: bl.length * 3,
+        done: steps.filter((s) => Prog.isDone(s.id)).length, total: steps.length, complete: bl.every((b) => Prog.complete(b)) }));
+    } catch (e) {}
+    /* stamps of parts finished before rewards existed: given quietly from the saved results */
+    plan.forEach((n) => { const b = blockOf(n.id); if (b && !n.soon && Prog.complete(b) && !Rewards.stamp(L.id, n.id)) Rewards.award(L.id, n.id, Prog.pct(b)); });
+    /* the whole lesson is finished and no reward picked yet → pick one first (offered again until picked) */
+    if (allDone && !Rewards.cart(L.id) && !pickLater.has(L.id) && ((meta && meta.rewards) || []).length) return showPick(L.id, { back: () => showMap() });
     plan.forEach((n, k) => {
       const b = blockOf(n.id);
       const has = b && !n.soon && Prog.blockSteps(b).length;
       const open = has && Prog.blockOpen(b), done = has && Prog.complete(b);
       const st = done ? "done" : open ? "open" : "lock";
-      const sc = done ? Prog.stars(b) : 0;
       const frame = h("button", { class: "nv-mile " + st + (opts.justDone === n.id ? " pop" : ""), type: "button", "aria-label": `${k + 1} · ${n.label}` + (done ? " · done" : open ? "" : " · locked") },
         h("span", { class: "pic", style: `background-image:url("${img(n.frame || n.img)}")` }));
+      const stp = done ? Rewards.stamp(L.id, n.id) : null;
       const mile = h("div", { class: "nv-item nv-mileitem " + st }, frame,
-        h("span", { class: "flag" }, `${k + 1} · ${String(n.label).toUpperCase()}`),
-        done ? h("span", { class: "stars", "aria-label": sc + " stars" }, "★".repeat(sc), h("span", { class: "off" }, "★".repeat(3 - sc))) : null);
+        stp ? h("span", { class: "rw-mbadge ink-" + stp.ink, role: "img", "aria-label": INK_NAME[stp.ink] + " stamp" }, h("i", { html: UI.check })) : null,
+        h("span", { class: "flag" }, `${k + 1} · ${String(n.label).toUpperCase()}`));
       frame.onclick = () => {
         if (!open && !done) return nudge(mile);
         const ss = Prog.blockSteps(b);
@@ -463,13 +523,16 @@
       });
     });
     const scroller = h("div", { class: "nv-scroll" });
-    const total = allDone ? plan.reduce((t, n) => t + (blockOf(n.id) ? Prog.stars(blockOf(n.id)) : 0), 0) : 0;
-    const badge = allDone ? h("span", { class: "nv-done" + (opts.justDone ? " pop" : "") }, h("span", { html: UI.star }), `${total} / ${plan.length * 3}`) : null;
+    /* the stamps of this lesson (decision #57: the stamp ink is the only rating children see; scores stay stored for teachers) */
+    const stamps = plan.filter((n) => blockOf(n.id) && !n.soon).map((n) => Rewards.stamp(L.id, n.id));
+    const got = stamps.filter(Boolean).length;
+    const badge = got ? h("span", { class: "rw-scount" + (opts.justDone ? " pop" : ""), role: "img", "aria-label": `${got} of ${stamps.length} stamps` },
+      ...stamps.map((st) => h("i", { class: st ? "ink-" + st.ink : "" })), h("b", {}, `${got}/${stamps.length}`)) : null;
     main.append(navBg(L.bg || (meta && meta.bg)), navTop(L.subtitle || L.title, () => showUnit(L.id.charAt(0)), badge), scroller);
     const R = road(scroller, items, {
       size(its, W, H, land) {
         const dM = land ? clampN(96, H * 0.19, 170) : clampN(120, W * 0.38, 190), dn = land ? clampN(52, H * 0.095, 80) : clampN(56, W * 0.17, 80);
-        its.forEach((it) => { it.d = it.big ? dM : dn; it.bottom = it.big ? 30 + (it.el.querySelector(".stars") ? 22 : 0) : 0; it.top = 0; });
+        its.forEach((it) => { it.d = it.big ? dM : dn; it.bottom = it.big ? 30 : 0; it.top = 0; });
       },
       amp: 0.2, ampMax: 150, firstSide: 1, padTop: 26, padBottom: 40,
       gap: (a, b) => (a.big || b.big ? 30 : a.d * 0.32),
@@ -507,13 +570,6 @@
     R.layout();
     if (at) requestAnimationFrame(() => scrollToItem(scroller, at));
     cleanup = () => R.stop();
-    /* summary for the unit screen */
-    try {
-      const bl = plan.map((n) => blockOf(n.id)).filter(Boolean);
-      localStorage.setItem("explore-hw:sum:" + L.id, JSON.stringify({
-        stars: bl.reduce((t, b) => t + (Prog.complete(b) ? Prog.stars(b) : 0), 0), max: bl.length * 3,
-        done: steps.filter((s) => Prog.isDone(s.id)).length, total: steps.length, complete: bl.every((b) => Prog.complete(b)) }));
-    } catch (e) {}
     if (opts.justDone) { Audio_.sfx("complete"); const r = runId; setTimeout(() => { if (alive(r)) pin.click(); }, 900); }
   }
   function nudge(el) { el.classList.remove("nv-no"); void el.offsetWidth; el.classList.add("nv-no"); }
@@ -1083,42 +1139,66 @@
     root.append(h("div", { class: "px-top st-ctop" }, iconBtn("px-x", "✕", "Back to the map", () => showMap()), h("span", { class: "px-prog" }, h("i", { style: "width:100%" }))),
       h("h2", { class: "st-h" }, wordsTitle(step)), h("div", { class: "st-gridwrap" }, grid),
       h("div", { class: "st-cfoot two" }, h("button", { class: "px-btn white", type: "button", onclick: () => go(first) }, "PLAY AGAIN"),
-        h("button", { class: "px-btn red", type: "button", onclick: () => next() }, "CONTINUE")));
+        h("button", { class: "px-btn red", type: "button", onclick: () => endRecap(step) }, "CONTINUE")));
     main.append(root);
     Audio_.sfx("complete");
   };
+  /* the recap ends its part (Vocabulary): the part's own Done screen follows, with its stamp (F4) */
+  function endRecap(step) {
+    const n = steps[idx + 1];
+    if (n && n.block === step.block) return next();
+    Prog.mark(step.id);
+    const label = ((L.plan || []).find((x) => x.id === step.block.id) || {}).label || step.block.name;
+    screen("done");
+    cleanup = doneScreen({ id: step.id, title: `${label} done!`, block: step.block, scores: step.scores, say: ["Well done!"] }) || null;
+  }
 
-  /* ---------- DONE (F4, without the passport stamp for now): Kim's head cheering · results · again / continue ---------- */
-  TYPES.done = function (step) {
+  /* ---------- DONE (F4): Kim's head cheering · the passport page of this lesson, the part's stamp drops in · results · again / continue ---------- */
+  TYPES.done = (step) => doneScreen(step);
+  function doneScreen(step) {
     const meta = lessonMeta(L.id);
+    const run = runId;
     const root = h("div", { class: "st st-done" });
     const chips = h("div", { class: "st-scores" });
     (step.scores || []).forEach(([id, label]) => {
       const r = Results.get(id); const n = r ? (r.firstTry != null ? r.firstTry : r.said) : null;
       chips.append(h("span", { class: "st-score" }, h("span", { class: "l" }, label), h("b", {}, r && r.total ? `${n}/${r.total}` : "–")));
     });
-    const rs = Prog.rates(step.block);
-    const pct = rs.length ? Math.round((rs.reduce((a, x) => a + x, 0) / rs.length) * 100) : null;
+    const pct = Prog.pct(step.block);
     const ms = Prog.elapsed(step.block.id);
+    /* the stamp: only when every other step of the part is done (the Done step itself can be opened from the teachers' menu) */
+    const ready = Prog.blockSteps(step.block).every((s) => s.id === step.id || Prog.isDone(s.id));
+    const aw = ready ? Rewards.award(L.id, step.block.id, pct) : null;
+    const page = passPage(L, L.id, step.block.id, aw);
     const time = ms ? `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, "0")}` : null;
     const stats = h("div", { class: "st-stats" },
       pct != null ? h("div", { class: "st-stat" }, h("small", {}, "CORRECT"), h("b", { class: "g" }, pct + "%")) : null,
       time ? h("div", { class: "st-stat" }, h("small", {}, "TIME"), h("b", { class: "b" }, time)) : null);
     const first = steps.findIndex((s) => s.block === step.block);
+    if (page) root.classList.add("has-stamp");
     root.append(navBg(L.bg || (meta && meta.bg)),
       h("div", { class: "st-dmain" },
-        h("div", { class: "st-cheer" }, kimHead("cheer", "big"), h("span", { class: "st-burst", "aria-hidden": "true" }, ...Array.from({ length: 8 }, (_, q) => h("i", { style: `--a:${q * 45}deg` })))),
-        h("h1", { class: "st-dtitle" }, step.title),
-        /* reserved: the part's passport stamp goes here (rewards, decision #57) */
-        h("div", { class: "st-stamp-slot", "data-slot": "stamp", "aria-hidden": "true" }),
-        stats.childNodes.length ? stats : null, chips),
+        h("div", { class: "st-dhead" },
+          h("div", { class: "st-cheer" }, kimHead("cheer", "big"), h("span", { class: "st-burst", "aria-hidden": "true" }, ...Array.from({ length: 8 }, (_, q) => h("i", { style: `--a:${q * 45}deg` })))),
+          h("h1", { class: "st-dtitle" }, step.title)),
+        /* the part's passport stamp (rewards, decision #57) */
+        h("div", { class: "st-stamp-slot", "data-slot": "stamp" }, page),
+        h("div", { class: "st-dres" }, stats.childNodes.length ? stats : null, chips)),
       h("div", { class: "st-cfoot two" }, h("button", { class: "px-btn white", type: "button", onclick: () => go(first) }, "DO THIS PART AGAIN"),
         h("button", { class: "px-btn red", type: "button", onclick: () => next() }, "CONTINUE")));
     main.append(root);
     Audio_.sfx("complete");
     const head = root.querySelector(".st-cheer");
-    head.classList.add("talk"); playSafe(() => kimVoice(step.title)).then(() => head.classList.remove("talk"));
-  };
+    const say = (step.say || []).concat(step.title).find((t) => recorded("kim", t)) || step.title;
+    head.classList.add("talk"); playSafe(() => kimVoice(say)).then(() => head.classList.remove("talk"));
+    /* a new / better stamp: it drops onto the page (thunk), the ink spreads */
+    const cur = page && page.querySelector(".rw-stamp.cur");
+    if (cur && aw && aw.up) {
+      cur.classList.add("pre"); page.classList.add("pre");
+      setTimeout(() => { if (!alive(run)) return; cur.classList.remove("pre"); cur.classList.add("drop"); }, 650);
+      setTimeout(() => { if (!alive(run)) return; Audio_.sfx("sticker-place"); page.classList.remove("pre"); page.classList.add("thunk"); }, 650 + 330);
+    }
+  }
 
   /* ---------- speaking checks used by ANSWER: BE + every food (+ verb), or the short answer ---------- */
   const BE_RX = { he: /\bhe ?'?s\b|\bhe is\b|\bhis\b|\bhes\b/, she: /\bshe ?'?s\b|\bshe is\b|\bshes\b/, i: /\bi ?'?m\b|\bi am\b|\bim\b|\bam\b/ };
@@ -1582,18 +1662,338 @@
     }).cleanup;
   };
 
+  /* ======================= Rewards (milestone 6 · decision #57): stamps · pick a reward · my street · passport =======================
+   * Every picture, name and line comes from data: the catalog (unit logo / street / rewards) and the lesson packs
+   * (the stamp picture = the part's roadmap milestone picture; the line a stamp / cart plays = a recorded line of that part). */
+  const INK_NAME = { blue: "BLUE", silver: "SILVER", gold: "GOLD" };
+  const recorded = (who, t) => !!(t && window.VOICE && window.VOICE[who + "|" + String(t).trim()]);
+  /* Kim says the first of these lines that has a recording (no new audio: nothing is said when none has) */
+  function kimLine(cands, el) {
+    const t = cands.find((x) => recorded("kim", x));
+    if (!t) return Promise.resolve();
+    if (el) el.classList.add("talk");
+    return playSafe(() => kimVoice(t)).then(() => { if (el) el.classList.remove("talk"); });
+  }
+  const lessonNo = (lid) => { const m = lessonMeta(lid); return m ? m.unit.lessons.findIndex((l) => l.id === lid) + 1 : 0; };
+  const rewardOf = (lid) => { const c = Rewards.cart(lid), m = lessonMeta(lid); return (c && m && (m.rewards || []).find((r) => r.id === c.id)) || null; };
+  const boldStars = (s) => esc(s).replace(/\*(.+?)\*/g, "<b>$1</b>");
+
+  /* lesson packs opened outside the lesson (passport, street, demo): loaded once, with their recorded voice */
+  const packs = new Map();
+  async function packOf(lid) {
+    if (L.id === lid) return L;
+    if (packs.has(lid)) return packs.get(lid);
+    const meta = lessonMeta(lid);
+    if (!meta || !meta.ready) return null;
+    const keep = window.LESSON; window.LESSON = null;
+    await loadScript(meta.file);
+    const p = window.LESSON; window.LESSON = keep;
+    if (!p) return null;
+    await loadScript(meta.file.replace(/\.js$/, ".voice.js"));
+    packs.set(lid, p);
+    return p;
+  }
+  const imgOf = (p, name) => ver((String(name).startsWith("@") ? "assets/" + name.slice(1) : p.img + name) + ".webp");
+  const planOf = (p) => (p.plan || p.blocks.map((b) => ({ id: b.id, label: b.name }))).filter((n) => !n.soon && p.blocks.some((b) => b.id === n.id));
+  const stepsOf = (p) => { const out = []; p.blocks.forEach((b) => b.steps.forEach((s) => { if (!(s.skill && !(p.skills || []).includes(s.skill))) out.push(Object.assign({ block: b }, s)); })); return out; };
+  const wordSrc = (p, id) => { const a = p.words[id].audio; return (a.startsWith("@") ? "assets/" + a.slice(1) : p.aud + a) + ".mp3"; };
+  const stampLabel = (n) => n.stamp || (n.id === "vocab" ? "VOCAB" : String(n.label).toUpperCase());
+  /* the line a stage's stamp replays (optional override: plan[n].key = { text, who }):
+   * grammar → the first Explore card · Let's Talk → the first question + answer · vocabulary → the first word of the Watch
+   * · otherwise the first model sentence of the Watch (a line with a sentence strip) · last resort: the first word */
+  function keyLine(p, pid, avoid) {
+    const fresh = (t) => !(avoid && avoid.has(t));
+    const n = planOf(p).find((x) => x.id === pid) || {};
+    if (n.key) return n.key;
+    const b = p.blocks.find((x) => x.id === pid);
+    if (!b) return null;
+    const ss = b.steps.filter((s) => !(s.skill && !(p.skills || []).includes(s.skill)));
+    const ch = ss.find((s) => s.type === "chunks" && (s.cards || []).length);
+    if (ch) { const c = ch.cards.find((x) => fresh(x.short)) || ch.cards[0]; return { text: c.short, who: c.who || "narrator" }; }
+    const qa = ss.find((s) => s.type === "qa" && (s.cards || []).length);
+    if (qa) { const c = qa.cards[0]; return { text: c.q, who: "narrator", then: { text: c.a, who: "kim" } }; }
+    const w = ss.find((s) => s.type === "watch"), cues = (w && w.cues) || [];
+    const food = cues.find((q) => q.food && p.words[q.food]);
+    if (food) return { word: food.food, text: p.words[food.food].label };
+    const okLine = (q) => q.strip && q.line && !/…/.test(q.line.text) && !/^Look\b/.test(q.line.text);
+    const line = cues.find((q) => okLine(q) && fresh(q.line.text)) || cues.find(okLine);
+    if (line) return { text: line.line.text, who: line.line.who || "narrator" };
+    const rc = ss.find((s) => s.type === "recap"), wid = (rc && rc.words && rc.words[0]) || Object.keys(p.words)[0];
+    return wid ? { word: wid, text: p.words[wid].label } : null;
+  }
+  const keyText = (k) => (k ? (k.then ? k.text + " " + k.then.text : k.text) : "");
+  const playKey = (p, k) => (!k ? Promise.resolve() : k.word ? Audio_.file(wordSrc(p, k.word))
+    : Audio_.speak(k.text, k.who).then(() => (k.then ? sleep(250).then(() => Audio_.speak(k.then.text, k.then.who)) : null)));
+  /* the sentence a lesson's cart says on the street: the lesson's first grammar model sentence
+   * (avoid = sentences earlier carts already say: a reading lesson that reuses the same cards takes its next card) */
+  const streetLine = (p, avoid) => { const pl = planOf(p); const n = pl.find((x) => x.id === "grammar") || pl[1] || pl[0]; return n ? keyLine(p, n.id, avoid) : null; };
+
+  /* ---- a stage stamp: dashed ink ring · the stage's milestone picture · label; ink = blue / silver / gold. Tap = hear its line ---- */
+  const ROT = [-7, 5, -3];
+  function stampEl(p, lid, n, k, st) {
+    const el = h(st ? "button" : "span", { class: "rw-stamp " + (st ? "ink-" + st.ink : "empty"), style: `--rot:${ROT[k % 3]}deg`, type: st ? "button" : null,
+      "aria-label": st ? `${n.label} · ${INK_NAME[st.ink].toLowerCase()} stamp` : `${n.label} · no stamp yet` },
+      h("span", { class: "ring" }), st ? h("span", { class: "pic", style: `background-image:url("${imgOf(p, n.frame || n.img)}")` }) : null,
+      h("span", { class: "lab" }, stampLabel(n)), st ? h("span", { class: "spread", "aria-hidden": "true" }) : null);
+    if (st) el.onclick = () => {
+      el.classList.remove("tap"); void el.offsetWidth; el.classList.add("tap", "playing");
+      playSafe(() => playKey(p, keyLine(p, n.id))).then(() => el.classList.remove("playing"));
+    };
+    return el;
+  }
+  /* the lesson's passport page (Done screen): one stamp place per stage, the current stage marked */
+  function passPage(p, lid, cur) {
+    const meta = lessonMeta(lid);
+    if (!meta) return null;
+    const page = h("div", { class: "rw-page" }, h("span", { class: "rw-ptag" }, `PASSPORT · UNIT ${meta.unit.id} · LESSON ${lessonNo(lid)}`));
+    const row = h("div", { class: "rw-prow" });
+    planOf(p).forEach((n, k) => { const el = stampEl(p, lid, n, k, Rewards.stamp(lid, n.id)); if (n.id === cur) el.classList.add("cur"); row.append(el); });
+    page.append(row);
+    const st = Rewards.stamp(lid, cur);
+    if (st) page.append(h("span", { class: "rw-inkchip ink-" + st.ink }, `${INK_NAME[st.ink]} STAMP`));
+    return page;
+  }
+  /* a unit logo: the round badge + its ribbon text (written in CSS, so every unit's art can leave the ribbon empty) */
+  const logoEl = (u, cls = "") => h("span", { class: "rw-logo " + cls }, h("img", { src: ver(u.logo.img), alt: "" }), h("span", { class: "rw-ltext" }, u.logo.text || ""));
+
+  /* ---- R1 · lesson finished → pick one reward (only once; offered again on the next visit if skipped) ---- */
+  const pickLater = new Set();
+  function showPick(lid, o = {}) {
+    const meta = lessonMeta(lid), u = meta && meta.unit, opts = (meta && meta.rewards) || [];
+    const leave = o.back || (() => showUnit(u.id));
+    if (!opts.length) return leave();
+    screen("pick");
+    try { history.replaceState(null, "", "#" + lid.toLowerCase()); } catch (e) {}
+    let sel = o.change ? (Rewards.cart(lid) || {}).id || null : null;
+    const add = h("button", { class: "px-btn red", type: "button", disabled: !sel }, u.rewardButton || "ADD TO MY STREET");
+    const grid = h("div", { class: "rw-opts" });
+    opts.forEach((r) => {
+      const b = h("button", { class: "rw-opt" + (r.id === sel ? " sel" : ""), type: "button", "aria-pressed": String(r.id === sel) },
+        h("span", { class: "p" }, h("img", { src: ver(r.img), alt: "" })), h("span", { class: "t" }, r.name), h("span", { class: "ok", "aria-hidden": "true" }, "✓"));
+      b.onclick = () => {
+        sel = r.id; add.disabled = false; Audio_.sfx("region-enter");
+        grid.querySelectorAll(".rw-opt").forEach((x) => { x.classList.toggle("sel", x === b); x.setAttribute("aria-pressed", String(x === b)); });
+      };
+      grid.append(b);
+    });
+    add.onclick = () => { if (!sel) return; Rewards.setCart(lid, sel); showUnitPage(u.id, { arrive: lid, back: o.pageBack || leave }); };
+    const kim = h("div", { class: "rw-pkim" }, kimHead("cheer"));
+    const root = h("div", { class: "st rw-pick" }, navBg(u.bg),
+      h("div", { class: "rw-pin" },
+        h("div", { class: "rw-ptop" }, iconBtn("px-x", "✕", o.change ? "Back" : "Not now", () => { if (!o.change) pickLater.add(lid); leave(); })),
+        h("div", { class: "rw-phead" }, kim, h("div", { class: "rw-ptext" },
+          h("span", { class: "nv-tag" }, o.change ? `LESSON ${lessonNo(lid)}` : `LESSON ${lessonNo(lid)} COMPLETE!`), h("h1", {}, u.rewardPrompt || "Pick a reward!"))),
+        h("div", { class: "rw-optwrap" }, grid),
+        h("div", { class: "st-cfoot" }, add)));
+    main.append(root);
+    if (!o.change) { Audio_.sfx("complete"); kimLine([L.id === lid && L.finishLine, "Super!"], kim); }
+  }
+
+  /* ---- R2 + passport unit page: my street (one spot per lesson, the picked cart stands on it) · the stamps of every lesson ---- */
+  async function showUnitPage(uid, o = {}) {
+    const u = CAT.units.find((x) => x.id === uid);
+    if (!u || !u.street) return showPassport();
+    screen("street");
+    try { history.replaceState(null, "", "#passport-" + uid.toLowerCase()); } catch (e) {}
+    const run = runId, S = u.street, ls = u.lessons || [];
+    const back = o.back || showPassport;
+    const filled = ls.filter((l) => Rewards.cart(l.id)).length;
+    main.append(navBg(u.bg), navTop(S.title || `Unit ${u.id}`, back, h("span", { class: "rw-count" }, `${filled} / ${ls.length}`)));
+    const page = h("div", { class: "nv-scroll rw-upage" });
+    /* the street: a wide picture; phones scroll it sideways (snapping to the spots), wide screens see all of it */
+    const pic = h("img", { class: "rw-simg", src: ver(S.img), alt: "" });
+    const cv = h("div", { class: "rw-scv" }, pic);
+    const vp = h("div", { class: "rw-svp" }, cv);
+    const arL = iconBtn("rw-sarrow l", UI.back, "Scroll left", () => vp.scrollBy({ left: -G.Wi * 0.19, behavior: "smooth" }));
+    const arR = iconBtn("rw-sarrow r", UI.back, "Scroll right", () => vp.scrollBy({ left: G.Wi * 0.19, behavior: "smooth" }));
+    const street = h("div", { class: "rw-street" }, vp, arL, arR);
+    const bub = h("div", { class: "rw-bub", hidden: true }, h("span", { class: "spk", html: ICON3.speaker }), h("span", { class: "tx px-read" }));
+    const spots = ls.map((l, k) => {
+      const rw = rewardOf(l.id), [x, y] = S.spots[k] || [50 + (k - 2) * 18, 74];
+      const el = rw ? h("button", { class: "rw-cart", type: "button", "aria-label": `Lesson ${k + 1} · ${rw.name}` }, h("span", { class: "sh", "aria-hidden": "true" }), h("img", { src: ver(rw.img), alt: "" }))
+        : h("span", { class: "rw-spot" }, "L" + (k + 1));
+      const tag = rw ? h("span", { class: "rw-ctag" }, "L" + (k + 1)) : null;
+      const snap = h("i", { class: "rw-snap", "aria-hidden": "true" });
+      cv.append(snap, el); if (tag) cv.append(tag);
+      const s = { l, k, x, y, rw, el, tag, snap };
+      if (rw) el.onclick = () => talk(s);
+      return s;
+    });
+    cv.append(bub);
+    let G = { Wi: 0, Hi: 0, crop: 0 }, bubT = 0, bubFor = null;
+    async function talk(s) {
+      const ps = await Promise.all(ls.slice(0, s.k + 1).map((l) => (l.ready ? packOf(l.id) : null)));
+      const p = ps[s.k];
+      if (!alive(run) || !p) return;
+      const said = new Set();
+      ps.slice(0, s.k).forEach((q) => { const k = q && streetLine(q, said); if (k) said.add(k.text); });
+      const key = streetLine(p, said);
+      if (!key) return;
+      clearTimeout(bubT); bubFor = s;
+      bub.querySelector(".tx").textContent = keyText(key);
+      bub.hidden = false; placeBub(); bub.classList.remove("in"); void bub.offsetWidth; bub.classList.add("in");
+      center(s.k, true);
+      spots.forEach((x) => x.el.classList.toggle("talk", x === s));
+      await playSafe(() => playKey(p, key));
+      if (!alive(run)) return;
+      s.el.classList.remove("talk");
+      bubT = setTimeout(() => { bub.hidden = true; bubFor = null; }, 2600);
+    }
+    function placeBub() {
+      const s = bubFor; if (!s || bub.hidden) return;
+      const bw = bub.offsetWidth, bh = bub.offsetHeight;
+      const left = clampN(bw / 2 + 8, s.cx, G.Wi - bw / 2 - 8);
+      const top = Math.max(G.crop + bh + 8, s.top + s.side * 0.06);
+      bub.style.left = left + "px"; bub.style.top = top + "px";
+      bub.style.setProperty("--tail", clampN(14, s.cx - (left - bw / 2), bw - 14) + "px");
+    }
+    function center(k, smooth) { const s = spots[k]; if (s && s.cx != null) vp.scrollTo({ left: s.cx - vp.clientWidth / 2, behavior: smooth ? "smooth" : "auto" }); }
+    function arrows() {
+      const max = vp.scrollWidth - vp.clientWidth;
+      arL.hidden = !(max > 4 && vp.scrollLeft > 4);
+      arR.hidden = !(max > 4 && vp.scrollLeft < max - 4);
+    }
+    vp.addEventListener("scroll", arrows, { passive: true });
+    /* under the street: the five spots (gold = filled; tap = go there) · the goal or the logo */
+    const slots = h("div", { class: "rw-slots" });
+    ls.forEach((l, k) => {
+      const on = !!Rewards.cart(l.id);
+      slots.append(h("button", { class: "rw-slot" + (on ? " on" : ""), type: "button", "aria-label": `Lesson ${k + 1}` + (on ? " · " + rewardOf(l.id).name : " · empty"), onclick: () => (on ? talk(spots[k]) : center(k, true)) }, "L" + (k + 1)));
+    });
+    const won = Rewards.logo(uid);
+    const goal = h("div", { class: "rw-goal" + (won ? " won" : "") }, won && u.logo ? logoEl(u, "sm") : null,
+      h("span", { html: boldStars(won ? `You got the *${u.nick || u.title} logo*!` : u.rewardGoal || "") }));
+    const below = h("div", { class: "rw-below" }, slots, goal);
+    /* every lesson: its three stage stamps, its reward (with a small "Change") */
+    const lgrid = h("div", { class: "rw-lgrid" });
+    page.append(street, below, h("section", { class: "rw-sbox" }, h("h2", {}, "My stamps"), lgrid));
+    main.append(page);
+    function layout() {
+      const cw = vp.clientWidth, ph = page.clientHeight;
+      if (!cw || !ph) return;
+      const land = cw > ph * 1.05 && cw >= 560;
+      const ar = pic.naturalWidth ? pic.naturalWidth / pic.naturalHeight : S.ar || 1920 / 814;
+      let Hi, Wi, vis;
+      if (!land) { Hi = clampN(280, ph * 0.56, 560); Wi = Hi * ar; if (Wi < cw) { Wi = cw; Hi = Wi / ar; } vis = Hi; }
+      else { Wi = cw; Hi = Wi / ar; vis = Math.min(Hi, Math.max(ph - below.offsetHeight - 14, Hi * 0.75)); }   /* wide: only sky is cropped */
+      G = { Wi, Hi, crop: Hi - vis };
+      vp.style.height = vis + "px";
+      Object.assign(cv.style, { width: Wi + "px", height: Hi + "px", top: -G.crop + "px" });
+      const side = (Wi * ((S.cart && S.cart.w) || 18)) / 100, base = (S.cart && S.cart.base) || 3;
+      spots.forEach((s) => {
+        s.cx = (Wi * s.x) / 100; s.cy = (Hi * s.y) / 100; s.side = side;
+        const foot = (Hi * (s.y + base)) / 100; s.top = foot - side * 0.98;   /* the wheels (98 % down the picture) on the chalk circle */
+        if (s.rw) Object.assign(s.el.style, { left: s.cx - side / 2 + "px", top: s.top + "px", width: side + "px", height: side + "px" });
+        else Object.assign(s.el.style, { left: s.cx + "px", top: s.cy + "px" });
+        if (s.tag) Object.assign(s.tag.style, { left: s.cx + "px", top: foot + Hi * 0.012 + "px" });
+        Object.assign(s.snap.style, { left: s.cx + "px", top: G.crop + "px" });
+      });
+      placeBub(); arrows();
+    }
+    const ro = window.ResizeObserver ? new ResizeObserver(() => layout()) : null;
+    if (ro) { ro.observe(page); ro.observe(below); } else window.addEventListener("resize", layout);
+    pic.onload = layout;
+    cleanup = () => { clearTimeout(bubT); if (ro) ro.disconnect(); else window.removeEventListener("resize", layout); };
+    layout();
+    const arrive = o.arrive && spots.find((s) => s.l.id === o.arrive && s.rw);
+    if (arrive) {
+      center(arrive.k, false);
+      arrive.el.classList.add("arrive");
+      setTimeout(() => { if (alive(run)) Audio_.sfx("sticker-place"); }, 520);
+      setTimeout(() => { if (alive(run)) talk(arrive).then(() => { if (alive(run)) maybeParty(); }); }, 1100);
+    } else setTimeout(() => { if (alive(run)) maybeParty(); }, 500);
+    function maybeParty() { const r = Rewards.logo(uid); if (r && !r.seen) { clearTimeout(bubT); bub.hidden = true; logoParty(u, run); } }
+    /* the stamps need the lesson packs (pictures, lines) */
+    const ps = await Promise.all(ls.map((l) => (l.ready ? packOf(l.id) : null)));
+    if (!alive(run)) return;
+    ls.forEach((l, k) => {
+      const p = ps[k], rw = rewardOf(l.id);
+      const card = h("div", { class: "rw-lcard" }, h("div", { class: "hd" }, h("span", { class: "nv-tag" }, `LESSON ${k + 1}`), h("b", {}, l.title)));
+      if (p) card.append(h("div", { class: "rw-lstamps" }, ...planOf(p).map((n, j) => stampEl(p, l.id, n, j, Rewards.stamp(l.id, n.id)))));
+      if (rw) card.append(h("div", { class: "ft" }, h("img", { src: ver(rw.img), alt: "" }), h("span", {}, rw.name),
+        h("button", { class: "rw-change", type: "button", onclick: () => showPick(l.id, { change: true, back: () => showUnitPage(uid, { back }), pageBack: back }) }, "Change")));
+      lgrid.append(card);
+    });
+  }
+  /* one-time celebration: the unit's logo pops in */
+  function logoParty(u, run) {
+    const rec = Rewards.logo(u.id);
+    if (rec) { rec.seen = true; Rewards.save(); }
+    const ov = h("div", { class: "overlay rw-logoov" });
+    const close = () => { ov.remove(); };
+    const box = h("div", { class: "rw-logobox", role: "dialog", "aria-label": `${u.nick || u.title} logo` },
+      h("div", { class: "rw-lwrap" }, h("span", { class: "rw-rays", "aria-hidden": "true" }, ...Array.from({ length: 12 }, (_, q) => h("i", { style: `--a:${q * 30}deg` }))), logoEl(u, "big")),
+      h("span", { class: "nv-tag" }, `UNIT ${u.id} COMPLETE!`),
+      h("h2", { html: boldStars(`You got the *${u.nick || u.title} logo*!`) }),
+      h("button", { class: "px-btn red", type: "button", onclick: close }, "CONTINUE"));
+    ov.append(box); document.body.append(ov);
+    Audio_.sfx("complete");
+    setTimeout(() => { if (alive(run)) kimLine([u.logoSay, "Super!"]); }, 500);
+  }
+
+  /* ---- R3 · passport cover: one logo per unit A → J; tap an earned (or started) unit → its page ---- */
+  function showPassport() {
+    screen("passport");
+    try { history.replaceState(null, "", "#passport"); } catch (e) {}
+    const grid = h("div", { class: "rw-pgrid" });
+    CAT.units.forEach((u) => {
+      const got = !!(u.logo && Rewards.logo(u.id));
+      const some = !got && !!u.street && (u.lessons || []).some((l) => Rewards.touched(l.id));
+      const name = `${u.id} · ${u.nick || u.title}`;
+      const n = (u.lessons || []).filter((l) => Rewards.cart(l.id)).length;
+      const disc = got ? logoEl(u) : some && u.logo ? h("span", { class: "rw-ghost" }, logoEl(u), h("span", { class: "n" }, `${n} / ${u.lessons.length}`)) : h("span", { class: "rw-emoji" }, u.badge || "📦");
+      const it = h(got || some ? "button" : "div", { class: "rw-unit " + (got ? "won" : some ? "some" : "none"), type: got || some ? "button" : null,
+        "aria-label": name + (got ? " · logo" : some ? " · started" : " · not yet") }, h("span", { class: "disc" }, disc), h("b", {}, name));
+      if (got || some) it.onclick = () => showUnitPage(u.id, { back: showPassport });
+      grid.append(it);
+    });
+    const won = CAT.units.filter((u) => u.logo && Rewards.logo(u.id)).length;
+    main.append(navTop("My Passport", showUnits),
+      h("div", { class: "nv-scroll rw-pscroll" }, h("div", { class: "rw-pass" },
+        h("span", { class: "rw-ptag" }, "DOL EXPLORE · PASSPORT"), h("b", { class: "rw-pcount" }, `${won} / ${CAT.units.length} units`), grid)));
+  }
+
+  /* ---- teachers / testers: fill fake progress (☰ menu; #reward-test). mode: "almost" = L1–L4 done, L5 one step short · "all" · "clear" ---- */
+  async function demoProgress(mode) {
+    const u = CAT.units.find((x) => x.street && x.ready);
+    if (!u) return;
+    try { localStorage.removeItem(Rewards.key); } catch (e) {}
+    Rewards.d = null; Rewards.load();
+    const PCT = [[95, 80, 60], [92, 96, 75], [65, 90, 93], [85, 72, 98], [94, 88, 91]];
+    for (const [k, l] of u.lessons.entries()) {
+      ["explore-hw:" + l.id, "explore-hw:sum:" + l.id].forEach((key) => { try { localStorage.removeItem(key); } catch (e) {} });
+      if (mode === "clear" || !l.ready) continue;
+      const p = await packOf(l.id);
+      if (!p) continue;
+      const ss = stepsOf(p), short = mode === "almost" && k === u.lessons.length - 1;
+      const res = { _done: {} }, at = new Date().toISOString();
+      ss.forEach((s, j) => { if (!(short && j === ss.length - 1)) res._done[s.id] = true; });
+      const plan = planOf(p);
+      ss.filter((s) => s.skill).forEach((s) => { const r = PCT[k % PCT.length][plan.findIndex((n) => n.id === s.block.id) % 3] / 100; res[s.id] = { at, firstTry: Math.round(r * 20), total: 20 }; });
+      try { localStorage.setItem("explore-hw:" + l.id, JSON.stringify(res)); } catch (e) {}
+      const bl = plan.map((n) => p.blocks.find((b) => b.id === n.id));
+      const bDone = (b) => ss.filter((s) => s.block === b).every((s) => res._done[s.id]);
+      const bPct = (b) => { const rs = ss.filter((s) => s.block === b && s.skill).map((s) => res[s.id].firstTry / res[s.id].total); return rs.length ? Math.round((rs.reduce((a, x) => a + x, 0) / rs.length) * 100) : null; };
+      bl.forEach((b) => { if (bDone(b)) Rewards.award(l.id, b.id, bPct(b)); });
+      const complete = bl.every(bDone);
+      try { localStorage.setItem("explore-hw:sum:" + l.id, JSON.stringify({ stars: 0, max: bl.length * 3, done: Object.keys(res._done).length, total: ss.length, complete })); } catch (e) {}
+      if (complete && (l.rewards || []).length) Rewards.setCart(l.id, l.rewards[k % l.rewards.length].id);
+    }
+    if (L.id !== "HOME") Results.data = Store.load();
+    pickLater.clear();
+  }
+
   /* ======================= Open a lesson / routes ======================= */
   const lessonMeta = (lid) => { for (const u of CAT.units) for (const l of (u.lessons || [])) if (l.id === lid) return Object.assign({ unit: u }, l); return null; };
   const loadScript = (src) => new Promise((res) => { const sc = document.createElement("script"); sc.src = src + (window.EXPLORE_BUILD ? "?v=" + window.EXPLORE_BUILD : ""); sc.onload = () => res(true); sc.onerror = () => res(false); document.head.append(sc); });
   async function openLesson(lid, stepId) {
     const meta = lessonMeta(lid);
     if (!meta || !meta.ready) return showUnits();
+    pickLater.delete(lid);   /* a skipped reward pick is offered again on this visit */
     if (L.id !== lid) {
-      window.LESSON = null;
-      const ok = await loadScript(meta.file);
-      if (!ok || !window.LESSON) { kimVoice("Oops! This lesson is not ready yet."); return; }
-      await loadScript(meta.file.replace(/\.js$/, ".voice.js"));
-      L = window.LESSON;
+      const p = await packOf(lid);
+      if (!p) { kimVoice("Oops! This lesson is not ready yet."); return; }
+      L = p;
       Results.data = Store.load();
       buildSteps();
     }
@@ -1641,6 +2041,10 @@
     const u = hsh.match(/^unit-([a-j])$/);
     if (u) return showUnit(u[1].toUpperCase());
     if (hsh === "voices") return showVoices();
+    if (hsh === "passport") return showPassport();
+    const pp = hsh.match(/^passport-([a-j])$/);
+    if (pp) return showUnitPage(pp[1].toUpperCase(), { back: showPassport });
+    if (hsh === "reward-test") return demoProgress("almost").then(showPassport);
     showUnits();
   }
 
@@ -1650,6 +2054,9 @@
     const close = () => ov.remove();
     const m = h("div", { class: "nv-menubox", role: "dialog", "aria-label": "Steps" }, h("h3", {}, "Steps"), h("small", {}, "Dành cho GV/người duyệt: nhảy tới bước bất kỳ."));
     m.append(h("button", { type: "button", onclick: () => { close(); showUnits(); } }, "🏠 Units"));
+    m.append(h("button", { type: "button", onclick: () => { close(); showPassport(); } }, "🛂 Passport"));
+    /* rewards test (teachers / testers only): fake progress, then the passport */
+    const demo = (mode) => async () => { close(); await demoProgress(mode); if (mode === "clear") showUnits(); else showPassport(); };
     if (L.id === "HOME") m.append(h("button", { type: "button", onclick: () => { close(); showVoices(); } }, "🎧 Nghe audio (GV)"));
     else {
       if (skipped.length) m.append(h("small", { class: "warn" }, "⚠️ Đã bỏ qua bài sai kỹ năng của lesson: " + skipped.join("; ")));
@@ -1658,6 +2065,10 @@
       m.append(h("button", { type: "button", onclick: () => { try { localStorage.removeItem(Store.key); } catch (e) {} Results.data = {}; close(); showMap(); } }, "↺ Xoá kết quả & làm lại từ đầu"));
       m.append(h("button", { type: "button", onclick: () => { close(); showVoices(); } }, "🎧 Nghe audio (GV)"));
     }
+    m.append(h("small", {}, "Thử phần thưởng (GV): điền tiến độ giả cho Unit I."),
+      h("button", { type: "button", onclick: demo("almost") }, "🧪 Demo: L1–L4 xong, L5 còn bước cuối"),
+      h("button", { type: "button", onclick: demo("all") }, "🧪 Demo: xong cả 5 lesson (có logo)"),
+      h("button", { type: "button", onclick: demo("clear") }, "🧪 Demo: xoá hết tiến độ & phần thưởng"));
     ov.onclick = (e) => { if (e.target === ov) close(); };
     ov.append(m); document.body.append(ov);
   }
@@ -1667,12 +2078,12 @@
   (window.EXPLORE_ADDONS || []).forEach((f) => f(window.EXPLORE_API));
 
   /* ======================= Boot: splash (N1) ======================= */
-  /* splash background: the opened lesson's / unit's `bg` (people-free theme art), else the catalog's */
+  /* splash background: the unit's `bg` (people-free theme art) of the opened lesson / unit, else the catalog's */
   (function splashBg() {
     const hsh = (location.hash || "").slice(1).toUpperCase();
     const meta = lessonMeta((hsh.match(/^([A-J]\d)/) || [])[1]);
     const unit = meta ? meta.unit : CAT.units.find((u) => hsh === "UNIT-" + u.id);
-    const src = (meta && meta.bg) || (unit && unit.bg) || (CAT.splash && CAT.splash.bg) || BG_FALLBACK;
+    const src = (meta && meta.unit.bg) || (unit && unit.bg) || (CAT.splash && CAT.splash.bg) || BG_FALLBACK;
     const el = $("#startBg"); if (el) el.style.backgroundImage = `url("${ver(src)}")`;
   })();
   $("#startBtn").onclick = () => {
