@@ -1821,23 +1821,14 @@
     });
     cv.append(bub);
     let G = { Wi: 0, Hi: 0, crop: 0 }, bubT = 0, bubFor = null;
+    /* tapping a cart on the street: a little bounce + a soft sound (no sentence — Thanh 11-18) */
     async function talk(s) {
-      const ps = await Promise.all(ls.slice(0, s.k + 1).map((l) => (l.ready ? packOf(l.id) : null)));
-      const p = ps[s.k];
-      if (!alive(run) || !p) return;
-      const said = new Set();
-      ps.slice(0, s.k).forEach((q) => { const k = q && streetLine(q, said); if (k) said.add(k.text); });
-      const key = streetLine(p, said);
-      if (!key) return;
-      clearTimeout(bubT); bubFor = s;
-      bub.querySelector(".tx").textContent = keyText(key);
-      bub.hidden = false; placeBub(); bub.classList.remove("in"); void bub.offsetWidth; bub.classList.add("in");
+      if (!alive(run) || !s) return;
       center(s.k, true);
-      spots.forEach((x) => x.el.classList.toggle("talk", x === s));
-      await playSafe(() => playKey(p, key));
-      if (!alive(run)) return;
-      s.el.classList.remove("talk");
-      bubT = setTimeout(() => { bub.hidden = true; bubFor = null; }, 2600);
+      s.el.classList.remove("talk"); void s.el.offsetWidth; s.el.classList.add("talk");
+      Audio_.sfx("region-enter");
+      await new Promise((r) => setTimeout(r, 700));
+      if (alive(run)) s.el.classList.remove("talk");
     }
     function placeBub() {
       const s = bubFor; if (!s || bub.hidden) return;
