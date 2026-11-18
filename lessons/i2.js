@@ -39,10 +39,17 @@
     backdrop: "scene-street",
     finishLine: "Hooray! You can read and write the food words!",
     plan: [
-      { id: "vocab",   label: "Vocabulary", img: "food-sausage",   awning: "#e5534b" },
+      { id: "vocab",   label: "Vocabulary", img: "food-sausage", frame: "cart-burger",   awning: "#e5534b" },
       { id: "grammar", label: "Grammar",    img: "g-sue-chicken",  awning: "#e8b33a" },
       { id: "fl",      label: "Let's Talk", img: "fl-pat-egg",     awning: "#4aa3a2" }
     ],
+    /* v3 (2026-11-18): focus = what each scene picture is about, in % of the picture {x,y,w,h} — the Watch camera keeps it in view
+     * and Explore cards centre on it; frame = the picture on the roadmap milestone of a part. */
+    focus: {
+      "cart-bread": { x: 30, y: 4, w: 40, h: 84 }, "cart-burger": { x: 30, y: 4, w: 40, h: 84 }, "cart-rice": { x: 30, y: 2, w: 62, h: 86 },
+      "g-bill-burger": { x: 26, y: 4, w: 40, h: 88 }, "g-sue-chicken": { x: 28, y: 4, w: 34, h: 88 },
+      "fl-tony-chips": { x: 16, y: 2, w: 48, h: 90 }, "fl-pat-egg": { x: 6, y: 10, w: 88, h: 82 }
+    },
     mapDeco: [{ img: "food-bread", x: 72, y: 6, r: 12 }, { img: "food-fish", x: 6, y: 46, r: -10 }, { img: "food-meatballs", x: 80, y: 80, r: 18 }],
     words: W,
     confusable: CONF,

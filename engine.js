@@ -1,6 +1,8 @@
-/* EXPLORE Homework — Player engine (CP3)
+/* EXPLORE Homework — Player engine
  * One engine for every lesson; content comes from window.LESSON (lessons/*.js).
- * Step types: watch · explore · bubbles · say · recap  (more in CP4: chunks, qa, lines…)
+ * Screens (giao diện v3, decisions #52–#57): splash → units → unit path → lesson roadmap → steps.
+ * Story steps: watch · explore · chunks · qa · recap · done. Practice steps: here (bubbles, pick, names, say, lid, answer)
+ * and in types-rw.js (choose, spell, build, sort, gaptext).
  */
 (function () {
   "use strict";
@@ -28,29 +30,6 @@
   const VER = window.EXPLORE_BUILD ? "?v=" + window.EXPLORE_BUILD : "";
   const ver = (u) => (u && !/^(data|blob):/.test(u) && !u.includes("?") ? u + VER : u);
   const img = (name) => ver((String(name).startsWith("@") ? "assets/" + name.slice(1) : L.img + name) + ".webp");   /* "@i1/img/x" = another lesson's picture */
-  const ICON = {
-    speaker: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 4V5L7 9H3z"/><path d="M15.5 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
-    mic: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4M8 21h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
-  };
-  /* Placeholder Kim (girl, yellow shirt, pigtails) until the illustrator's Kim exists */
-  /* Placeholder Kim puppet (girl, yellow shirt, pigtails) — arms move per pose.
-     Replaced automatically by drawn poses in assets/common/kim/kim-<pose>.png when they exist. */
-  const KIM_SVG = `<svg class="puppet" viewBox="0 0 120 200" width="100%" height="100%" aria-hidden="true">
-    <g class="legs" stroke="#e9b48f" stroke-width="9" stroke-linecap="round"><path d="M50 150v28"/><path d="M70 150v28"/></g>
-    <g fill="#fff" stroke="#3a2e29" stroke-width="2"><ellipse cx="48" cy="184" rx="11" ry="6"/><ellipse cx="72" cy="184" rx="11" ry="6"/></g>
-    <path d="M40 128h40l3 24H37z" fill="#4f7fc4" stroke="#3a2e29" stroke-width="2" stroke-linejoin="round"/>
-    <g class="arm armL"><path d="M40 86v40" stroke="#e9b48f" stroke-width="9" stroke-linecap="round"/><path d="M40 84v14" stroke="#f6c445" stroke-width="13" stroke-linecap="round"/></g>
-    <g class="arm armR"><path d="M80 86v40" stroke="#e9b48f" stroke-width="9" stroke-linecap="round"/><path d="M80 84v14" stroke="#f6c445" stroke-width="13" stroke-linecap="round"/></g>
-    <path d="M38 84q22-10 44 0l2 46H36z" fill="#f6c445" stroke="#3a2e29" stroke-width="2" stroke-linejoin="round"/>
-    <g class="head">
-      <circle cx="31" cy="46" r="11" fill="#5a3b2a"/><circle cx="89" cy="46" r="11" fill="#5a3b2a"/>
-      <circle cx="37" cy="40" r="4" fill="#e5534b"/><circle cx="83" cy="40" r="4" fill="#e5534b"/>
-      <circle cx="60" cy="52" r="26" fill="#ffdcc4" stroke="#3a2e29" stroke-width="2"/>
-      <path d="M34 50c0-20 12-28 26-28s26 8 26 28c-7-9-16-12-26-12s-19 3-26 12z" fill="#5a3b2a"/>
-      <g class="eyes" fill="#3a2e29"><ellipse cx="51" cy="54" rx="3" ry="3.6"/><ellipse cx="69" cy="54" rx="3" ry="3.6"/></g>
-      <circle cx="45" cy="62" r="4" fill="#f4a3a3" opacity=".7"/><circle cx="75" cy="62" r="4" fill="#f4a3a3" opacity=".7"/>
-      <path class="mouth" d="M53 64q7 6 14 0" fill="#c94f4f" stroke="#3a2e29" stroke-width="2" stroke-linecap="round"/>
-    </g></svg>`;
 
   /* ======================= Storage layer =======================
    * Prototype: localStorage. Later: swap these two functions for Firebase writes. */
@@ -79,7 +58,7 @@
     stop() {
       if (this.cur) { try { this.cur.pause(); } catch (e) {} this.cur.onended = null; this.cur = null; }
       if (window.speechSynthesis) speechSynthesis.cancel();
-      document.querySelectorAll(".speak.playing").forEach((b) => b.classList.remove("playing"));
+      document.querySelectorAll(".speak.playing, .px-spk.playing").forEach((b) => b.classList.remove("playing"));
     },
     rateMul: 1,
     file(src) {
@@ -121,67 +100,29 @@
   };
   if (window.speechSynthesis) speechSynthesis.onvoiceschanged = () => Audio_.pickVoices();
 
-  /* ======================= Kim helper ======================= */
-  const Kim = {
-    el: $("#kim"), bub: $("#kimBub"), btn: $("#kimBtn"), last: "", poseNow: "", imgs: {}, hideT: 0, backT: 0,
-    POSES: ["wave", "point", "cheer", "listen", "think"],
-    init() {
-      this.btn.innerHTML = KIM_SVG + '<img class="kimimg" alt="" hidden><img class="kimhead" alt="" hidden>';
-      this.btn.addEventListener("click", () => this.last && this.say(this.last));
-      /* any tap elsewhere puts the speech bubble away, so it never sits on what the child wants to touch */
-      document.addEventListener("pointerdown", (e) => { if (!this.el.contains(e.target)) this.bub.hidden = true; }, true);
-      /* use drawn poses when the files exist */
-      this.POSES.forEach((p) => { const im = new Image(); im.onload = () => { this.imgs[p] = im.src; if (this.poseNow) this.pose(this.poseNow, true); }; im.src = ver("assets/common/kim/kim-" + p + ".webp"); });
-      this.pose("idle");
-    },
-    /* idle · talk · cheer · listen · think · point */
-    pose(p, force) {
-      if (p === this.poseNow && !force) return;
-      this.poseNow = p;
-      const art = { idle: "wave", talk: "point", point: "point", cheer: "cheer", listen: "listen", think: "think" }[p] || "wave";
-      this.el.dataset.pose = p;
-      const im = this.btn.querySelector(".kimimg");
-      if (this.imgs[art]) { im.src = this.imgs[art]; im.hidden = false; this.btn.querySelector(".puppet").style.display = "none"; }
-      /* head-only version, used where Kim just "talks" from the corner (scenes, home screens) */
-      const hd = this.btn.querySelector(".kimhead");
-      if (this.imgs[art]) { hd.src = ver("assets/common/kim/kim-head-" + art + ".webp"); hd.hidden = false; }
-    },
-    moodOf(text) {
-      if (/\b(great|well done|super|yes!|hooray|good job|good!)/i.test(text)) return "cheer";
-      if (/try again|can't hear|don't forget|full sentence|again\.|look at the (shadow|picture) again/i.test(text)) return "think";
-      return "talk";
-    },
-    async say(text, { silent = false } = {}) {
-      this.last = text; this.bub.textContent = text; this.bub.hidden = false;
-      clearTimeout(this.hideT); clearTimeout(this.backT);
-      const mood = this.moodOf(text);
-      this.pose(mood); this.el.classList.add("talking");
-      const intro = document.body.classList.contains("kim-intro");
-      if (!silent) await Audio_.speak(text, "kim");
-      this.el.classList.remove("talking");
-      /* exercise screens: Kim (head + text) only reads the opening instruction, then leaves */
-      if (intro) { clearTimeout(this.introT); this.introT = setTimeout(() => document.body.classList.remove("kim-intro"), silent ? 2500 : 900); }
-      this.backT = setTimeout(() => { if (this.poseNow !== "listen") this.pose("idle"); }, mood === "cheer" ? 1400 : 600);
-      this.hideT = setTimeout(() => (this.bub.hidden = true), 3500);
-    },
-    /* small standing Kim for the map */
-    mini() {
-      const d = h("span", { class: "kimmini" });
-      if (this.imgs.wave) d.append(h("img", { src: this.imgs.wave, alt: "" })); else d.innerHTML = KIM_SVG;
-      return d;
-    },
-    hide() { this.bub.hidden = true; this.el.classList.remove("talking"); clearTimeout(this.backT); this.pose("idle"); this.dock(null); },
-    /* Layout v2: on scene screens Kim's head sits in a reserved slot at the left end of the dock */
-    slotEl: null,
-    dock(el) { this.slotEl = el; this.el.classList.toggle("slotted", !!el); if (!el) { ["left", "top", "bottom", "width", "height"].forEach((k) => (this.el.style[k] = "")); this.el.classList.remove("bub-up", "bub-down"); } else requestAnimationFrame(() => this.place()); },
-    place() {
-      const s = this.slotEl; if (!s) return;
-      if (!s.isConnected) return this.dock(null);
-      const r = s.getBoundingClientRect(); if (!r.width) return;
-      Object.assign(this.el.style, { left: r.left + "px", top: r.top + "px", bottom: "auto", width: r.width + "px", height: r.height + "px" });
-    }
+  /* ======================= Kim (v3 · decision #56) =======================
+   * Full body only on the splash. Her round HEAD: the Watch caption (tap = hear the line again), the roadmap
+   * "you are here" marker, celebrating on the Done screen. Explore and practice: her voice only. */
+  const kimArt = (pose) => ver("assets/common/kim/kim-" + pose + ".webp");
+  const kimHead = (pose = "point", cls = "") => h("span", { class: "kh " + cls, style: `background-image:url("${kimArt("head-" + pose)}")`, "aria-hidden": "true" });
+  const kimVoice = (text) => (text ? Audio_.speak(text, "kim") : Promise.resolve());
+  /* small UI icons (stroke style, currentColor) */
+  const UI = {
+    map: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z"/><path d="M9 4v13.5M15 6.5V20"/></svg>',
+    menu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
+    back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
+    next: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>',
+    play: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.2-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>',
+    tap: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V11m0-1.5a1.5 1.5 0 0 1 3 0V11m0-.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-1a6 6 0 0 1-5-2.7L3.6 15a1.5 1.5 0 0 1 2.4-1.8L9 15"/></svg>',
+    cards: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/></svg>',
+    star: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z"/></svg>',
+    ear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M7 9a5 5 0 0 1 10 0c0 3-3 3.5-3 6.5a3 3 0 0 1-5.5 1.6"/><path d="M10 9.5a2 2 0 0 1 4 0"/></svg>',
+    mic: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="8.5" y="2" width="7" height="12.5" rx="3.5"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M12 17.5V21" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+    book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 5.5C5.5 4.5 9 4.5 12 6.5c3-2 6.5-2 9-1V19c-2.5-1-6-1-9 1-3-2-6.5-2-9-1z"/><path d="M12 6.5V20"/></svg>',
+    pen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1-4.5L16 4.5a2.1 2.1 0 0 1 3 3L8 18.5z"/><path d="M14 6.5l3 3"/></svg>',
+    lock: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 10V8a5 5 0 0 1 10 0v2h.5A1.5 1.5 0 0 1 19 11.5v8a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 19.5v-8A1.5 1.5 0 0 1 6.5 10zm2 0h6V8a3 3 0 0 0-6 0z"/></svg>'
   };
-  window.addEventListener("resize", () => Kim.place());
+  const iconBtn = (cls, icon, label, onclick) => h("button", { class: cls, type: "button", "aria-label": label, title: label, html: icon, onclick });
 
   /* ======================= Flow / progress ======================= */
   /* Steps of the open lesson. A practice step whose skill the lesson does not teach is skipped (and reported to the author). */
@@ -196,26 +137,21 @@
   }
   let idx = 0, cleanup = null, runId = 0;
   const main = $("#main");
-
-  function renderProgress() {
-    const p = $("#progress"); p.innerHTML = "";
-    const block = steps[idx].block;
-    steps.forEach((s, i) => { if (s.block === block) p.append(h("i", { class: i < idx ? "done" : i === idx ? "now" : "", title: s.title })); });
-    const phase = ["watch", "explore", "chunks", "qa"].includes(steps[idx].type) ? "Review" : steps[idx].type === "recap" ? "Words" : steps[idx].type === "done" ? "Done" : "Practice";
-    $("#tag").innerHTML = `${L.id} · <b>${block.name}</b> · ${phase}`;
+  /* every screen starts here: stop what runs, clear the page; body[data-view] names the screen (v3 = white DOL frame) */
+  function screen(view) {
+    runId++; Audio_.stop();
+    if (cleanup) { try { cleanup(); } catch (e) {} cleanup = null; }
+    document.querySelectorAll(".overlay").forEach((o) => o.remove());
+    main.innerHTML = "";
+    document.body.className = "v3"; document.body.dataset.view = view;
   }
   function go(i) {
-    runId++; Audio_.stop(); Kim.hide(); clearTimeout(Kim.introT);
-    document.body.classList.add("kim-intro");
-    if (cleanup) { try { cleanup(); } catch (e) {} cleanup = null; }
     idx = Math.max(0, Math.min(steps.length - 1, i));
-    main.innerHTML = ""; renderProgress();
-    document.body.dataset.view = steps[idx].type; document.body.classList.remove("contain");
-    try { history.replaceState(null, "", "#" + L.id.toLowerCase() + "--" + steps[idx].id); } catch (e) {}
-    cleanup = TYPES[steps[idx].type](steps[idx], runId) || null;
-    document.body.classList.toggle("framed", FRAME.includes(steps[idx].type));
-    document.body.classList.toggle("aa-on", AA.on);
-    if (FRAME.includes(steps[idx].type)) taskbar(steps[idx]);
+    const s = steps[idx];
+    screen(s.type);
+    if (Prog.blockSteps(s.block)[0] === s) Prog.started(s.block.id);
+    try { history.replaceState(null, "", "#" + L.id.toLowerCase() + "--" + s.id); } catch (e) {}
+    cleanup = TYPES[s.type](s, runId) || null;
   }
   /* ---- progress: which steps are done (kept with results; Firebase later) ---- */
   const Prog = {
@@ -225,86 +161,352 @@
     blockSteps(b) { return steps.filter((s) => s.block === b); },
     count(b) { return this.blockSteps(b).filter((s) => this.isDone(s.id)).length; },
     complete(b) { const st = this.blockSteps(b); return st.length > 0 && st.every((s) => this.isDone(s.id)); },
-    stars(b) {
-      const rs = this.blockSteps(b).filter((s) => s.skill).map((s) => Results.get(s.id)).filter(Boolean)
+    /* a part opens when the part before it is complete; inside a part, a step opens when every step before it is done */
+    blockOpen(b) { const k = L.blocks.indexOf(b); return k <= 0 || L.blocks.slice(0, k).every((p) => !this.blockSteps(p).length || this.complete(p)); },
+    stepOpen(s) { if (this.isDone(s.id)) return true; if (!this.blockOpen(s.block)) return false; const st = this.blockSteps(s.block); return st.slice(0, st.indexOf(s)).every((x) => this.isDone(x.id)); },
+    current() { return steps.find((s) => !this.isDone(s.id) && this.stepOpen(s)) || null; },
+    /* practice results of a part: first-try share of every scored item (total 0 = all skipped with "Can't speak now" → not counted) */
+    rates(b) {
+      return this.blockSteps(b).filter((s) => s.skill).map((s) => Results.get(s.id)).filter((r) => r && r.total > 0)
         .map((r) => (r.firstTry != null ? r.firstTry : r.said) / r.total);
-      if (!rs.length) return 0;
+    },
+    stars(b) {
+      const rs = this.rates(b); if (!rs.length) return 0;
       const avg = rs.reduce((a, x) => a + x, 0) / rs.length;
       return avg >= 0.9 ? 3 : avg >= 0.6 ? 2 : 1;
-    }
+    },
+    /* time spent on a part: from opening its first step to its last screen */
+    started(bid) { (Results.data._t = Results.data._t || {})[bid] = Date.now(); Store.save(Results.data); },
+    elapsed(bid) { const t = (Results.data._t || {})[bid]; const ms = t ? Date.now() - t : 0; return ms > 0 && ms < 3 * 3600e3 ? ms : 0; }
   };
-  /* finishing a step: go on inside the block, or back to the map when the block ends */
+  /* finishing a step: go on inside the part, or back to the roadmap when the part ends */
   const next = () => {
-    Prog.mark(steps[idx].id);
+    const s = steps[idx];
+    Prog.mark(s.id);
     const n = steps[idx + 1];
-    if (!n || n.block !== steps[idx].block) showMap({ justDone: steps[idx].block.id });
+    if (!n || n.block !== s.block) showMap({ justDone: s.block.id, from: s.id });
     else go(idx + 1);
   };
   const alive = (r) => r === runId;
 
-  /* ======================= MAP (lesson home) ======================= */
+  /* ======================= Road: unit path (N3) + lesson roadmap (N4) — decisions #53, #56 =======================
+   * One design for every screen, only stretched: portrait → one winding column; landscape → rows that snake
+   * left→right / right→left (on the roadmap each part starts a new row). Items are placed by their centre;
+   * the SVG road is a smooth curve through the centres. Re-laid out on every resize. */
+  const SVGNS = "http://www.w3.org/2000/svg";
+  const clampN = (a, x, b) => Math.max(a, Math.min(b, x));
+  /* background of the nav screens: a people-free theme scene, blurred evenly + washed (configurable: catalog / lesson pack `bg`) */
+  const BG_FALLBACK = "assets/i1/img/cart-rice.webp";
+  function navBg(src) {
+    return h("div", { class: "nv-bg", "aria-hidden": "true" }, h("div", { class: "nv-bgimg", style: `background-image:url("${ver(src || BG_FALLBACK)}")` }), h("div", { class: "nv-wash" }));
+  }
+  function navTop(title, back, extra) {
+    return h("div", { class: "nv-top" }, back ? iconBtn("nv-ib nv-back", UI.back, "Back", back) : null, h("b", { class: "nv-title" }, title), h("span", { class: "nv-sp" }), extra || null,
+      iconBtn("nv-ib nv-menu", UI.menu, "All steps (teachers)", openMenu));
+  }
+  /* items: [{ el, d (circle / frame size), big, row (starts a new row in landscape), bottom (extra px under the item: flag, label) }] */
+  function road(scroller, items, cfg) {
+    const wrap = h("div", { class: "nv-road" });
+    const svg = document.createElementNS(SVGNS, "svg"); svg.setAttribute("class", "nv-path"); svg.setAttribute("aria-hidden", "true");
+    wrap.append(svg); items.forEach((it) => wrap.append(it.el));
+    scroller.append(wrap);
+    const api = { wrap, items, land: false, onLayout: null };
+    function layout() {
+      const W = scroller.clientWidth, H = scroller.clientHeight; if (!W || !H) return;
+      const land = W > H * 1.05 && W >= 560; api.land = land;
+      cfg.size(items, W, H, land);   /* sets it.d / it.bottom / it.top */
+      const pts = [];
+      let total;
+      if (!land) {
+        const cx = W / 2, amp = Math.min(W * cfg.amp, cfg.ampMax);
+        let y = cfg.padTop, side = cfg.firstSide || 1, prev = null;
+        items.forEach((it) => {
+          if (prev) y += prev.d / 2 + (prev.bottom || 0) + cfg.gap(prev, it) + it.d / 2 + (it.top || 0);
+          else y += it.d / 2 + (it.top || 0);
+          if (it.big) { it.x = cx; side = 1; } else { it.x = cx + side * amp; side = -side; }
+          it.y = y; prev = it;
+        });
+        total = y + prev.d / 2 + (prev.bottom || 0) + cfg.padBottom;
+      } else {
+        /* rows: a new row where an item asks for it, or when the row is full */
+        const padX = cfg.padX(W), Wa = W - 2 * padX;
+        const pitch = (it) => it.pitch || (it.big ? it.d + cfg.bigGap : it.d + cfg.smallGap(it));
+        const rows = [];
+        items.forEach((it) => {
+          const r = rows[rows.length - 1];
+          if (!r || (it.row && r.length) || r.reduce((a, x) => a + pitch(x), 0) + pitch(it) > Wa) rows.push([it]); else r.push(it);
+        });
+        let y = cfg.padTopLand;
+        rows.forEach((r, k) => {
+          const sum = r.reduce((a, x) => a + pitch(x), 0);
+          const scale = Math.min(Wa / sum, cfg.stretch);
+          let x = padX + (Wa - sum * scale) / 2;
+          const wob = cfg.wobble(r);
+          const up = Math.max(...r.map((it) => it.d / 2 + (it.top || 0) + (it.big ? 0 : wob))), down = Math.max(...r.map((it) => it.d / 2 + (it.bottom || 0) + (it.big ? 0 : wob)));
+          y += up;
+          let s = 0;
+          r.forEach((it) => {
+            const p = pitch(it) * scale;
+            it.x = x + p / 2; x += p;
+            if (k % 2) it.x = W - it.x;   /* snake */
+            it.y = y + (it.big ? 0 : (s++ % 2 ? wob : -wob));
+          });
+          y += down + (k < rows.length - 1 ? cfg.rowGap : 0);
+        });
+        total = y + (cfg.padBottomLand || cfg.padBottom);
+        api.rows = rows;
+      }
+      /* centre the whole road when it is shorter than the screen */
+      const off = Math.max(0, (H - total) / 2);
+      items.forEach((it) => { it.y += off; });
+      total = Math.max(total, H);
+      wrap.style.height = total + "px";
+      items.forEach((it) => Object.assign(it.el.style, { left: it.x - it.d / 2 + "px", top: it.y - it.d / 2 + "px", width: it.d + "px", height: it.d + "px" }));
+      /* the road: lead in, through every centre (U-turns between landscape rows), lead out */
+      const f = items[0], l = items[items.length - 1];
+      if (!land) pts.push([f.x, f.y - f.d / 2 - 60]);
+      else pts.push([f.x - 90, f.y]);
+      items.forEach((it, k) => {
+        const nx = items[k + 1];
+        pts.push([it.x, it.y]);
+        if (land && nx && Math.abs(nx.y - it.y) > it.d && Math.abs(nx.x - it.x) < it.d * 2) {
+          const dir = it.x > W / 2 ? 1 : -1, turn = Math.min(cfg.padX(W) * 0.8, 70);
+          const edge = (dir > 0 ? Math.max(it.x, nx.x) : Math.min(it.x, nx.x)) + dir * turn;
+          pts.push([Math.max(10, Math.min(W - 10, edge)), (it.y + nx.y) / 2]);
+        }
+      });
+      if (!land) pts.push([l.x, l.y + l.d / 2 + (l.bottom || 0) + 40]);
+      else pts.push([l.x + (l.x > W / 2 ? 90 : -90), l.y]);
+      let d = `M${pts[0][0]},${pts[0][1]}`;
+      for (let i = 0; i < pts.length - 1; i++) {
+        const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)];
+        d += ` C${p1[0] + (p2[0] - p0[0]) / 6},${p1[1] + (p2[1] - p0[1]) / 6} ${p2[0] - (p3[0] - p1[0]) / 6},${p2[1] - (p3[1] - p1[1]) / 6} ${p2[0]},${p2[1]}`;
+      }
+      const rw = cfg.roadW(items);
+      svg.setAttribute("viewBox", `0 0 ${W} ${total}`); svg.setAttribute("width", W); svg.setAttribute("height", total);
+      svg.innerHTML = `<path class="edge" d="${d}" stroke-width="${rw + 8}"/><path class="lane" d="${d}" stroke-width="${rw}"/><path class="dash" d="${d}" stroke-width="${Math.max(3, rw / 9)}" stroke-dasharray="${rw * 0.5} ${rw * 0.45}"/>`;
+      if (api.onLayout) api.onLayout(W, total);
+    }
+    const ro = window.ResizeObserver ? new ResizeObserver(() => layout()) : null;
+    if (ro) ro.observe(scroller); else window.addEventListener("resize", layout);
+    layout();
+    api.layout = layout;
+    api.stop = () => { if (ro) ro.disconnect(); else window.removeEventListener("resize", layout); };
+    return api;
+  }
+  /* Kim's head as the "you are here" pin: round, red ring, small tail pointing at the node */
+  function kimPin(say) {
+    const pin = h("button", { class: "nv-kim", type: "button", "aria-label": "Kim" }, kimHead("point"), h("i", { class: "tail" }));
+    pin.onclick = () => { pin.classList.add("talk"); playSafe(() => kimVoice(say())).then(() => pin.classList.remove("talk")); };
+    return pin;
+  }
+  /* place the pin beside an item: "side" (outer side, falls back to the other one), "above", or "corner" (top-right, overlapping) */
+  function placePin(pin, it, where, W) {
+    const kd = pin.offsetWidth || 60, gap = 8;
+    let left, top, side = it.x < W / 2 ? -1 : 1;
+    if (where === "side") {
+      if (side > 0 && it.x + it.d / 2 + gap + kd > W - 6) side = -1;
+      if (side < 0 && it.x - it.d / 2 - gap - kd < 6) side = 1;
+      left = side > 0 ? it.x + it.d / 2 + gap : it.x - it.d / 2 - gap - kd;
+      top = it.y - kd * 0.92;
+    } else if (where === "above") { left = it.x - kd / 2; top = it.y - it.d / 2 - kd - 14; side = 0; }
+    else {
+      side = it.x + it.d * 0.2 + kd > W - 6 ? -1 : 1;
+      left = side > 0 ? it.x + it.d * 0.2 : it.x - it.d * 0.2 - kd; top = it.y - it.d / 2 - kd * 0.8;
+    }
+    pin.style.left = left + "px"; pin.style.top = top + "px";
+    pin.dataset.side = side > 0 ? "r" : side < 0 ? "l" : "c";
+    return side;
+  }
+
+  /* ======================= Units (N2) ======================= */
+  const sumOf = (id) => { try { return JSON.parse(localStorage.getItem("explore-hw:sum:" + id)) || null; } catch (e) { return null; } };
+  function showUnits() {
+    screen("units");
+    try { history.replaceState(null, "", "#units"); } catch (e) {}
+    const ready = CAT.units.filter((u) => u.ready), soon = CAT.units.filter((u) => !u.ready);
+    const page = h("div", { class: "nv-units" });
+    const head = h("div", { class: "nv-uhead" }, h("h1", {}, "My units"), iconBtn("nv-ib nv-menu", UI.menu, "Teachers", openMenu));
+    const cards = h("div", { class: "nv-ucards" });
+    ready.forEach((u) => {
+      const ls = u.lessons || [];
+      const done = ls.filter((l) => (sumOf(l.id) || {}).complete).length;
+      const go = () => showUnit(u.id);
+      const card = h("div", { class: "nv-ucard" },
+        h("button", { class: "nv-ucover", type: "button", "aria-label": "Unit " + u.id + " · " + u.title, onclick: go, style: `background-image:url("${ver(u.cover)}")` }),
+        h("div", { class: "nv-ubody" },
+          h("span", { class: "nv-tag" }, `UNIT ${u.id} · ${ls.length} LESSONS`),
+          h("b", { class: "nv-utitle" }, u.title),
+          h("span", { class: "nv-bar", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(ls.length), "aria-valuenow": String(done) }, h("i", { style: `width:${ls.length ? Math.max(4, (done / ls.length) * 100) : 0}%` })),
+          h("small", { class: "nv-ucount" }, `${done} / ${ls.length} lessons`),
+          h("button", { class: "nv-btn red", type: "button", onclick: go }, "CONTINUE")));
+      cards.append(card);
+    });
+    const tiles = h("div", { class: "nv-soon" });
+    soon.forEach((u) => tiles.append(h("div", { class: "nv-stile", "aria-label": "Unit " + u.id + " · coming soon" }, h("b", {}, u.id), h("span", {}, u.title))));
+    page.append(head, h("div", { class: "nv-ugrid" }, cards, h("div", { class: "nv-soonbox" }, h("span", { class: "nv-sub" }, "COMING SOON"), tiles)));
+    main.append(page);
+  }
+
+  /* ======================= Unit path (N3): the lessons of a unit on a road ======================= */
+  function showUnit(uid) {
+    const u = CAT.units.find((x) => x.id === uid);
+    if (!u || !u.ready) return showUnits();
+    screen("unit");
+    try { history.replaceState(null, "", "#unit-" + uid.toLowerCase()); } catch (e) {}
+    const scroller = h("div", { class: "nv-scroll" });
+    main.append(navBg(u.bg), navTop(`Unit ${u.id} · ${u.title}`, showUnits), scroller);
+    let cur = null;
+    const items = u.lessons.map((l, k) => {
+      const sum = sumOf(l.id), done = !!(sum && sum.complete);
+      const now = l.ready && !done && !cur; if (now) cur = l.id;
+      const st = !l.ready ? "lock" : done ? "done" : now ? "now" : "open";
+      const label = h("span", { class: "nv-llabel" }, h("small", {}, "LESSON " + (k + 1)), h("b", {}, l.title));
+      const btn = h("button", { class: "nv-lesson " + st, type: "button", "aria-label": `Lesson ${k + 1} · ${l.title}` + (done ? " · done" : ""), disabled: !l.ready },
+        h("span", { class: "pic", style: `background-image:url("${ver(l.cover || u.cover)}")` }));
+      btn.onclick = () => openLesson(l.id);
+      const el = h("div", { class: "nv-item" }, btn, label, done ? h("span", { class: "nv-star", html: UI.star }) : null, now ? h("span", { class: "nv-start" }, "START") : null);
+      return { el, label, id: l.id, now };
+    });
+    const R = road(scroller, items, {
+      size(its, W, H, land) {
+        const d = land ? clampN(84, H * 0.26, 150) : clampN(92, W * 0.29, 140);
+        /* landscape: every lesson in one row when the labels still get ≥ 140 px */
+        const pitch = land ? clampN(140, (W - 2 * Math.max(40, W * 0.06)) / its.length, 260) : 0;
+        its.forEach((it) => { it.d = d; it.top = d * 0.12; it.bottom = land ? 64 : d * 0.12; it.pitch = Math.max(pitch, d + 30) || 0; });
+      },
+      amp: 0.2, ampMax: 170, firstSide: -1, padTop: 70, padBottom: 34, gap: (a) => a.d * 0.32,
+      padX: (W) => Math.max(40, W * 0.06), padTopLand: 74, bigGap: 0, smallGap: (it) => Math.max(70, 220 - it.d), stretch: 2.2, rowGap: 40,
+      wobble: (r) => r[0].d * 0.22, roadW: (its) => clampN(26, its[0].d * 0.3, 42)
+    });
+    const pin = kimPin(() => "Choose a lesson!");
+    R.wrap.append(pin);
+    R.onLayout = (W) => {
+      items.forEach((it) => {
+        const side = R.land ? "b" : it.x < W / 2 ? "r" : "l";
+        it.label.className = "nv-llabel " + side;
+        it.label.style.maxWidth = (R.land ? Math.min(220, W / items.length - 16) : side === "r" ? W - it.x - it.d / 2 - 30 : it.x - it.d / 2 - 30) + "px";
+      });
+      const c = items.find((it) => it.now);
+      pin.hidden = !c; if (c) placePin(pin, c, "corner", W);
+    };
+    R.layout();
+    const c = items.find((it) => it.now);
+    if (c) requestAnimationFrame(() => scrollToItem(scroller, c));
+    cleanup = () => R.stop();
+  }
+  function scrollToItem(scroller, it) { const t = it.y - scroller.clientHeight / 2; if (t > 0) scroller.scrollTo({ top: t, behavior: "auto" }); }
+
+  /* ======================= Lesson roadmap (N4) ======================= */
+  /* the picture on a step's node: a food / item from the step where possible (each used once), else an icon for its kind */
+  function stepIcons() {
+    const used = new Set(), out = new Map();
+    const wimg = (id) => L.words[id] && L.words[id].img;
+    const okPic = (n) => n && /(^|\/)(food|item|icon)-/.test(n);
+    const pool = (s) => {
+      const c = [];
+      const add = (x) => { if (!x) return; if (typeof x === "string") c.push(wimg(x) || x); else if (Array.isArray(x)) x.forEach(add); else { add(x.word); add(x.answer && typeof x.answer === "string" ? x.answer : null); add(x.food); add(x.foods); add(x.plate); add(x.img); add(x.imgs); add(x.tray); if (x.prompt) add(x.prompt.img); ["say", "a", "short", "text"].forEach((k) => typeof x[k] === "string" && said(x[k])); if (x.line) said(x.line.text); } };
+      /* foods named in a sentence ("He's eating a burger.") */
+      const said = (t) => { const low = " " + t.toLowerCase().replace(/[^a-z ]/g, " ") + " "; Object.keys(L.words).forEach((id) => { const w = L.words[id], lab = w.label.replace(/^(an?|the) /, "").toLowerCase(); if (low.includes(" " + lab + " ")) c.push(w.img); }); };
+      if (s.icon) c.push(s.icon);
+      if (s.type === "watch") (s.cues || []).forEach((q) => add(q.food ? q.food : q.line ? { line: q.line } : null));
+      if (s.type === "explore" && L.street) L.street.carts.forEach((k) => add(k.foods));
+      add(s.targets); add(s.items); add(s.foods); add(s.cards); add(s.kids); add(s.words);
+      return c.filter(okPic);
+    };
+    const kind = (s) => s.type === "watch" ? UI.play : ["explore", "chunks", "qa"].includes(s.type) ? UI.tap : s.type === "recap" ? UI.cards : s.type === "done" ? UI.star
+      : s.skill === "S" ? UI.mic : s.skill === "R" ? UI.book : s.skill === "W" ? UI.pen : UI.ear;
+    steps.forEach((s) => {
+      const pic = s.type === "done" || s.type === "recap" ? null : pool(s).find((n) => !used.has(n));
+      if (pic) used.add(pic);
+      out.set(s, pic ? { img: pic } : { svg: kind(s) });
+    });
+    return out;
+  }
   function showMap(opts = {}) {
-    runId++; Audio_.stop(); Kim.hide();
-    if (cleanup) { try { cleanup(); } catch (e) {} cleanup = null; }
-    main.innerHTML = "";
-    document.body.dataset.view = "map"; document.body.classList.remove("contain"); document.body.classList.add("framed");
+    screen("map");
     try { history.replaceState(null, "", "#" + L.id.toLowerCase()); } catch (e) {}
+    const meta = lessonMeta(L.id);
     const plan = L.plan || L.blocks.map((b) => ({ id: b.id, label: b.name }));
     const blockOf = (id) => L.blocks.find((b) => b.id === id);
-    /* top bar shows the whole lesson: one segment per part */
-    const p = $("#progress"); p.innerHTML = "";
-    plan.forEach((n) => { const b = blockOf(n.id); p.append(h("i", { class: b && Prog.complete(b) ? "done" : "", title: n.label })); });
-    $("#tag").innerHTML = `${L.id} · <b>${L.title}</b>`;
-
-    const map = h("div", { class: "map" });
-    const unitId = L.id.charAt(0);
-    const head = h("div", { class: "maphead" },
-      h("button", { class: "backlink", onclick: () => showUnit(unitId) }, "← Unit " + unitId),
-      h("span", { class: "eyebrow" }, L.subtitle), h("h1", {}, L.title));
-    const path = h("div", { class: "mappath" });
-    const road = "M32 50 C 32 100, 68 100, 68 150 S 32 200, 32 250 C 32 275, 50 285, 50 312";
-    path.innerHTML = `<svg class="trail" viewBox="0 0 100 300" preserveAspectRatio="none" aria-hidden="true">
-      <path class="edge" d="${road}"/><path class="road" d="${road}"/><path class="stones" d="${road}"/><path class="mid" d="${road}"/></svg>`;
-    /* a few foods dropped along the road, from this unit's own pictures */
-    (L.mapDeco || []).forEach((d) => { const el = h("img", { class: "deco", src: img(d.img), alt: "" }); Object.assign(el.style, { left: d.x + "%", top: d.y + "%", transform: `rotate(${d.r || 0}deg)` }); path.append(el); });
-    let current = null;
+    const cur = Prog.current();
+    const icons = stepIcons();
+    const items = [];
+    const allDone = plan.every((n) => { const b = blockOf(n.id); return b && Prog.complete(b); });
     plan.forEach((n, k) => {
       const b = blockOf(n.id);
-      const prev = k > 0 ? blockOf(plan[k - 1].id) : null;
-      const open = b && !n.soon && (k === 0 || (prev && Prog.complete(prev)));
-      const done = b && Prog.complete(b);
-      const total = b ? Prog.blockSteps(b).length : 1;
-      const got = b ? Prog.count(b) : 0;
-      if (open && !done && !current) current = n.id;
-      const stall = h("span", { class: "stall" }, h("span", { class: "awning" }), h("span", { class: "board" }, h("img", { src: img(n.img), alt: "" })));
-      if (n.awning) stall.style.setProperty("--aw", n.awning);
-      const badge = h("span", { class: "nbadge" }, done ? "✓" : !open ? "🔒" : String(k + 1));
+      const has = b && !n.soon && Prog.blockSteps(b).length;
+      const open = has && Prog.blockOpen(b), done = has && Prog.complete(b);
+      const st = done ? "done" : open ? "open" : "lock";
       const sc = done ? Prog.stars(b) : 0;
-      const pips = h("span", { class: "pips", "aria-label": `${got} of ${total} steps done` });
-      for (let q = 0; q < total; q++) pips.append(h("i"));
-      const stars = done ? h("span", { class: "nstars", "aria-label": sc + " stars" }, "★".repeat(sc), h("span", { class: "off" }, "★".repeat(3 - sc)))
-        : n.soon ? h("span", { class: "nsoon" }, "Coming soon") : pips;
-      const node = h("button", { class: "node" + (done ? " done" : "") + (open ? " open" : " locked") + (k % 2 ? " right" : " left"), disabled: !open && !done, "aria-label": n.label },
-        h("span", { class: "nbtn" }, stall, badge), h("span", { class: "nlabel" }, n.label), stars);
-      node.dataset.id = n.id;
-      const frac = done ? 1 : got / total;
-      const animate = opts.justDone === n.id;
-      const fill = (k2) => pips.querySelectorAll("i").forEach((e, q) => e.classList.toggle("on", q < k2));
-      if (animate) { node.classList.add("celebrate"); }
-      if (!done && !n.soon) {
-        if (opts.from === n.id) { fill(0); pips.querySelectorAll("i").forEach((e, q) => q < got && setTimeout(() => e.classList.add("on"), 300 + q * 180)); }
-        else fill(got);
-      }
-      node.onclick = () => {
-        if (!b || (!open && !done)) return;
-        const st = Prog.blockSteps(b);
-        const resume = done ? st[0] : st.find((s) => !Prog.isDone(s.id)) || st[0];
-        go(steps.indexOf(resume));
+      const frame = h("button", { class: "nv-mile " + st + (opts.justDone === n.id ? " pop" : ""), type: "button", "aria-label": `${k + 1} · ${n.label}` + (done ? " · done" : open ? "" : " · locked") },
+        h("span", { class: "pic", style: `background-image:url("${img(n.frame || n.img)}")` }));
+      const mile = h("div", { class: "nv-item nv-mileitem " + st }, frame,
+        h("span", { class: "flag" }, `${k + 1} · ${String(n.label).toUpperCase()}`),
+        done ? h("span", { class: "stars", "aria-label": sc + " stars" }, "★".repeat(sc), h("span", { class: "off" }, "★".repeat(3 - sc))) : null);
+      frame.onclick = () => {
+        if (!open && !done) return nudge(mile);
+        const ss = Prog.blockSteps(b);
+        go(steps.indexOf(done ? ss[0] : ss.find((s) => !Prog.isDone(s.id)) || ss[0]));
       };
-      path.append(node);
+      items.push({ el: mile, big: true, row: true });
+      if (!has) return;
+      Prog.blockSteps(b).forEach((s) => {
+        const sd = Prog.isDone(s.id), now = s === cur, op = Prog.stepOpen(s);
+        const ic = icons.get(s);
+        const btn = h("button", { class: "nv-node " + (sd ? "done" : now ? "now" : op ? "open" : "lock"), type: "button", "aria-label": `${n.label} · ${s.title}` + (sd ? " · done" : op ? "" : " · locked") },
+          ic.img ? h("img", { src: img(ic.img), alt: "" }) : h("span", { class: "ico", html: ic.svg }));
+        const el = h("div", { class: "nv-item" }, btn, sd ? h("span", { class: "nv-chk" }, "✓") : null);
+        el.dataset.step = s.id;
+        btn.onclick = () => (op ? go(steps.indexOf(s)) : nudge(el));
+        items.push({ el, s, now });
+      });
     });
-    map.append(head, path);
-    main.append(map);
+    const scroller = h("div", { class: "nv-scroll" });
+    const total = allDone ? plan.reduce((t, n) => t + (blockOf(n.id) ? Prog.stars(blockOf(n.id)) : 0), 0) : 0;
+    const badge = allDone ? h("span", { class: "nv-done" + (opts.justDone ? " pop" : "") }, h("span", { html: UI.star }), `${total} / ${plan.length * 3}`) : null;
+    main.append(navBg(L.bg || (meta && meta.bg)), navTop(L.subtitle || L.title, () => showUnit(L.id.charAt(0)), badge), scroller);
+    const R = road(scroller, items, {
+      size(its, W, H, land) {
+        const dM = land ? clampN(96, H * 0.19, 170) : clampN(120, W * 0.38, 190), dn = land ? clampN(52, H * 0.095, 80) : clampN(56, W * 0.17, 80);
+        its.forEach((it) => { it.d = it.big ? dM : dn; it.bottom = it.big ? 30 + (it.el.querySelector(".stars") ? 22 : 0) : 0; it.top = 0; });
+      },
+      amp: 0.2, ampMax: 150, firstSide: 1, padTop: 26, padBottom: 40,
+      gap: (a, b) => (a.big || b.big ? 30 : a.d * 0.32),
+      padX: (W) => Math.max(44, W * 0.05), padTopLand: 76, padBottomLand: 20, bigGap: 70, smallGap: (it) => it.d * 0.75, stretch: 1.6, rowGap: 30,
+      wobble: (r) => Math.min(...r.map((it) => it.d)) * 0.25, roadW: (its) => clampN(24, its.find((x) => !x.big) ? its.find((x) => !x.big).d * 0.46 : 30, 40)
+    });
+    /* START tag + Kim pin at the current step */
+    const label = (id) => (plan.find((n) => n.id === id) || {}).label;
+    const curPart = cur ? cur.block.id : null;
+    const msg = () => allDone ? (L.finishLine || "Hooray! You finished Food Street!")
+      : opts.justDone ? (curPart ? `Great job! Now let's do ${label(curPart)}!` : "Well done! More is coming soon!")
+      : curPart ? `Tap ${label(curPart)} to start!` : "Well done! More is coming soon!";
+    const tag = h("span", { class: "nv-starttag" }, "START");
+    const pin = kimPin(msg);
+    R.wrap.append(tag, pin);
+    const at = items.find((it) => it.now);
+    const from = opts.from && items.find((it) => it.s && it.s.id === opts.from);
+    /* coming back from a finished part: the pin starts at the last step and slides along to the next one */
+    let first = true, sliding = false;
+    R.onLayout = (W) => {
+      tag.hidden = pin.hidden = !at;
+      if (!at) return;
+      const where = R.land ? "above" : "side";
+      if (first && from && from !== at) {
+        placePin(pin, from, where, W); sliding = true;
+        setTimeout(() => { pin.classList.add("slide"); placePin(pin, at, where, R.wrap.clientWidth); setTimeout(() => { sliding = false; pin.classList.remove("slide"); }, 950); }, 600);
+      } else if (!sliding) placePin(pin, at, where, W);
+      first = false;
+      /* START: on the inner side of the node (portrait), under it (landscape) */
+      const tw = tag.offsetWidth || 70, th = tag.offsetHeight || 30;
+      const side = pin.dataset.side;
+      if (R.land) { tag.style.left = at.x - tw / 2 + "px"; tag.style.top = at.y + at.d / 2 + 10 + "px"; tag.dataset.side = "b"; }
+      else { const s = side === "r" ? -1 : 1; tag.style.left = (s > 0 ? at.x + at.d / 2 + 12 : at.x - at.d / 2 - 12 - tw) + "px"; tag.style.top = at.y - th / 2 + "px"; tag.dataset.side = s > 0 ? "r" : "l"; }
+    };
+    R.layout();
+    if (at) requestAnimationFrame(() => scrollToItem(scroller, at));
+    cleanup = () => R.stop();
     /* summary for the unit screen */
     try {
       const bl = plan.map((n) => blockOf(n.id)).filter(Boolean);
@@ -312,905 +514,613 @@
         stars: bl.reduce((t, b) => t + (Prog.complete(b) ? Prog.stars(b) : 0), 0), max: bl.length * 3,
         done: steps.filter((s) => Prog.isDone(s.id)).length, total: steps.length, complete: bl.every((b) => Prog.complete(b)) }));
     } catch (e) {}
-    const cur = current && path.querySelector(`.node[data-id="${current}"]`);
-    if (cur) { cur.classList.add("current"); cur.querySelector(".nbtn").append(Kim.mini()); }
-    if (opts.justDone) Audio_.sfx("complete");
-    const allDone = plan.every((n) => { const b = blockOf(n.id); return b && Prog.complete(b); });
-    if (allDone) {
-      const total = plan.reduce((t, n) => t + Prog.stars(blockOf(n.id)), 0);
-      const fin = h("div", { class: "finish" + (opts.justDone ? " pop" : "") }, h("span", { class: "cup" }, "🏆"),
-        h("b", {}, "Complete!"), h("span", { class: "fstars" }, "★ " + total + " / " + plan.length * 3));
-      head.append(fin);
-      if (opts.justDone) { Kim.say(L.finishLine || "Hooray! You finished Food Street!"); return; }
-    }
-    const label = (id) => (plan.find((n) => n.id === id) || {}).label;
-    const msg = opts.justDone
-      ? (current ? `Great job! Now let's do ${label(current)}!` : "Well done! More is coming soon!")
-      : current ? `Tap ${label(current)} to start!` : "Well done! More is coming soon!";
-    Kim.say(msg);
+    if (opts.justDone) { Audio_.sfx("complete"); const r = runId; setTimeout(() => { if (alive(r)) pin.click(); }, 900); }
   }
+  function nudge(el) { el.classList.remove("nv-no"); void el.offsetWidth; el.classList.add("nv-no"); }
 
-  /* Stage with crossfading scene images */
-  /* Full-screen stage: the 16:9 scene covers the screen when little would be cropped,
-     otherwise it is shown whole and the rest is filled with a blurred copy of itself. */
-  function makeStage() {
-    const wrap = h("div", { class: "stagewrap" });
-    const stage = h("div", { class: "stage" });
-    const fill = h("div", { class: "blurfill" });
-    const canvas = h("div", { class: "canvas" });
-    const a = h("img", { class: "scene", alt: "" }), b = h("img", { class: "scene out", alt: "" });
-    const layer = h("div", { class: "layer" });
-    canvas.append(a, b, layer); stage.append(fill, canvas); wrap.append(stage);
-    let front = a, back = b, current = null;
-    /* Layout v2 (2026-11-17):
-       · cover   — little would be cropped: the scene fills the screen, the dock floats on its bottom edge.
-       · wide    — screen much wider than 16:9: whole scene between the top bar and the dock, blurred copy at the sides.
-       · tall    — portrait: scene full width; scene + dock form one group centred in the free height
-                   (leaving room under the dock for Kim's speech bubble when possible). */
-    const fit = () => {
-      const W = stage.clientWidth, H = stage.clientHeight, ar = 16 / 9; if (!W || !H) return;
-      const dock = main.querySelector(":scope > .dock");
-      const css = getComputedStyle(document.documentElement);
-      const sat = parseFloat(css.getPropertyValue("--sat")) || 0;
-      const topH = (parseFloat(css.getPropertyValue("--topH")) || 64) + sat;
-      const dockH = dock ? dock.offsetHeight : 0, gap = 12, edge = 14;
-      let cw, ch, left, top, mode;
-      if (W / H > ar) { cw = W; ch = W / ar; } else { ch = H; cw = H * ar; }
-      const crop = Math.max((cw - W) / cw, (ch - H) / ch);
-      if (crop <= 0.12) { mode = "cover"; left = (W - cw) / 2; top = (H - ch) / 2; }
-      else if (W / H > ar) {
-        mode = "wide";
-        const boxH = Math.max(120, H - topH - dockH - edge - gap);
-        ch = Math.min(boxH, W / ar); cw = ch * ar; left = (W - cw) / 2; top = topH + (boxH - ch) / 2;
-      } else {
-        mode = "tall";
-        const avail = H - topH - edge;
-        cw = W; ch = W / ar;
-        if (ch + gap + dockH > avail) { ch = Math.max(100, avail - gap - dockH); cw = Math.min(W, ch * ar); ch = cw / ar; }
-        const spare = avail - (ch + gap + dockH);
-        const bubRoom = 120;   /* Kim's bubble goes under the dock */
-        const lift = spare > 2 * bubRoom ? spare / 2 : Math.max(0, spare - bubRoom);
-        left = (W - cw) / 2; top = topH + Math.min(spare / 2, lift);
-      }
-      Object.assign(canvas.style, { width: cw + "px", height: ch + "px", left: left + "px", top: top + "px" });
-      stage.dataset.mode = mode;
-      const contain = mode !== "cover";
-      stage.classList.toggle("contain", contain);
-      document.body.classList.toggle("contain", contain);
-      document.body.dataset.stage = mode;
-      if (dock) {
-        if (mode === "tall") { dock.style.top = top + ch + gap + "px"; dock.style.bottom = "auto"; }
-        else { dock.style.top = ""; dock.style.bottom = ""; }
-      }
-      Kim.el.classList.toggle("bub-down", mode === "tall" && H - (top + ch + gap + dockH) > 90);
-      Kim.el.classList.toggle("bub-up", !(mode === "tall" && H - (top + ch + gap + dockH) > 90));
-      keepInside(canvas);
-      Kim.place();
-    };
-    const ro = window.ResizeObserver ? new ResizeObserver(() => fit()) : null;
-    if (ro) { ro.observe(stage); requestAnimationFrame(() => { const d = main.querySelector(":scope > .dock"); if (d) ro.observe(d); }); }
-    else window.addEventListener("resize", fit);
-    requestAnimationFrame(fit);
-    return {
-      wrap, stage, layer, fit,
-      set(name) {
-        if (name === current) return; current = name;
-        back.src = img(name); fill.style.backgroundImage = `url("${img(name)}")`;
-        back.classList.remove("out"); front.classList.add("out");
-        [front, back] = [back, front];
-      },
-      get scene() { return current; }
-    };
-  }
-  /* labels on a scene (cart names, food labels) must stay inside the picture: nudge them back in */
-  function keepInside(canvas) {
-    requestAnimationFrame(() => {
-      if (!canvas.isConnected) return;
-      const c = canvas.getBoundingClientRect(), pad = 4;
-      canvas.querySelectorAll(".hot .name, .food .lbl").forEach((el) => {
-        el.style.setProperty("--nx", "0px");
-        const r = el.getBoundingClientRect();
-        let dx = 0;
-        if (r.right > c.right - pad) dx = c.right - pad - r.right;
-        if (r.left + dx < c.left + pad) dx = c.left + pad - r.left;
-        el.style.setProperty("--nx", dx + "px");
-        if (r.bottom > c.bottom - pad) el.style.setProperty("--ny", (c.bottom - pad - r.bottom) + "px");
-      });
+  /* ======================= V3 practice shell (giao diện v3, 2026-11-18 · decisions #52–#56) =======================
+   * One frame for every practice screen:
+   *   top bar  ✕ (back to the map) · progress (blue, this exercise's items) · Aa
+   *   body     the exercise (each type fills P.body)
+   *   foot     CHECK (spell / build / gaptext) or the speaking controls — empty for tap-to-answer exercises
+   *   Aa line  the instruction (or the spoken question) as one dark line over space the body keeps free
+   *   sheet    feedback sliding up from the bottom: green "Great job!" + CONTINUE · light red "Almost!" + TRY AGAIN / GOT IT
+   * No Kim on screen: her voice reads the instruction at the start; nothing is written unless Aa is on. */
+  const V3 = ["bubbles", "pick", "names", "say", "lid", "answer"];
+  const ICON3 = {
+    speaker: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M16.5 12A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4z"/><path d="M14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>',
+    mic: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="8.5" y="2" width="7" height="12.5" rx="3.5"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M12 17.5V21M8.5 21.5h7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>'
+  };
+  /* pictures with a transparent background (foods, drinks, figures) sit on a padded white card; scenes fill their card */
+  const isObj = (name) => /(^|\/)(food|item|icon|shadow|who|kid|lid-kid)-|i-hand|girl-plate|hand-point|fridge|(^|\/)may$/.test(String(name));
+  /* audio that resolves when it ends OR when something else stops it — so a flow never hangs on a cut-off sound */
+  function playSafe(fn) {
+    return new Promise((res) => {
+      let done = false, idle = 0; const fin = () => { if (!done) { done = true; clearInterval(t); res(); } };
+      const busy = () => Audio_.cur || (window.speechSynthesis && (speechSynthesis.speaking || speechSynthesis.pending));
+      /* two quiet checks in a row (≥ ¼ s of silence): short pauses inside a sequence of lines don't count */
+      const t = setInterval(() => { idle = busy() ? 0 : idle + 1; if (idle >= 2) fin(); }, 250);
+      Promise.resolve(fn && fn()).then(fin, fin);
     });
   }
-  function setChrome(px) { document.documentElement.style.setProperty("--chrome", px + "px"); }
 
-  /* ======================= Tray (collection slots) + task bar ======================= */
-  /* Each round has a slot; a right answer flies its picture into the slot (Pixie-style collection). */
-  function makeTray() {
-    const el = h("div", { class: "tray" }); let n = 0;
-    return {
-      el,
-      update(r, res, total) {
-        if (total !== n) { n = total; el.innerHTML = ""; for (let k = 0; k < n; k++) el.append(h("i")); }
-        [...el.children].forEach((e, k) => { e.classList.toggle("now", k === r); e.classList.toggle("try", k < r && !res[k]); });
+  function practice(step, opts = {}) {
+    const root = h("div", { class: "px" + (opts.cls ? " " + opts.cls : "") });
+    const bar = h("i");
+    const aaBtn = h("button", { class: "px-aa", type: "button", "aria-label": "Show the words", "aria-pressed": "false" }, "Aa");
+    const top = h("div", { class: "px-top" },
+      h("button", { class: "px-x", type: "button", "aria-label": "Back to the map", onclick: () => showMap() }, "✕"),
+      h("span", { class: "px-prog", role: "progressbar", "aria-label": "Progress" }, bar), aaBtn);
+    const content = h("div", { class: "px-main" });
+    const aaLine = h("div", { class: "px-aaline", hidden: true });
+    const frame = h("div", { class: "px-body" }, content, aaLine);
+    const foot = h("div", { class: "px-foot" });
+    root.append(top, frame, foot);
+    main.append(root);
+
+    let aaText = "", aaOn = false, sheetEl = null;
+    const runNow = runId;
+    const syncAa = () => { aaBtn.classList.toggle("on", aaOn); aaBtn.setAttribute("aria-pressed", String(aaOn)); aaLine.textContent = aaText; aaLine.hidden = !(aaOn && aaText); };
+    aaBtn.onclick = () => { aaOn = !aaOn; syncAa(); };
+
+    const P = {
+      root, body: content, foot,
+      progress(done, total) { bar.style.width = (total ? Math.round((done / total) * 100) : 0) + "%"; },
+      /* Aa text: the instruction, or the question being asked */
+      aa(text) { aaText = String(text || "").replace(/[*_]/g, ""); syncAa(); },
+      /* blue speaker; size: xl (listen-and-tap) · lg · md (speaking) · sm · xs (next to a word / sentence) */
+      speaker(size, play, label = "Listen again") {
+        const b = h("button", { class: "px-spk " + size, type: "button", "aria-label": label, html: ICON3.speaker });
+        if (play) b.onclick = () => P.play(b, play);
+        return b;
       },
-      fill(k, src, fromEl, ok = true) {
-        const slot = el.children[k]; if (!slot) return;
-        const pic = h("img", { src, alt: "" }); slot.innerHTML = ""; slot.append(pic); slot.classList.add("full"); slot.classList.toggle("try", !ok);
-        if (!fromEl || !fromEl.getBoundingClientRect) return;
-        const a = fromEl.getBoundingClientRect(), b = slot.getBoundingClientRect();
-        const fly = h("img", { class: "flyer", src, alt: "" });
-        Object.assign(fly.style, { left: a.left + a.width / 2 - 40 + "px", top: a.top + a.height / 2 - 40 + "px" });
-        document.body.append(fly);
-        pic.style.opacity = "0";
-        fly.animate([{ transform: "translate(0,0) scale(1)" }, { transform: `translate(${b.left + b.width / 2 - (a.left + a.width / 2)}px,${b.top + b.height / 2 - (a.top + a.height / 2)}px) scale(.35)` }],
-          { duration: 650, easing: "cubic-bezier(.5,-.3,.6,1)" }).onfinish = () => { fly.remove(); pic.style.opacity = ""; slot.animate([{ transform: "scale(1.35)" }, { transform: "scale(1)" }], { duration: 300 }); };
+      play(btn, fn) { if (btn) btn.classList.add("playing"); return playSafe(fn).then(() => btn && btn.classList.remove("playing")); },
+      /* Kim's voice only (no avatar, no text) */
+      voice(text) { return text ? playSafe(() => Audio_.speak(text, "kim")) : Promise.resolve(); },
+      /* the first item is already on screen, dimmed and not tappable, while Kim reads the instruction */
+      async intro(text) { root.classList.add("pre"); await P.voice(text); root.classList.remove("pre"); },
+      wrong(el) {
+        Audio_.sfx("practice-wrong");
+        el.classList.remove("px-wrong"); void el.offsetWidth; el.classList.add("px-wrong");
+        setTimeout(() => el.classList.remove("px-wrong"), 900);
+      },
+      /* feedback sheet → resolves when its button is tapped.
+         { ok, title, text | html, play (sheet speaker), auto (sound played as it opens), button } */
+      sheet(o) {
+        return new Promise((res) => {
+          P.closeSheet(true);
+          const ok = o.ok !== false;
+          const inner = h("div", { class: "px-sheet-in" }, h("h3", {}, o.title || (ok ? "✔ Great job!" : "Almost!")));
+          let spk = null;
+          if (o.text || o.html) {
+            const row = h("div", { class: "px-ans" });
+            if (o.play) { spk = h("button", { class: "px-spk xs green", type: "button", "aria-label": "Listen", html: ICON3.speaker }); spk.onclick = () => P.play(spk, o.play); row.append(spk); }
+            row.append(o.html ? h("span", { class: "px-read", html: o.html }) : h("span", { class: "px-read" }, o.text));
+            inner.append(row);
+          }
+          /* o.hideAfter (ms): no button — the sheet slides away by itself (a wrong tap: the child just tries again) */
+          const btn = o.hideAfter ? null : h("button", { class: "px-btn " + (ok ? "green" : "red"), type: "button" }, o.button || (ok ? "CONTINUE" : "GOT IT"));
+          if (btn) inner.append(btn);
+          const el = h("div", { class: "px-sheet " + (ok ? "ok" : "bad"), role: "status" }, inner);
+          sheetEl = el; root.append(el); root.classList.add("sheet-open");
+          requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add("show")));
+          /* sound played as the sheet opens; still() turns false once the sheet is gone, so nothing spills into the next item */
+          if (o.auto) { const still = () => sheetEl === el && alive(runNow); spk ? P.play(spk, () => o.auto(still)) : playSafe(() => o.auto(still)); }
+          if (btn) btn.onclick = () => { Audio_.stop(); P.closeSheet(); res(); };
+          else setTimeout(() => { if (sheetEl === el) P.closeSheet(); res(); }, o.hideAfter);
+        });
+      },
+      closeSheet(now) {
+        const el = sheetEl; sheetEl = null; root.classList.remove("sheet-open");
+        if (!el) return;
+        if (now) return el.remove();
+        el.classList.remove("show"); setTimeout(() => el.remove(), 320);
+      },
+      /* a wrong answer that the child simply tries again: short red sheet, gone after ~1.2 s (longer when it carries a hint) */
+      retry(text) { return P.sheet({ ok: false, title: "Almost!", text: text || "Try again!", hideAfter: text && text !== "Try again!" ? 2000 : 1200 }); },
+      /* CHECK (only spell / build / gaptext): grey until every slot is filled */
+      check(onCheck) {
+        const b = h("button", { class: "px-btn red", type: "button", disabled: true }, "CHECK");
+        b.onclick = onCheck; foot.append(b); root.classList.add("has-btn");
+        return b;
+      },
+      /* end of the exercise: score + Kim's praise, then on */
+      async finish(score, total, line) {
+        P.progress(1, 1); P.aa("");
+        await P.sheet({ ok: true, title: "⭐ " + score + " / " + total, text: line, auto: () => Audio_.speak(line, "kim") });
+        if (alive(runNow)) next();
+      },
+      /* speaking controls: a line (hints, "Your turn!") · big red mic · "Can't speak now" */
+      micFoot() {
+        const line = h("div", { class: "px-mline", "aria-live": "polite" });
+        const mic = h("button", { class: "px-mic", type: "button", "aria-label": "Tap and speak", html: ICON3.mic });
+        const cant = h("button", { class: "px-cant", type: "button" }, "Can't speak now");
+        foot.append(line, mic, cant); root.classList.add("has-mic");
+        return {
+          mic, cant,
+          line(text, tone) { line.textContent = text || ""; line.className = "px-mline" + (tone ? " " + tone : ""); },
+          pulse(on) { mic.classList.toggle("pulse", !!on); },
+          listening(on) { mic.classList.toggle("listening", !!on); }
+        };
       }
     };
+    return P;
   }
-  /* Aa: show/hide text in listening practice (hidden by default so students really listen) */
-  const AA = { get on() { try { return localStorage.getItem("explore-hw:aa") === "1"; } catch (e) { return false; } },
-    set on(v) { try { localStorage.setItem("explore-hw:aa", v ? "1" : "0"); } catch (e) {} document.body.classList.toggle("aa-on", v); } };
-  const FRAME = ["bubbles", "pick", "names", "say", "lid", "answer", "chunks", "qa", "recap", "done"];
-  function taskbar(step) {
-    const block = step.block;
-    const bs = steps.filter((s) => s.block === block), at = bs.indexOf(step);
-    const close = h("button", { class: "tb-x", "aria-label": "Back to the map", onclick: () => showMap() }, "✕");
-    const prog = h("span", { class: "tb-prog" }, h("i", { style: `width:${Math.round(((at + 0.5) / bs.length) * 100)}%` }));
-    const tray = main.querySelector(".tray");
-    const kids = [close, prog];
-    if (tray) kids.push(tray);
-    else kids.push(h("span", { class: "tb-title" }, block.name));
-    if (step.skill === "L") {
-      const aa = h("button", { class: "tb-aa" + (AA.on ? " on" : ""), "aria-label": "Show the words" }, "Aa");
-      aa.onclick = () => { AA.on = !AA.on; aa.classList.toggle("on", AA.on); };
-      kids.push(aa);
+
+  /* picture block: a padded white card for objects, the picture itself (rounded) for scenes */
+  function picture(name, cls = "") {
+    const im = h("img", { src: img(name), alt: "" });
+    return isObj(name) ? h("div", { class: "px-obj " + cls }, im) : h("div", { class: "px-scene " + cls }, im);
+  }
+
+  /* ======================= Scene camera (Watch · Explore) — decisions #54, #27 =======================
+   * The scene picture sits in a canvas that is scaled and moved so the cue's FOCUS box (in % of the picture) is fully
+   * visible between the top UI and the bottom UI. If the picture can cover the screen with the focus inside → cover.
+   * Otherwise it shrinks until the focus fits; the rest of the screen shows the same picture blurred and washed.
+   * Focus boxes: lesson pack `focus: { <scene>: {x,y,w,h} }`, a cue's own `focus`, or what the cue points at. */
+  const ratio = {};
+  const aspectOf = (name) => new Promise((res) => {
+    if (ratio[name]) return res(ratio[name]);
+    const im = new Image();
+    im.onload = () => res((ratio[name] = im.naturalWidth / im.naturalHeight || 16 / 9));
+    im.onerror = () => res(16 / 9);
+    im.src = img(name);
+  });
+  const WHOLE = { x: 0, y: 0, w: 100, h: 100 };
+  const focusOf = (scene) => (L.focus && L.focus[scene]) || WHOLE;
+  const pad = (f, p) => { const x = Math.max(0, f.x - p), y = Math.max(0, f.y - p); return { x, y, w: Math.min(100, f.x + f.w + p) - x, h: Math.min(100, f.y + f.h + p) - y }; };
+  const union = (a, b) => { const x = Math.min(a.x, b.x), y = Math.min(a.y, b.y); return { x, y, w: Math.max(a.x + a.w, b.x + b.w) - x, h: Math.max(a.y + a.h, b.y + b.h) - y }; };
+  function camera(root) {
+    const blur = h("div", { class: "st-blur" });
+    const a = h("img", { class: "st-img", alt: "" }), b = h("img", { class: "st-img out", alt: "" });
+    const layer = h("div", { class: "st-layer" });
+    const canvas = h("div", { class: "st-canvas" }, a, b, layer);
+    const cam = h("div", { class: "st-cam" }, blur, h("div", { class: "st-wash" }), canvas);
+    root.append(cam);
+    let front = a, back = b, scene = null, ar = 16 / 9, focus = WHOLE, margins = () => ({ top: 0, bottom: 0 }), token = 0;
+    function fit(animate) {
+      const W = cam.clientWidth, H = cam.clientHeight; if (!W || !H) return;
+      const m = margins(), y0 = m.top, y1 = H - m.bottom, side = m.side || 0, vw = W - 2 * side, vh = Math.max(80, y1 - y0);
+      const fx = focus.x / 100, fy = focus.y / 100, fw = focus.w / 100, fh = focus.h / 100;
+      /* where the canvas may go on one axis: the focus inside the free band [v0, v1] and, when possible, the screen covered
+         (or the whole picture on screen when it is smaller than the screen); the focus centred in the band when there is room */
+      const axis = (size, S, v0, v1, f0, f1, t) => {
+        const fLo = v0 - f0 * size - t * (f1 - f0) * size, fHi = v1 - f1 * size + t * (f1 - f0) * size;
+        const sLo = size >= S ? S - size : 0, sHi = size >= S ? 0 : S - size;
+        const want = (v0 + v1) / 2 - ((f0 + f1) / 2) * size;
+        const lo = Math.max(fLo, sLo), hi = Math.min(fHi, sHi);
+        return { pos: lo <= hi ? Math.min(hi, Math.max(lo, want)) : Math.min(fHi, Math.max(fLo, want)), ok: lo <= hi + 0.5 };
+      };
+      const tol = m.tol != null ? m.tol : 0.05;
+      const place = (cw, t) => {
+        const ch = cw / ar;
+        const x = axis(cw, W, side, W - side, fx, fx + fw, t), y = axis(ch, H, y0, y1, fy, fy + fh, t);
+        return { cw, ch, left: x.pos, top: y.pos, ok: x.ok && y.ok };
+      };
+      /* cover when the focus box fits inside the free area (a little tolerance), else shrink until it fits */
+      let g = place(Math.max(W, H * ar), tol), mode = "cover";
+      if (!g.ok) { mode = "fit"; g = place(Math.min(vw / fw, (vh / fh) * ar, Math.max(W, H * ar)), 0); }
+      if (animate != null) canvas.classList.toggle("anim", !!animate);   /* null (a resize): keep the running move */
+      Object.assign(canvas.style, { width: g.cw + "px", height: g.ch + "px", left: g.left + "px", top: g.top + "px" });
+      cam.dataset.mode = mode;
     }
-    kids.push(h("button", { class: "tb-menu", "aria-label": "All steps", onclick: () => $("#menuBtn").click() }, "☰"));
-    main.prepend(h("div", { class: "taskbar" }, ...kids));
-    /* turtle: same sentence, slower */
-    const spk = main.querySelector(".speak.big");
-    if (spk && step.skill === "L") {
-      const turtle = h("button", { class: "turtle", "aria-label": "Listen slowly", title: "Listen slowly" }, "🐢");
-      turtle.onclick = () => { Audio_.rateMul = 0.72; Promise.resolve(spk.onclick && spk.onclick()).finally(() => (Audio_.rateMul = 1)); };
-      spk.after(turtle);
-    }
+    const resized = () => { if (api.onResize) api.onResize(); fit(null); };
+    const ro = window.ResizeObserver ? new ResizeObserver(resized) : null;
+    if (ro) ro.observe(cam); else window.addEventListener("resize", resized);
+    const api = {
+      cam, layer, canvas,
+      /* margins(): the free area — { top, bottom, side } in px */
+      margins(fn) { margins = fn; },
+      watch(el) { if (ro && el) ro.observe(el); },
+      fit,
+      async show(name, f) {
+        const tk = ++token;
+        const r = await aspectOf(name);
+        if (tk !== token) return;
+        focus = f || focusOf(name);
+        if (name !== scene) {
+          const first = !scene;
+          scene = name; ar = r;
+          back.src = img(name); blur.style.backgroundImage = `url("${img(name)}")`;
+          back.classList.remove("out"); front.classList.add("out"); [front, back] = [back, front];
+          fit(!first);
+        } else fit(true);
+      },
+      get scene() { return scene; },
+      stop() { token++; if (ro) ro.disconnect(); else window.removeEventListener("resize", resized); }
+    };
+    return api;
+  }
+  /* top of a scene screen: the part's pill · map · menu */
+  function sceneTop(step) {
+    return h("div", { class: "st-top" }, h("span", { class: "st-pill" }, `${L.id} · ${step.block.name}`), h("span", { class: "st-sp" }),
+      iconBtn("st-ib", UI.map, "Back to the map", () => showMap()), iconBtn("st-ib", UI.menu, "All steps (teachers)", openMenu));
+  }
+  /* strip HTML → plain words, for comparing a cue's sentence strip with its spoken line */
+  const plain = (s) => String(s || "").replace(/<[^>]+>/g, " ").replace(/[…….!?,·]/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
+  /* strip markup for the caption / board: <b> = the chunk (dashed blue underline), .q = a question (red) */
+  const stripHtml = (s) => String(s).replace(/<b class=['"]m['"]>/g, '<span class="hl m">').replace(/<b>/g, '<span class="hl">').replace(/<\/b>/g, "</span>");
+  /* "He's eating" in a strip's merged chunk → ["He is", "He's"] (the chip row "He is ➜ He's") */
+  function contraction(strip) {
+    const m = /<b class=['"]m['"]>\s*(He|She|It|I|You|We|They)('s|'m|'re)\b/.exec(strip || "");
+    if (!m) return null;
+    return [m[1] + { "'s": " is", "'m": " am", "'re": " are" }[m[2]], m[1] + m[2]];
   }
 
   /* ======================= Step types ======================= */
   const TYPES = {};
 
-  /* ---------- WATCH: auto-play animated review, every line replayable ---------- */
+  /* ---------- WATCH (S1 · S2): the scene fills the screen; caption = Kim's head (tap = again) · line · ➜ ---------- */
   TYPES.watch = function (step, run) {
-    setChrome(300);
-    const st = makeStage();
-    const counter = h("div", { class: "counter" });
-    const extras = h("div", { class: "layer" });
-    const strip = h("div", { class: "strip", hidden: true });
-    st.layer.append(counter, extras, strip);
-    const capTxt = h("div", { class: "txt" }, "");
-    const replay = h("button", { class: "speak", "aria-label": "Listen again", html: ICON.speaker });
-    const caption = h("div", { class: "caption" }, replay, capTxt);
-    const bPrev = h("button", { class: "ctl", "aria-label": "Previous" }, "⏮", h("span", { class: "t" }, "Back"));
-    const bPlay = h("button", { class: "ctl primary", "aria-label": "Pause" }, "⏸", h("span", { class: "t" }, "Pause"));
-    const bNext = h("button", { class: "ctl", "aria-label": "Next line" }, "⏭", h("span", { class: "t" }, "Next"));
-    const bSkip = h("button", { class: "ctl go" }, step.skipLabel || "Skip ▶");
-    const chips = h("div", { class: "chips", "aria-label": "Lines you heard" });
-    bSkip.className = "ctl go bigarrow"; bSkip.innerHTML = "➜"; bSkip.setAttribute("aria-label", "Continue");
-    caption.append(bSkip);
-    const slot = h("span", { class: "kimslot", "aria-hidden": "true" });
-    caption.prepend(slot);
-    const dock = h("div", { class: "dock" }, caption, chips);
-    main.append(st.wrap, dock);
-    Kim.dock(slot);
+    const root = h("div", { class: "st st-watch" });
+    main.append(root);
+    const cam = camera(root);
+    const top = sceneTop(step);
+    const board = h("div", { class: "st-board", hidden: true });
+    const chips = h("div", { class: "st-chips", hidden: true });
+    const foods = h("div", { class: "st-foods", hidden: true });
+    const head = h("button", { class: "st-head", type: "button", "aria-label": "Listen again" }, kimHead("wave"));
+    const txt = h("div", { class: "st-txt", "aria-live": "polite" });
+    const goBtn = iconBtn("st-go", UI.next, "Next", () => next());
+    const cap = h("div", { class: "st-cap" }, head, txt, goBtn);
+    const bottom = h("div", { class: "st-bottom" }, board, chips, foods, cap);
+    root.append(top, bottom);
+    cam.margins(() => ({ top: top.offsetHeight + 4, bottom: bottom.offsetHeight + 14 }));
+    cam.watch(bottom);
 
     const cues = step.cues;
-    let i = 0, playing = true, token = 0;
-    const cueText = (c) => c.food ? (c.line && !c.wordFirst ? c.line.text : (c.line ? L.words[c.food].label + " — " + c.line.text : L.words[c.food].label)) : (c.line ? c.line.text : "");
+    let i = 0, token = 0;
     const cueSound = async (c, tk) => {
       if (c.food && c.wordFirst) { await Audio_.word(c.food); if (tk !== token) return; await sleep(250); if (tk !== token) return; await Audio_.line(c.line); }
-      else if (c.food) { await Audio_.word(c.food); }
-      else if (c.line) { await Audio_.line(c.line); }
+      else if (c.food) await Audio_.word(c.food);
+      else if (c.line) await Audio_.line(c.line);
     };
-    function ringAt(c) {
-      st.layer.querySelectorAll(".ring").forEach((r) => r.remove());
-      if (!c.point) return;
-      let x, y;
-      const [kind, id] = c.point.split(":");
-      if (kind === "cart") { const k = L.street.carts.find((k) => k.id === id).hot; x = k.x + k.w / 2; y = k.y + k.h * 0.32; }
-      else { const p = L.street.signRice[id]; x = p.x; y = p.y; }
-      const r = h("div", { class: "ring" }); r.style.left = x + "%"; r.style.top = y + "%"; st.layer.append(r);
+    /* what the cue talks about: a cart / a sign point / the actors + bubble / the scene's own focus */
+    function focusCue(c) {
+      if (c.focus) return c.focus;
+      if (c.point) {
+        const [kind, id] = c.point.split(":");
+        if (kind === "cart") { const k = L.street.carts.find((x) => x.id === id).hot; return pad(k, 3); }
+        const p = L.street.signRice[id]; return { x: p.x - 10, y: Math.max(0, p.y - 15), w: 20, h: 30 };
+      }
+      if (c.actors && c.actors.length) {
+        let f = null;
+        c.actors.forEach((a) => { const r = ratio[a.img] || 1; const box = { x: a.x, y: a.y, w: a.w, h: (a.w / r) * (ratio[c.scene] || 16 / 9) }; f = f ? union(f, box) : box; });
+        if (c.bubble) f = union(f, { x: c.bubble.x, y: c.bubble.y, w: Math.min(32, 100 - c.bubble.x), h: 16 });
+        return pad(f, 2);
+      }
+      return focusOf(c.scene);
     }
-    /* Rebuild what is visible after cues[0..k-1] (so Back works) */
     function foodsBefore(k) {
       let list = [];
       for (let j = 0; j < k; j++) { if (cues[j].clear) list = []; if (cues[j].food) list.push(cues[j].food); }
       if (cues[k] && cues[k].clear) list = [];
       return list;
     }
-    function drawCounter(list, popLast) {
-      counter.innerHTML = "";
+    /* foods heard at this cart: a row of small cards over the caption (so any framing keeps them visible) */
+    function drawFoods(list, popLast) {
+      foods.innerHTML = ""; foods.hidden = !list.length;
       list.forEach((f, n) => {
-        const el = h("div", { class: "food" }, h("img", { src: img(L.words[f].img), alt: L.words[f].label }), h("span", { class: "lbl", html: wlabel(L.words[f]) }));
-        if (!(popLast && n === list.length - 1)) el.style.animation = "none";
-        counter.append(el);
+        const w = L.words[f];
+        const el = h("span", { class: "st-food" + (popLast && n === list.length - 1 ? " now" : "") }, h("img", { src: img(w.img), alt: "" }), h("span", { class: "px-read", html: wlabel(w) }));
+        foods.append(el);
       });
-      st.fit();
     }
-    function chip(k) {
-      const c = cues[k], t = cueText(c);
-      if (!t) return;
-      const existing = chips.querySelector(`[data-k="${k}"]`);
-      chips.querySelectorAll(".chip").forEach((x) => x.classList.remove("now"));
-      if (existing) { existing.classList.add("now"); return; }
-      const el = h("button", { class: "chip now", "data-k": k, onclick: () => { token++; playing = false; syncPlay(); cueSound(cues[k], token); } },
-        h("span", { class: "s", html: ICON.speaker }), t);
-      chips.append(el); el.scrollIntoView({ block: "nearest", inline: "end" });
+    function drawLayer(c) {
+      cam.layer.innerHTML = "";
+      if (c.dim) cam.layer.append(h("div", { class: "st-dim" }));
+      (c.actors || []).forEach((a) => { const el = h("img", { class: "st-actor", src: img(a.img), alt: "" }); Object.assign(el.style, { left: a.x + "%", top: a.y + "%", width: a.w + "%" }); cam.layer.append(el); });
+      if (c.bubble) { const bb = h("div", { class: "st-bubble px-read" }, c.bubble.text); Object.assign(bb.style, { left: c.bubble.x + "%", top: c.bubble.y + "%" }); cam.layer.append(bb); }
+      if (c.point) {
+        const [kind, id] = c.point.split(":");
+        const r = h("div", { class: "st-ring" + (kind === "cart" ? " box" : "") });
+        if (kind === "cart") { const k = L.street.carts.find((x) => x.id === id).hot; Object.assign(r.style, { left: k.x + "%", top: k.y + "%", width: k.w + "%", height: k.h + "%" }); }
+        else { const p = L.street.signRice[id]; Object.assign(r.style, { left: p.x + "%", top: p.y + "%" }); }
+        cam.layer.append(r);
+      }
     }
-    /* actors (positioned images), speech bubble and sentence strip — state belongs to the cue */
-    function drawExtras(c) {
-      extras.innerHTML = "";
-      if (c.dim) extras.append(h("div", { class: "dimmer" }));
-      (c.actors || []).forEach((a) => { const el = h("img", { class: "actor", src: img(a.img), alt: "" }); Object.assign(el.style, { left: a.x + "%", top: a.y + "%", width: a.w + "%" }); extras.append(el); });
-      if (c.bubble) { const b = h("div", { class: "sbubble" }, c.bubble.text); Object.assign(b.style, { left: c.bubble.x + "%", top: c.bubble.y + "%" }); extras.append(b); }
-      if (c.strip) { strip.hidden = false; strip.innerHTML = c.strip; strip.classList.remove("fx"); void strip.offsetWidth; strip.classList.add("fx"); }
-      else strip.hidden = true;
+    /* sentence strip: a contraction → chip row "He is ➜ He's"; the same words as the line → highlights in the caption; else a small board */
+    function drawText(c) {
+      const line = c.line ? c.line.text : "";
+      const ct = contraction(c.strip);
+      chips.hidden = !ct; board.hidden = true;
+      let html = c.food ? `<span class="hl">${wlabel(L.words[c.food])}</span>` + (line ? " " + esc(line) : "") : esc(line);
+      if (ct) {
+        chips.innerHTML = `<s>${esc(ct[0])}</s><span class="ar" aria-hidden="true">➜</span><b>${esc(ct[1])}</b>`;
+        chips.setAttribute("aria-label", ct[0] + " becomes " + ct[1]);
+        const k = html.indexOf(ct[1]);
+        if (k >= 0) { const end = html.slice(k + ct[1].length).match(/^[!.…]?/)[0]; html = html.slice(0, k) + `<span class="hl m">${ct[1]}${end}</span>` + html.slice(k + ct[1].length + end.length); }
+      } else if (c.strip && !c.food) {
+        if (plain(c.strip) === plain(line)) html = stripHtml(c.strip);
+        else { board.hidden = false; board.innerHTML = stripHtml(c.strip); board.classList.remove("in"); void board.offsetWidth; board.classList.add("in"); }
+      }
+      txt.innerHTML = html;
     }
-    function syncPlay() { bPlay.innerHTML = playing ? '⏸<span class="t">Pause</span>' : '▶<span class="t">Play</span>'; }
     async function runFrom(k) {
       const tk = ++token;
       for (i = k; i < cues.length; i++) {
         if (!alive(run) || tk !== token) return;
         const c = cues[i];
-        st.set(c.scene);
-        const list = foodsBefore(i).concat(c.food ? [c.food] : []);
-        drawCounter(list, !!c.food);
-        ringAt(c);
-        drawExtras(c);
-        capTxt.innerHTML = c.food ? `<mark>${wlabel(L.words[c.food])}</mark>` + (c.line ? " " + c.line.text : "") : (c.line ? c.line.text : "");
-        chip(i);
-        replay.classList.add("playing"); Kim.pose("point"); Kim.el.classList.add("talking");
+        drawLayer(c); drawText(c);
+        drawFoods(foodsBefore(i).concat(c.food ? [c.food] : []), !!c.food);
+        cam.show(c.scene, focusCue(c));
+        head.classList.add("talk"); head.firstChild.style.backgroundImage = `url("${kimArt("head-point")}")`;
         await cueSound(c, tk);
-        replay.classList.remove("playing"); Kim.el.classList.remove("talking");
+        head.classList.remove("talk");
         if (!alive(run) || tk !== token) return;
         await sleep(c.after != null ? c.after : (c.food ? 550 : 450));
       }
-      if (alive(run) && tk === token) bSkip.classList.add("pulse");
+      if (alive(run) && tk === token) { goBtn.classList.add("pulse"); head.firstChild.style.backgroundImage = `url("${kimArt("head-wave")}")`; }
     }
-    replay.onclick = () => { token++; playing = false; syncPlay(); replay.classList.add("playing"); cueSound(cues[Math.min(i, cues.length - 1)], token).then(() => replay.classList.remove("playing")); };
-    bPlay.onclick = () => { playing = !playing; syncPlay(); if (playing) runFrom(Math.min(i, cues.length - 1)); else { token++; Audio_.stop(); } };
-    bPrev.onclick = () => { playing = true; syncPlay(); runFrom(Math.max(0, i - 1)); };
-    bNext.onclick = () => { playing = true; syncPlay(); if (i + 1 >= cues.length) next(); else runFrom(i + 1); };
-    bSkip.onclick = () => next();
-    runFrom(0);
-    return () => { token++; };
+    head.onclick = () => { token++; head.classList.add("talk"); const c = cues[Math.min(i, cues.length - 1)]; playSafe(() => cueSound(c, token)).then(() => head.classList.remove("talk")); };
+    /* actors' picture ratios first, so the first framing is already right */
+    Promise.all(cues.flatMap((c) => (c.actors || []).map((a) => aspectOf(a.img))).concat(cues.map((c) => aspectOf(c.scene)))).then(() => alive(run) && runFrom(0));
+    return () => { token++; cam.stop(); };
   };
 
-  /* ---------- EXPLORE: tap carts → foods → hear each word ---------- */
+  /* ---------- EXPLORE vocab (S3 · S3b): the scene, whole and uncovered; a thin top bar collects the words heard ---------- */
   TYPES.explore = function (step, run) {
-    setChrome(300);
-    const st = makeStage();
-    /* Self-tracking: every visit starts grey; a word turns green when the student taps it on a cart.
-       "I'm ready!" never blocks (students who already know the words can skip). */
-    const heard = new Set();
-    const all = Object.keys(L.words);
-    const visited = new Set();
-    const tracker = h("div", { class: "tracker", "aria-label": "Words heard" });
-    const count = h("span", { class: "count" });
-    const ready = h("button", { class: "ctl go", disabled: true }, "I'm ready! ▶");
-    const slot = h("span", { class: "kimslot", "aria-hidden": "true" });
-    const dock = h("div", { class: "dock" }, h("div", { class: "controls" }, slot, h("div", { class: "trackwrap" }, tracker, count), h("span", { class: "spacer" }), ready));
-    main.append(st.wrap, dock);
-    Kim.dock(slot);
-
-    function drawTracker() {
-      tracker.innerHTML = "";
-      all.forEach((w) => tracker.append(h("span", { class: heard.has(w) ? "on" : "", title: L.words[w].label }, h("img", { src: img(L.words[w].img), alt: L.words[w].label }))));
-      count.textContent = `${heard.size}/${all.length} words`;
-      const ok = step.readyWhen !== "all" || heard.size >= all.length;
-      ready.disabled = !ok;
+    const root = h("div", { class: "st st-explore" });
+    main.append(root);
+    const cam = camera(root);
+    const heard = new Set(), all = Object.keys(L.words), visited = new Set();
+    const total = all.length;
+    /* bar: icons of the words heard (empty dots for the rest), ≤ 6 per row; tap → every word */
+    const cols = total <= 6 ? total : Math.ceil(total / 2);
+    const slots = h("div", { class: "st-slots", style: `--cols:${Math.min(6, cols)}` });
+    const slotOf = {};
+    all.forEach((w) => { const s = h("span", { class: "st-slot", title: L.words[w].label }); slotOf[w] = s; slots.append(s); });
+    const count = h("small", { class: "st-count" });
+    const bar = h("button", { class: "st-wbar", type: "button", "aria-label": "All the words" }, slots, count);
+    const close = iconBtn("st-x", "✕", "Back to the map", () => showMap());
+    const backBtn = h("button", { class: "st-back", type: "button", hidden: true }, h("span", { html: UI.back }), L.street.name || "Food Street");
+    const top = h("div", { class: "st-etop" }, h("div", { class: "st-erow" }, close, bar), backBtn);
+    const ready = h("button", { class: "st-ready px-btn red", type: "button", hidden: true }, "I'M READY");
+    /* upright screens: the foods of an open cart sit as big cards under the picture (landscape: on the cart's counter) */
+    const tray = h("div", { class: "st-tray", hidden: true });
+    root.append(top, tray, ready);
+    cam.margins(() => ({ top: top.offsetHeight + 10, bottom: (ready.hidden ? 12 : ready.offsetHeight + 28) + (tray.hidden ? 0 : tray.offsetHeight + 14), side: 8, tol: 0 }));
+    cam.watch(top); cam.watch(tray);
+    let counter = null, cart = null;
+    const upright = () => cam.cam.clientWidth < cam.cam.clientHeight * 0.9;
+    const cartFocus = () => cart.focus || (upright() ? focusOf(cart.scene) : { x: 10, y: 10, w: 80, h: 88 });
+    function placeCounter() {
+      const up = !!counter && upright();
+      if (counter && up && counter.parentNode !== tray) tray.append(counter);
+      if (counter && !up && counter.parentNode !== cam.layer) cam.layer.append(counter);
+      tray.hidden = !up;
+    }
+    cam.onResize = () => { const was = tray.hidden; placeCounter(); if (cart && was !== tray.hidden) cam.show(cart.scene, cartFocus()); };
+    const done = () => heard.size >= total;
+    function drawBar() {
+      count.textContent = `${heard.size} / ${total}`;
+      const ok = done();
+      if (ok && ready.hidden) { ready.hidden = false; ready.classList.add("in"); cam.fit(true); }
+      root.classList.toggle("all", ok);
+    }
+    function fillSlot(w, fromEl) {
+      const s = slotOf[w];
+      if (s.firstChild) return;
+      const pic = h("img", { src: img(L.words[w].img), alt: "" });
+      s.append(pic); s.classList.add("on");
+      if (fromEl && fromEl.animate) {
+        const a = fromEl.getBoundingClientRect(), b = s.getBoundingClientRect();
+        if (a.width && b.width) {
+          const fly = h("img", { class: "st-fly", src: img(L.words[w].img), alt: "" });
+          Object.assign(fly.style, { left: a.left + "px", top: a.top + "px", width: a.width + "px", height: a.height + "px" });
+          document.body.append(fly); pic.style.opacity = 0;
+          fly.animate([{ transform: "none" }, { transform: `translate(${b.left - a.left}px,${b.top - a.top}px) scale(${b.width / a.width})` }], { duration: 650, easing: "cubic-bezier(.5,0,.3,1)" })
+            .onfinish = () => { fly.remove(); pic.style.opacity = ""; s.classList.remove("pop"); void s.offsetWidth; s.classList.add("pop"); };
+        }
+      }
+    }
+    async function hear(w, el) {
+      Audio_.stop();
+      const fresh = !heard.has(w);
+      if (fresh) { heard.add(w); Results.put(step.id, { heard: [...heard] }); fillSlot(w, el); drawBar(); }
+      await Audio_.word(w);
     }
     function streetView() {
-      st.set(L.street.scene); st.layer.innerHTML = "";
+      backBtn.hidden = true;
+      cam.layer.innerHTML = ""; counter = cart = null; tray.innerHTML = ""; placeCounter();
       L.street.carts.forEach((c) => {
-        const b = h("button", { class: "hot" + (visited.has(c.id) ? " visited" : ""), "aria-label": c.name }, h("span", { class: "name" }, c.name));
+        const b = h("button", { class: "st-hot" + (visited.has(c.id) ? " visited" : ""), type: "button", "aria-label": c.name });
         Object.assign(b.style, { left: c.hot.x + "%", top: c.hot.y + "%", width: c.hot.w + "%", height: c.hot.h + "%" });
-        b.onclick = () => cartView(c);
-        st.layer.append(b);
-      });
-      st.fit();
-    }
-    async function cartView(c) {
-      visited.add(c.id); Audio_.sfx("region-enter");
-      st.set(c.scene); st.layer.innerHTML = "";
-      const back = h("button", { class: "backbtn" }, "◀ Food Street");
-      back.onclick = () => { Audio_.stop(); streetView(); };
-      const counter = h("div", { class: "counter" });
-      st.layer.append(counter, back);
-      for (const f of c.foods) {
-        const el = h("button", { class: "food" + (heard.has(f) ? " heard" : ""), "aria-label": L.words[f].label },
-          h("img", { src: img(L.words[f].img), alt: "" }), h("span", { class: "lbl", html: wlabel(L.words[f]) }));
-        el.onclick = async () => {
-          el.classList.remove("bounce"); void el.offsetWidth; el.classList.add("bounce", "heard");
-          await Audio_.word(f);
-          if (!heard.has(f)) { heard.add(f); Results.put(step.id, { heard: [...heard] }); drawTracker(); if (!ready.disabled && heard.size === all.length) { ready.animate([{ transform: "scale(1)" }, { transform: "scale(1.12)" }, { transform: "scale(1)" }], { duration: 600, iterations: 2 }); Kim.say("Great! Now tap “I'm ready!”"); } }
+        const name = h("span", { class: "st-hotname px-read" + (visited.has(c.id) ? " visited" : ""), "aria-hidden": "true" }, c.name);
+        Object.assign(name.style, { left: c.hot.x + c.hot.w / 2 + "%", top: c.hot.y + c.hot.h + "%" });
+        cam.layer.append(name);
+        b.onclick = () => {
+          /* the ring sits exactly on the cart's hotspot, then the cart opens */
+          cam.layer.querySelectorAll(".st-hot").forEach((x) => x.classList.toggle("sel", x === b));
+          Audio_.sfx("region-enter");
+          const r = run; setTimeout(() => alive(r) && cartView(c), 520);
         };
-        counter.append(el); st.fit();
-        await sleep(160);
-        if (!alive(run)) return;
-      }
+        cam.layer.append(b);
+      });
+      const hots = L.street.carts.map((c) => c.hot).reduce((f, k) => union(f, k));
+      cam.show(L.street.scene, L.street.focus || pad(hots, 4));
     }
-    /* Data for the teacher: which words were heard, and whether the student skipped */
-    ready.onclick = () => { Results.put(step.id, { heard: [...heard], total: all.length, skipped: heard.size < all.length }); next(); };
-    streetView(); drawTracker();
-    Kim.say(step.instruction);
-  };
-
-  /* ---------- BUBBLES: listen and pop (template: Nghe & chọn đáp án) ---------- */
-  TYPES.bubbles = function (step, run) {
-    const field = h("div", { class: "field" });
-    const tray = makeTray(); const dots = tray.el; main.append(dots);
-    const spk = h("button", { class: "speak big", "aria-label": "Listen again", html: ICON.speaker });
-    const row = h("div", { class: "bubbles" });
-    const aaTxt = h("div", { class: "aa psent" });
-    field.append(h("div", { class: "row" }, spk), aaTxt, row);
-    main.append(field);
-    const targets = shuffle(step.targets);
-    const res = []; let r = 0;
-    function drawDots() {
-      tray.update(r, res, targets.length);
-    }
-    function optionsFor(t) {
-      const set = [t, L.confusable[t]];
-      const rest = shuffle(Object.keys(L.words).filter((w) => !set.includes(w)));
-      while (set.length < step.options) set.push(rest.pop());
-      return shuffle(set);
-    }
-    const playT = async () => { spk.classList.add("playing"); await Audio_.word(targets[r]); spk.classList.remove("playing"); };
-    spk.onclick = playT;
-    async function round() {
-      if (!alive(run)) return;
-      if (r >= targets.length) return finish();
-      drawDots(); row.innerHTML = "";
-      const t = targets[r]; let wrong = 0, locked = false;
-      aaTxt.textContent = L.words[t].label; aaTxt.classList.remove("shown");
-      optionsFor(t).forEach((w) => {
-        const b = h("button", { class: "bubble", "aria-label": "Bubble" }, h("img", { src: img(L.words[w].img), alt: "" }));
-        b.onclick = async () => {
-          if (locked) return;
-          if (w === t) {
-            locked = true; res[r] = wrong === 0;
-            Audio_.sfx("sticker-place"); tray.fill(r, img(L.words[t].img), b, res[r]); aaTxt.classList.add("shown"); b.classList.add("popped");
-            row.querySelectorAll(".bubble").forEach((x) => x !== b && x.classList.add("fade"));
-            const rev = h("div", { class: "reveal" }, h("div", { class: "card" }, h("img", { src: img(L.words[t].img), alt: "" }), h("div", { class: "w" }, L.words[t].label)));
-            field.append(rev);
-            await sleep(250); await Audio_.word(t); await sleep(650);
-            rev.remove(); r++; round();
-          } else {
-            wrong++; Audio_.sfx("practice-wrong"); Kim.pose("think"); setTimeout(() => Kim.poseNow === "think" && Kim.pose("idle"), 1200);
-            b.classList.remove("wrong"); void b.offsetWidth; b.classList.add("wrong");
-            locked = true; await sleep(900); locked = false; b.classList.remove("wrong");
-            if (wrong >= 2) row.querySelectorAll(".bubble").forEach((x, k) => { if (x.dataset.w === t) x.classList.add("hint"); });
-            playT();
-          }
+    function cartView(c) {
+      visited.add(c.id); cart = c;
+      backBtn.hidden = false;
+      cam.layer.innerHTML = ""; tray.innerHTML = "";
+      counter = h("div", { class: "st-counter", "data-n": c.foods.length });
+      c.foods.forEach((f, n) => {
+        const el = h("button", { class: "st-cfood" + (heard.has(f) ? " heard" : ""), type: "button", "aria-label": L.words[f].label, style: `animation-delay:${n * 90}ms` },
+          h("img", { src: img(L.words[f].img), alt: "" }), h("span", { class: "lbl px-read", html: wlabel(L.words[f]) }));
+        el.onclick = () => {
+          counter.querySelectorAll(".st-cfood").forEach((x) => x.classList.toggle("sel", x === el));
+          el.classList.add("heard"); el.classList.remove("bounce"); void el.offsetWidth; el.classList.add("bounce");
+          hear(f, el.querySelector("img"));
         };
-        b.dataset.w = w; row.append(b);
+        counter.append(el);
       });
-      await sleep(350); await intro; if (!alive(run)) return;
-      field.classList.remove("pre"); playT();
+      placeCounter();
+      cam.show(c.scene, cartFocus());
     }
-    async function finish() {
-      drawDots();
-      const score = res.filter(Boolean).length;
-      Results.put(step.id, { firstTry: score, total: targets.length });
-      row.innerHTML = "";
-      field.append(h("div", { class: "reveal" }, h("div", { class: "card" }, h("div", { class: "w", style: "color:var(--ink)" }, "⭐ " + score + " / " + targets.length))));
-      await Kim.say(score >= targets.length - 1 ? "Super listening!" : "Good job!");
-      await sleep(500); if (alive(run)) next();
+    backBtn.onclick = () => { Audio_.stop(); streetView(); };
+    /* panel: every word card; tap = hear */
+    function panel() {
+      const grid = h("div", { class: "st-grid" });
+      all.forEach((w) => {
+        const t = h("button", { class: "st-tile" + (heard.has(w) ? " heard" : ""), type: "button" }, h("img", { src: img(L.words[w].img), alt: "" }),
+          h("span", { class: "t" }, h("i", { html: ICON3.speaker }), h("span", { class: "px-read", html: wlabel(L.words[w]) })));
+        t.onclick = () => { t.classList.add("heard"); t.classList.remove("bounce"); void t.offsetWidth; t.classList.add("bounce"); hear(w, null).then(() => syncP()); syncP(); };
+        grid.append(t);
+      });
+      const pReady = h("button", { class: "px-btn red", type: "button", hidden: true, onclick: () => finish() }, "I'M READY");
+      const syncP = () => { pReady.hidden = !done(); };
+      const shut = () => { ov.classList.remove("show"); setTimeout(() => ov.remove(), 220); };
+      const sheet = h("div", { class: "st-sheet", role: "dialog", "aria-label": "All the words" },
+        h("div", { class: "st-sh-head" }, h("b", {}, wordsTitle(step)), iconBtn("st-x dark", "✕", "Close", shut)), h("div", { class: "st-sh-body" }, grid), h("div", { class: "st-sh-foot" }, pReady));
+      const ov = h("div", { class: "st-panel" }, sheet);
+      ov.onclick = (e) => { if (e.target === ov) shut(); };
+      root.append(ov); syncP();
+      requestAnimationFrame(() => ov.classList.add("show"));
     }
-    /* the first round is on screen (dimmed, not tappable) while Kim reads the instruction */
-    const intro = Kim.say(step.intro || step.instruction);
-    field.classList.add("pre"); round();
+    bar.onclick = panel;
+    /* data for the teacher: which words were heard (the button only shows once every word was heard — mockup S3b) */
+    function finish() { Results.put(step.id, { heard: [...heard], total, skipped: heard.size < total }); next(); }
+    ready.onclick = finish;
+    drawBar(); streetView();
+    playSafe(() => kimVoice(step.instruction));
+    return () => cam.stop();
   };
+  /* title of the word list (panel, recap): the recap heading of the part, else "<street> words" */
+  function wordsTitle(step) {
+    const rc = steps.find((s) => s.block === step.block && s.type === "recap");
+    return step.heading || (rc && rc.heading) || "Food Street words";
+  }
 
-  /* ---------- SAY: picture → student speaks → keyword check (template: Nghe & repeat) ---------- */
-  TYPES.say = function (step, run) {
-    /* Flow per item: picture → Kim asks (audio) → mic turns on by itself → keyword check.
-       Wrong/no sound → Kim encourages → mic turns on again. 2 misses → model answer, go on. */
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    let mode = SR ? "mic" : "self";
-    const field = h("div", { class: "sayfield" });
-    const tray = makeTray(); const dots = tray.el; main.append(dots);
-    const pic = h("img", { class: "pic", alt: "" });
-    const ans = h("div", { class: "answer" });
-    const heardTxt = h("div", { class: "heardtxt" });
-    const mic = h("button", { class: "mic", "aria-label": "Say it", html: ICON.mic });
-    const hint = h("button", { class: "ctl", hidden: true }, "👂 Listen");
-    const check = h("button", { class: "ctl primary", hidden: true }, "✓ Check");
-    const nxt = h("button", { class: "ctl go", hidden: true }, "Next ▶");
-    const note = h("div", { class: "note", hidden: true });
-    field.append(pic, ans, heardTxt, h("div", { class: "row" }, mic, hint, check, nxt), note);
-    main.append(field);
-    const items = shuffle(step.items); const res = []; let r = 0, tries = 0, quiet = 0, rec = null, itemTok = 0;
-    const live = (tk) => alive(run) && tk === itemTok;
-
-    function setMode(m) {
-      mode = m;
-      mic.hidden = m !== "mic";
-      if (m === "self") {
-        note.hidden = false;
-        note.textContent = "Máy hoặc trình duyệt này chưa cho dùng micro. HV nói to tên món, rồi bấm Check để nghe đáp án.";
+  /* ---------- EXPLORE grammar (S4) · Let's Talk (S5): one card per screen, then a summary (S6) ---------- */
+  function cardPic(c) {
+    const box = h("div", { class: "st-pic" + (isObj(c.img) ? " obj" : "") });
+    const im = h("img", { src: img(c.img), alt: "" });
+    if (!isObj(c.img)) { const f = focusOf(c.img); im.style.objectPosition = `${clampN(0, f.x + f.w / 2, 100)}% ${clampN(0, f.y + f.h / 2, 100)}%`; }
+    box.append(im);
+    if (c.food) box.append(h("img", { class: "st-cfoodimg", src: img(c.food), alt: "" }));
+    return box;
+  }
+  const chunkHtml = (sent, chunk) => { const s = esc(sent), k = s.indexOf(esc(chunk)); return k < 0 ? s : s.slice(0, k) + `<span class="hl">${esc(chunk)}</span>` + s.slice(k + esc(chunk).length); };
+  const fullChunk = (chunk) => chunk.replace(/^(He|She|It)'s/, "$1 is").replace(/^I'm/, "I am").replace(/^(You|We|They)'re/, "$1 are");
+  function cards(step, run, qa) {
+    const root = h("div", { class: "st st-cards" });
+    const bar = h("i");
+    root.append(h("div", { class: "px-top st-ctop" }, iconBtn("px-x", "✕", "Back to the map", () => showMap()), h("span", { class: "px-prog", role: "progressbar" }, bar)));
+    const body = h("div", { class: "st-cbody" });
+    const foot = h("div", { class: "st-cfoot" });
+    root.append(body, foot);
+    main.append(root);
+    const heard = new Set(), n = step.cards.length;
+    let k = 0, tok = 0;
+    const save = () => Results.put(step.id, { heard: [...heard], total: n, skipped: heard.size < n });
+    function show(j) {
+      k = j; tok++; Audio_.stop();
+      bar.style.width = Math.round(((j + 1) / (n + 1)) * 100) + "%";
+      body.innerHTML = ""; foot.innerHTML = "";
+      if (j >= n) return summary();
+      const c = step.cards[j], my = tok;
+      const lines = h("div", { class: "st-lines" });
+      let play;
+      if (!qa) {
+        const s = h("span", { class: "st-sent px-read" });
+        const spk = h("button", { class: "px-spk xs", type: "button", "aria-label": "Listen", html: ICON3.speaker });
+        const full = () => { s.innerHTML = chunkHtml(c.full, fullChunk(c.chunk)); };
+        const short = () => { s.innerHTML = chunkHtml(c.short, c.chunk); const m = s.querySelector(".hl"); if (m) m.classList.add("m"); };
+        /* the full form first, then the buddies merge (He is → He's) */
+        play = async () => { full(); await Audio_.speak(c.full, c.who || "narrator"); if (my !== tok) return; await sleep(200); if (my !== tok) return; short(); await Audio_.speak(c.short, c.who || "narrator"); };
+        spk.onclick = () => P0.play(spk, play);
+        full();
+        lines.append(h("div", { class: "st-line" }, spk, s));
+      } else {
+        const q = h("span", { class: "st-sent q px-read" }, c.q), a = h("span", { class: "st-sent px-read", html: chunkHtml(c.a, c.chunk) });
+        const sq = h("button", { class: "px-spk xs", type: "button", "aria-label": "Listen to the question", html: ICON3.speaker });
+        const sa = h("button", { class: "px-spk xs", type: "button", "aria-label": "Listen to the answer", html: ICON3.speaker });
+        const aRow = h("div", { class: "st-line ans" }, sa, a);
+        sq.onclick = () => P0.play(sq, () => Audio_.speak(c.q, "narrator"));
+        sa.onclick = () => { aRow.classList.add("in"); P0.play(sa, () => Audio_.speak(c.a, "kim")); };
+        play = async () => { aRow.classList.remove("in"); await P0.play(sq, () => Audio_.speak(c.q, "narrator")); if (my !== tok) return; aRow.classList.add("in"); await P0.play(sa, () => Audio_.speak(c.a, "kim")); };
+        lines.append(h("div", { class: "st-line" }, sq, q), aRow);
       }
+      body.append(h("div", { class: "st-card" }, cardPic(c), lines));
+      const dots = h("div", { class: "st-dots", "aria-hidden": "true" });
+      for (let q = 0; q < n; q++) dots.append(h("i", { class: q === j ? "on" : q < j ? "past" : "" }));
+      foot.append(dots, h("button", { class: "px-btn red", type: "button", onclick: () => show(j + 1) }, "NEXT"));
+      setTimeout(() => { if (alive(run) && my === tok) playSafe(play).then(() => { if (my === tok) { heard.add(j); save(); } }); }, 350);
     }
-    function drawDots() { tray.update(r, res, items.length); }
-    function matches(list, w) {
-      const word = L.words[w];
-      return list.some((t) => {
-        const s = " " + t.toLowerCase().replace(/[^a-z ]/g, " ") + " ";
-        if (word.reject && word.reject.some((x) => s.includes(x))) return false;
-        return word.say.some((k) => s.includes(k));
+    /* S6: every card in one list; tap a row = hear it again */
+    function summary() {
+      root.classList.add("sum");
+      const list = h("div", { class: "st-sum" });
+      step.cards.forEach((c) => {
+        const sent = qa ? c.a : c.short, chunk = c.chunk;
+        const row = h("button", { class: "st-row", type: "button" }, cardPic(c),
+          h("span", { class: "st-rtext" }, qa ? h("small", { class: "q px-read" }, c.q) : null, h("span", { class: "px-read", html: chunkHtml(sent, chunk) })));
+        row.onclick = () => { row.classList.add("playing"); playSafe(() => qa ? Audio_.speak(c.q, "narrator").then(() => Audio_.speak(c.a, "kim")) : Audio_.speak(c.short, c.who || "narrator")).then(() => row.classList.remove("playing")); };
+        list.append(row);
       });
+      body.append(list);
+      foot.append(h("button", { class: "px-btn red", type: "button", onclick: () => { save(); next(); } }, "I'M READY"));
     }
-    function stopRec() { if (rec) { const x = rec; rec = null; try { x.abort(); } catch (e) {} } (mic.classList.remove("listening"), Kim.poseNow === "listen" && Kim.pose("idle")); }
-    async function success(w, tk) {
-      res[r] = tries === 0; stopRec(); mic.hidden = true; hint.hidden = true; check.hidden = true;
-      ans.className = "answer ok"; ans.textContent = "✓ " + L.words[w].label; tray.fill(r, img(L.words[w].img), pic, res[r]);
-      Audio_.sfx("name-reveal"); await sleep(300); if (!live(tk)) return;
-      await Audio_.word(w); if (!live(tk)) return;
-      await Kim.say(["Great!", "Well done!", "Yes!", "Super!"][r % 4]);
-      await sleep(400); if (live(tk)) nextItem();
-    }
-    async function giveAnswer(w, tk) {
-      res[r] = false; stopRec(); hint.hidden = true; check.hidden = true; mic.hidden = true;
-      ans.className = "answer soft"; ans.textContent = L.words[w].label;
-      await Kim.say("Listen!"); if (!live(tk)) return;
-      await Audio_.word(w); if (!live(tk)) return;
-      await Kim.say("Say it with me next time!");
-      nxt.hidden = false;
-    }
-    async function retry(w, tk, msg) {
-      hint.hidden = false;
-      await Kim.say(msg); await sleep(250);
-      if (live(tk) && mode === "mic") listen(w, tk);
-    }
-    function listen(w, tk) {
-      stopRec(); Audio_.stop();
-      const R = new SR(); rec = R;
-      R.lang = "en-GB"; R.interimResults = false; R.maxAlternatives = 5; R.continuous = false;
-      let got = false;
-      (mic.classList.add("listening"), Kim.pose("listen")); heardTxt.textContent = "🎤 Listening…";
-      R.onresult = (e) => {
-        if (rec !== R || !live(tk)) return;
-        got = true; (mic.classList.remove("listening"), Kim.poseNow === "listen" && Kim.pose("idle"));
-        const alts = []; for (const x of e.results) for (const a of x) alts.push(a.transcript);
-        heardTxt.textContent = "I heard: “" + (alts[0] || "") + "”";
-        if (matches(alts, w)) return success(w, tk);
-        tries++;
-        Audio_.sfx("practice-wrong");
-        if (tries >= 2) giveAnswer(w, tk); else retry(w, tk, "Hmm… try again!");
-      };
-      R.onerror = (e) => {
-        if (rec !== R) return;
-        (mic.classList.remove("listening"), Kim.poseNow === "listen" && Kim.pose("idle"));
-        if (e.error === "not-allowed" || e.error === "service-not-allowed" || e.error === "audio-capture") { heardTxt.textContent = ""; setMode("self"); check.hidden = false; Kim.say("Say it out loud. Then tap Check!"); }
-      };
-      R.onend = () => {
-        if (rec !== R || !live(tk)) return;
-        (mic.classList.remove("listening"), Kim.poseNow === "listen" && Kim.pose("idle")); rec = null;
-        if (got || mode !== "mic") return;
-        /* nothing heard: re-open the mic once by itself, then wait for a tap */
-        quiet++;
-        if (quiet <= 1) retry(w, tk, "I can't hear you. Say it again!");
-        else { heardTxt.textContent = "Tap the mic and say it!"; hint.hidden = false; }
-      };
-      /* safety: never leave the mic open more than 7 s */
-      setTimeout(() => { if (rec === R) { try { R.stop(); } catch (e) {} } }, 7000);
-      try { R.start(); } catch (e) { (mic.classList.remove("listening"), Kim.poseNow === "listen" && Kim.pose("idle")); setMode("self"); check.hidden = false; }
-    }
-    async function show() {
-      if (r >= items.length) return finish();
-      const tk = ++itemTok;
-      tries = 0; quiet = 0; drawDots(); stopRec();
-      const w = items[r]; field.classList.remove("pre");
-      pic.src = img(L.words[w].img); pic.animate([{ transform: "scale(.6)", opacity: 0 }, { transform: "scale(1)", opacity: 1 }], { duration: 350, easing: "ease-out" });
-      ans.className = "answer"; ans.textContent = ""; heardTxt.textContent = "";
-      hint.hidden = true; nxt.hidden = true; check.hidden = mode !== "self"; mic.hidden = mode !== "mic";
-      mic.onclick = () => { quiet = 0; listen(w, tk); };
-      hint.onclick = async () => { stopRec(); ans.className = "answer soft"; ans.textContent = L.words[w].label; await Audio_.word(w); if (live(tk) && mode === "mic") listen(w, tk); };
-      check.onclick = async () => { res[r] = true; check.hidden = true; ans.className = "answer ok"; ans.textContent = L.words[w].label; await Audio_.word(w); nxt.hidden = false; };
-      await Kim.say(mode === "mic" ? (step.ask || "What's this?") : "What's this? Say it out loud!");
-      await sleep(200);
-      if (live(tk) && mode === "mic") listen(w, tk);
-    }
-    function nextItem() { r++; show(); }
-    nxt.onclick = nextItem;
-    async function finish() {
-      stopRec(); drawDots(); mic.hidden = true; hint.hidden = true; check.hidden = true; nxt.hidden = true; pic.hidden = true; heardTxt.textContent = ""; note.hidden = true;
-      const score = res.filter(Boolean).length;
-      Results.put(step.id, { said: score, total: items.length, mode });
-      ans.className = "answer"; ans.textContent = "⭐ " + score + " / " + items.length;
-      await Kim.say("Well done! You said all the food words!"); await sleep(400); if (alive(run)) next();
-    }
-    setMode(mode);
-    mic.hidden = true;
-    /* first picture shows (dimmed) during Kim's intro — never an empty frame */
-    pic.src = img(L.words[items[0]].img); field.classList.add("pre");
-    (async () => {
-      await Kim.say(step.intro || step.instruction);
-      await sleep(300);
-      if (alive(run)) show();
-    })();
-    return () => { itemTok++; stopRec(); };
-  };
+    const P0 = { play: (btn, fn) => { btn.classList.add("playing"); return playSafe(fn).then(() => btn.classList.remove("playing")); } };
+    show(0);
+    return () => { tok++; };
+  }
+  TYPES.chunks = (step, run) => cards(step, run, false);
+  TYPES.qa = (step, run) => cards(step, run, true);
 
-  /* ---------- RECAP: word list + results ---------- */
+  /* ---------- RECAP (F3): every word of the part; PLAY AGAIN · CONTINUE ---------- */
   TYPES.recap = function (step) {
-    const box = h("div", { class: "recap" });
-    const score = h("div", { class: "score" });
-    (step.scores || [["v-p1", "🫧 Pop the bubble"], ["v-p2", "🎤 Say it"]]).forEach(([id, label]) => {
-      const r = Results.get(id); const n = r ? (r.firstTry != null ? r.firstTry : r.said) : null;
-      score.append(h("div", {}, label, h("span", { class: "num" }, r ? `${n}/${r.total}` : "–")));
-    });
-    const grid = h("div", { class: "grid" });
+    const root = h("div", { class: "st st-recap" });
+    const grid = h("div", { class: "st-grid" });
     (step.words || Object.keys(L.words)).forEach((w) => {
-      const t = h("button", { class: "tile" }, h("img", { src: img(L.words[w].img), alt: "" }), h("span", { html: wlabel(L.words[w]) }));
+      const t = h("button", { class: "st-tile", type: "button" }, h("img", { src: img(L.words[w].img), alt: "" }),
+        h("span", { class: "t" }, h("i", { html: ICON3.speaker }), h("span", { class: "px-read", html: wlabel(L.words[w]) })));
       t.onclick = () => { t.classList.remove("bounce"); void t.offsetWidth; t.classList.add("bounce"); Audio_.word(w); };
       grid.append(t);
     });
-    const again = h("button", { class: "ctl" }, "↻ Play again");
-    again.onclick = () => go(steps.findIndex((s) => s.block === step.block));
-    const nextB = h("button", { class: "ctl primary", onclick: () => next() }, "🗺️ Back to the map");
-    box.append(h("h2", {}, step.heading || "Food Street words"), score, grid, h("div", { class: "controls" }, again, h("span", { class: "spacer" }), nextB));
-    main.append(box);
+    const first = steps.findIndex((s) => s.block === step.block);
+    root.append(h("div", { class: "px-top st-ctop" }, iconBtn("px-x", "✕", "Back to the map", () => showMap()), h("span", { class: "px-prog" }, h("i", { style: "width:100%" }))),
+      h("h2", { class: "st-h" }, wordsTitle(step)), h("div", { class: "st-gridwrap" }, grid),
+      h("div", { class: "st-cfoot two" }, h("button", { class: "px-btn white", type: "button", onclick: () => go(first) }, "PLAY AGAIN"),
+        h("button", { class: "px-btn red", type: "button", onclick: () => next() }, "CONTINUE")));
+    main.append(root);
     Audio_.sfx("complete");
-    Kim.say("Tap a food and listen again!");
   };
 
-
-  /* ---------- CHUNKS (Grammar explore): tap a card → full form, then buddies merge ---------- */
-  TYPES.chunks = function (step) {
-    const heard = new Set();
-    const grid = h("div", { class: "chunkgrid" });
-    const tracker = h("div", { class: "tracker" });
-    const count = h("span", { class: "count" });
-    const ready = h("button", { class: "ctl go" }, "I'm ready! ▶");
-    const dock = h("div", { class: "dock" }, h("div", { class: "controls" }, h("div", { class: "trackwrap" }, tracker, count), h("span", { class: "spacer" }), ready));
-    main.append(grid, dock);
-    function drawTracker() {
-      tracker.innerHTML = "";
-      step.cards.forEach((c, k) => tracker.append(h("span", { class: "dot" + (heard.has(k) ? " on" : "") }, c.chunk.split(" ")[0])));
-      count.textContent = `${heard.size}/${step.cards.length} cards`;
-    }
-    step.cards.forEach((c, k) => {
-      const pic = h("div", { class: "cpic" }, h("img", { src: img(c.img), alt: "" }));
-      if (c.food) pic.append(h("img", { class: "cfood", src: img(c.food), alt: "" }));
-      const sent = h("div", { class: "csent" }, h("b", {}, c.chunk), " " + c.rest);
-      const card = h("button", { class: "ccard" }, pic, sent);
-      card.onclick = async () => {
-        grid.querySelectorAll(".ccard").forEach((x) => x.classList.remove("now")); card.classList.add("now");
-        sent.innerHTML = `<b>${c.chunk.replace("'s", " is").replace("I'm", "I am")}</b> ${c.rest}`;
-        await Audio_.speak(c.full, c.who || "narrator");
-        sent.innerHTML = `<b class="m">${c.chunk}</b> ${c.rest}`;
-        await Audio_.speak(c.short, c.who || "narrator");
-        heard.add(k); drawTracker();
-      };
-      grid.append(card);
+  /* ---------- DONE (F4, without the passport stamp for now): Kim's head cheering · results · again / continue ---------- */
+  TYPES.done = function (step) {
+    const meta = lessonMeta(L.id);
+    const root = h("div", { class: "st st-done" });
+    const chips = h("div", { class: "st-scores" });
+    (step.scores || []).forEach(([id, label]) => {
+      const r = Results.get(id); const n = r ? (r.firstTry != null ? r.firstTry : r.said) : null;
+      chips.append(h("span", { class: "st-score" }, h("span", { class: "l" }, label), h("b", {}, r && r.total ? `${n}/${r.total}` : "–")));
     });
-    ready.onclick = () => { Results.put(step.id, { heard: [...heard], total: step.cards.length, skipped: heard.size < step.cards.length }); next(); };
-    drawTracker();
-    Kim.say(step.instruction);
+    const rs = Prog.rates(step.block);
+    const pct = rs.length ? Math.round((rs.reduce((a, x) => a + x, 0) / rs.length) * 100) : null;
+    const ms = Prog.elapsed(step.block.id);
+    const time = ms ? `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, "0")}` : null;
+    const stats = h("div", { class: "st-stats" },
+      pct != null ? h("div", { class: "st-stat" }, h("small", {}, "CORRECT"), h("b", { class: "g" }, pct + "%")) : null,
+      time ? h("div", { class: "st-stat" }, h("small", {}, "TIME"), h("b", { class: "b" }, time)) : null);
+    const first = steps.findIndex((s) => s.block === step.block);
+    root.append(navBg(L.bg || (meta && meta.bg)),
+      h("div", { class: "st-dmain" },
+        h("div", { class: "st-cheer" }, kimHead("cheer", "big"), h("span", { class: "st-burst", "aria-hidden": "true" }, ...Array.from({ length: 8 }, (_, q) => h("i", { style: `--a:${q * 45}deg` })))),
+        h("h1", { class: "st-dtitle" }, step.title),
+        /* reserved: the part's passport stamp goes here (rewards, decision #57) */
+        h("div", { class: "st-stamp-slot", "data-slot": "stamp", "aria-hidden": "true" }),
+        stats.childNodes.length ? stats : null, chips),
+      h("div", { class: "st-cfoot two" }, h("button", { class: "px-btn white", type: "button", onclick: () => go(first) }, "DO THIS PART AGAIN"),
+        h("button", { class: "px-btn red", type: "button", onclick: () => next() }, "CONTINUE")));
+    main.append(root);
+    Audio_.sfx("complete");
+    const head = root.querySelector(".st-cheer");
+    head.classList.add("talk"); playSafe(() => kimVoice(step.title)).then(() => head.classList.remove("talk"));
   };
 
-  /* ---------- PICK (Listening with characters): hear a sentence → tap 1 of 3 pictures ---------- */
-  TYPES.pick = function (step, run) {
-    const field = h("div", { class: "field pickfield" });
-    const tray = makeTray(); const dots = tray.el; main.append(dots);
-    const spk = h("button", { class: "speak big", "aria-label": "Listen again", html: ICON.speaker });
-    const sent = h("div", { class: "psent" });
-    const row = h("div", { class: "pickrow" });
-    sent.classList.add("aa");
-    field.append(h("div", { class: "row" }, spk), sent, row);
-    main.append(field);
-    const items = shuffle(step.items); const res = []; let r = 0;
-    const drawDots = () => { tray.update(r, res, items.length); };
-    const play = async () => { spk.classList.add("playing"); await Audio_.speak(items[r].say, "narrator"); spk.classList.remove("playing"); };
-    spk.onclick = play;
-    async function round() {
-      if (!alive(run)) return;
-      if (r >= items.length) return finish();
-      drawDots(); row.innerHTML = "";
-      const it = items[r]; let wrong = 0, locked = false;
-      sent.textContent = it.say; sent.classList.remove("shown");
-      const order = shuffle(it.opts.map((o, k) => k));
-      order.forEach((k) => {
-        const b = h("button", { class: "pcard" }, h("img", { src: img(it.opts[k]), alt: "" }));
-        b.dataset.k = k;
-        b.onclick = async () => {
-          if (locked) return;
-          if (k === it.answer) {
-            locked = true; res[r] = wrong === 0;
-            Audio_.sfx("name-reveal"); tray.fill(r, img(it.opts[k]), b, res[r]); b.classList.add("right");
-            row.querySelectorAll(".pcard").forEach((x) => x !== b && x.classList.add("fade"));
-            sent.classList.add("shown");
-            await sleep(250); await play(); await sleep(700);
-            if (!alive(run)) return; r++; round();
-          } else {
-            wrong++; Audio_.sfx("practice-wrong"); Kim.pose("think"); setTimeout(() => Kim.poseNow === "think" && Kim.pose("idle"), 1200);
-            b.classList.remove("wrong"); void b.offsetWidth; b.classList.add("wrong");
-            locked = true; await sleep(900); locked = false; b.classList.remove("wrong");
-            if (wrong >= 2) row.querySelector(`.pcard[data-k="${it.answer}"]`).classList.add("hint");
-            play();
-          }
-        };
-        row.append(b);
-      });
-      await sleep(350); await intro; if (!alive(run)) return;
-      field.classList.remove("pre"); play();
-    }
-    async function finish() {
-      drawDots(); row.innerHTML = ""; sent.textContent = "";
-      const score = res.filter(Boolean).length;
-      Results.put(step.id, { firstTry: score, total: items.length });
-      field.append(h("div", { class: "reveal" }, h("div", { class: "card" }, h("div", { class: "w", style: "color:var(--ink)" }, "⭐ " + score + " / " + items.length))));
-      await Kim.say(score >= items.length - 1 ? "Super listening!" : "Good job!");
-      await sleep(500); if (alive(run)) next();
-    }
-    const intro = Kim.say(step.intro);
-    field.classList.add("pre"); round();
-  };
-
-  /* ---------- LID (Speaking full sentence): shadow → mic opens → check BE + food → lid lifts ---------- */
-  TYPES.lid = function (step, run) {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    let mode = SR ? "mic" : "self";
-    const pron = { he: "He", she: "She", i: "I" };
-    const BE = {
-      he: /\bhe ?'?s\b|\bhe is\b|\bhis\b|\bhes\b/,
-      she: /\bshe ?'?s\b|\bshe is\b|\bshes\b|\bshe was\b/,
-      i: /\bi ?'?m\b|\bi am\b|\bim\b|\bam\b/
-    };
-    /* build random kid × food each attempt (anti-memory) */
-    const boys = shuffle(step.boys), girls = shuffle(step.girls), foods = shuffle(step.foods);
-    const items = shuffle(step.subjects).map((s, k) => ({ s, f: foods[k], kid: s === "he" ? boys.pop() : s === "she" ? girls.pop() : step.me }));
-    const field = h("div", { class: "sayfield lidfield" });
-    const tray = makeTray(); const dots = tray.el; main.append(dots);
-    const kid = h("img", { class: "lidkid", alt: "" });
-    const tag = h("span", { class: "subj" });
-    const plate = h("div", { class: "plate" });
-    const shadow = h("img", { class: "shadow", alt: "" });
-    const food = h("img", { class: "lfood", alt: "" });
-    const lid = h("div", { class: "lid" });
-    plate.append(food, shadow, lid);
-    /* 💡 hint: shows (and says) the food word, so a child who can't read the shadow can still build the sentence */
-    const bulb = h("button", { class: "bulb", "aria-label": "Hint", hidden: true }, "💡");
-    const wordChip = h("div", { class: "wordchip", hidden: true });
-    const plateWrap = h("div", { class: "platewrap" }, plate, bulb, wordChip);
-    const scene = h("div", { class: "lidscene" }, h("div", { class: "kidwrap" }, kid, tag), plateWrap);
-    const ans = h("div", { class: "answer" });
-    const heardTxt = h("div", { class: "heardtxt" });
-    const mic = h("button", { class: "mic", "aria-label": "Say it", html: ICON.mic });
-    const lift = h("button", { class: "ctl primary", hidden: true }, "🍽️ Lift the lid");
-    const hint = h("button", { class: "ctl", hidden: true }, "👂 Listen");
-    const nxt = h("button", { class: "ctl go", hidden: true }, "Next ▶");
-    const note = h("div", { class: "note", hidden: true });
-    field.append(scene, ans, heardTxt, h("div", { class: "row" }, mic, hint, lift, nxt), note);
-    main.append(field);
-    const res = []; let r = 0, tries = 0, quiet = 0, rec = null, tok = 0, hints = 0;
-    const live = (tk) => alive(run) && tk === tok;
-    const verbOf = (f) => L.words[f].verb || "eating";
-    const model = (it) => `${pron[it.s]}${it.s === "i" ? "'m" : "'s"} ${verbOf(it.f)} ${L.words[it.f].label}.`;
-    const drawDots = () => { tray.update(r, res, items.length); };
-    function setSelf() {
-      mode = "self"; mic.hidden = true; lift.hidden = false; note.hidden = false;
-      note.textContent = "Máy hoặc trình duyệt này chưa cho dùng micro. HV nói to cả câu, rồi bấm Lift the lid để nghe câu mẫu.";
-    }
-    function stopRec() { if (rec) { const x = rec; rec = null; try { x.abort(); } catch (e) {} } (mic.classList.remove("listening"), Kim.poseNow === "listen" && Kim.pose("idle")); }
-    async function open(it, tk, good) {
-      stopRec(); mic.hidden = true; hint.hidden = true; lift.hidden = true; bulb.hidden = true; wordChip.hidden = true;
-      plate.classList.add("open"); tray.fill(r, food.src, plate, good);
-      ans.className = "answer " + (good ? "ok" : "soft"); ans.textContent = (good ? "✓ " : "") + model(it);
-      Audio_.sfx(good ? "name-reveal" : "sticker-place"); await sleep(450); if (!live(tk)) return;
-      await Audio_.speak(model(it), it.s === "i" ? "kim" : "narrator"); if (!live(tk)) return;
-      if (good) { await Kim.say(["Great!", "Well done!", "Super!"][r % 3]); await sleep(300); if (live(tk)) nextItem(); }
-      else nxt.hidden = false;
-    }
-    async function retry(it, tk, msg) {
-      hint.hidden = false;
-      await Kim.say(msg); await sleep(250);
-      if (live(tk) && mode === "mic") listen(it, tk);
-    }
-    function judge(alts, it) {
-      const norm = alts.map((t) => " " + t.toLowerCase().replace(/[’`]/g, "'").replace(/[^a-z' ]/g, " ") + " ");
-      const w = L.words[it.f];
-      const hasFood = (t) => !(w.reject && w.reject.some((x) => t.includes(x))) && w.say.some((k) => t.includes(k));
-      const vb = verbOf(it.f), other = vb === "eating" ? "drinking" : "eating";
-      const verbOk = (t) => !step.checkVerb || (new RegExp("\\b" + vb.slice(0, -3)).test(t) && !new RegExp("\\b" + other.slice(0, -3)).test(t));
-      if (norm.some((t) => BE[it.s].test(t) && hasFood(t) && verbOk(t))) return "ok";
-      if (step.checkVerb && norm.some((t) => hasFood(t) && !verbOk(t))) return "verb";   /* "drinking ice cream" — the I3 STS Insights error */
-      if (norm.some(hasFood)) return "be";      /* food right, BE missing — the STS Insights error */
-      return "food";
-    }
-    function listen(it, tk) {
-      stopRec(); Audio_.stop();
-      const R = new SR(); rec = R;
-      R.lang = "en-GB"; R.interimResults = false; R.maxAlternatives = 5; R.continuous = false;
-      let got = false;
-      (mic.classList.add("listening"), Kim.pose("listen")); heardTxt.textContent = "🎤 Listening…";
-      R.onresult = (e) => {
-        if (rec !== R || !live(tk)) return;
-        got = true; (mic.classList.remove("listening"), Kim.poseNow === "listen" && Kim.pose("idle"));
-        const alts = []; for (const x of e.results) for (const a of x) alts.push(a.transcript);
-        heardTxt.textContent = "I heard: “" + (alts[0] || "") + "”";
-        const v = judge(alts, it);
-        if (v === "ok") { res[r] = tries === 0; return open(it, tk, true); }
-        tries++; Audio_.sfx("practice-wrong");
-        if (tries >= 2) { res[r] = false; return open(it, tk, false); }
-        if (v === "verb") retry(it, tk, "Eating or drinking? Try again!");
-        else if (v === "be") retry(it, tk, it.s === "i" ? "Don't forget “am”! Say the full sentence." : "Don't forget “is”! Say the full sentence.");
-        else retry(it, tk, "Look at the shadow again. Try again!");
-      };
-      R.onerror = (e) => {
-        if (rec !== R) return;
-        (mic.classList.remove("listening"), Kim.poseNow === "listen" && Kim.pose("idle"));
-        if (["not-allowed", "service-not-allowed", "audio-capture"].includes(e.error)) { heardTxt.textContent = ""; setSelf(); Kim.say("Say it out loud. Then lift the lid!"); }
-      };
-      R.onend = () => {
-        if (rec !== R || !live(tk)) return;
-        (mic.classList.remove("listening"), Kim.poseNow === "listen" && Kim.pose("idle")); rec = null;
-        if (got || mode !== "mic") return;
-        quiet++;
-        if (quiet <= 1) retry(it, tk, "I can't hear you. Say it again!");
-        else { heardTxt.textContent = "Tap the mic and say it!"; hint.hidden = false; }
-      };
-      setTimeout(() => { if (rec === R) { try { R.stop(); } catch (e) {} } }, 8000);
-      try { R.start(); } catch (e) { (mic.classList.remove("listening"), Kim.poseNow === "listen" && Kim.pose("idle")); setSelf(); }
-    }
-    function paint(it) {
-      kid.src = img(it.kid); kid.classList.toggle("me", it.s === "i");
-      tag.textContent = pron[it.s];
-      food.src = img(L.words[it.f].img);
-      if (step.style === "slot") { shadow.src = img(L.words[it.f].img); plate.classList.add("slot"); }
-      else shadow.src = img("shadow-" + it.f);
-      plate.classList.remove("open");
-    }
-    async function show() {
-      if (r >= items.length) return finish();
-      const tk = ++tok; const it = items[r];
-      tries = 0; quiet = 0; drawDots(); stopRec(); field.classList.remove("pre");
-      paint(it);
-      bulb.hidden = false; bulb.classList.remove("used"); wordChip.hidden = true; wordChip.textContent = L.words[it.f].label;
-      bulb.onclick = async () => {
-        if (!bulb.classList.contains("used")) hints++;
-        bulb.classList.add("used"); wordChip.hidden = false;
-        wordChip.animate([{ opacity: 0, transform: "translate(-50%,8px) scale(.8)" }, { opacity: 1, transform: "translate(-50%,0)" }], { duration: 300 });
-        stopRec(); await Audio_.word(it.f); await sleep(200);
-        if (live(tk) && mode === "mic" && !plate.classList.contains("open")) listen(it, tk);
-      };
-      ans.className = "answer"; ans.textContent = ""; heardTxt.textContent = "";
-      hint.hidden = true; nxt.hidden = true; mic.hidden = mode !== "mic"; lift.hidden = mode === "mic";
-      scene.animate([{ opacity: 0, transform: "translateY(12px)" }, { opacity: 1, transform: "none" }], { duration: 350 });
-      mic.onclick = () => { quiet = 0; listen(it, tk); };
-      hint.onclick = async () => { stopRec(); ans.className = "answer soft"; ans.textContent = model(it); await Audio_.speak(model(it), it.s === "i" ? "kim" : "narrator"); if (live(tk) && mode === "mic") listen(it, tk); };
-      lift.onclick = () => { res[r] = true; open(it, tk, true); };
-      if (step.style === "slot") await spin(it, tk);
-      await Kim.say(it.s === "he" ? "Look at him!" : it.s === "she" ? "Look at her!" : "Look! It's you!");
-      await sleep(200);
-      if (live(tk) && mode === "mic") listen(it, tk);
-    }
-    /* Snack Machine: person and item roll like a slot machine, then stop */
-    async function spin(it, tk) {
-      const pool = shuffle(step.foods), kidsPool = shuffle(step.boys.concat(step.girls));
-      Audio_.sfx("region-enter");
-      for (let k = 0; k < 12; k++) {
-        if (!live(tk)) return;
-        shadow.src = img(L.words[pool[k % pool.length]].img); kid.src = img(kidsPool[k % kidsPool.length]); tag.textContent = "?";
-        await sleep(60 + k * 12);
-      }
-      shadow.src = img(L.words[it.f].img); kid.src = img(it.kid); tag.textContent = pron[it.s];
-      Audio_.sfx("sticker-place");
-    }
-    function nextItem() { r++; show(); }
-    nxt.onclick = nextItem;
-    async function finish() {
-      stopRec(); drawDots(); scene.hidden = true; bulb.hidden = true; mic.hidden = true; hint.hidden = true; lift.hidden = true; nxt.hidden = true; heardTxt.textContent = ""; note.hidden = true;
-      const score = res.filter(Boolean).length;
-      Results.put(step.id, { said: score, total: items.length, mode, hints });
-      ans.className = "answer"; ans.textContent = "⭐ " + score + " / " + items.length;
-      await Kim.say("Well done! Great sentences!"); await sleep(400); if (alive(run)) next();
-    }
-    mic.hidden = true;
-    paint(items[0]); field.classList.add("pre"); drawDots();
-    (async () => { await Kim.say(step.intro); await sleep(300); if (alive(run)) show(); })();
-    return () => { tok++; stopRec(); };
-  };
-
-  /* ---------- QA (FL explore): tap a card → question, then the answer appears ---------- */
-  TYPES.qa = function (step) {
-    const heard = new Set();
-    const grid = h("div", { class: "chunkgrid" });
-    const tracker = h("div", { class: "tracker" });
-    const count = h("span", { class: "count" });
-    const ready = h("button", { class: "ctl go" }, "I'm ready! ▶");
-    main.append(grid, h("div", { class: "dock" }, h("div", { class: "controls" }, h("div", { class: "trackwrap" }, tracker, count), h("span", { class: "spacer" }), ready)));
-    const draw = () => { tracker.innerHTML = ""; step.cards.forEach((c, k) => tracker.append(h("span", { class: "dot" + (heard.has(k) ? " on" : "") }, c.chunk.split(" ")[0]))); count.textContent = `${heard.size}/${step.cards.length} cards`; };
-    step.cards.forEach((c, k) => {
-      const pic = h("div", { class: "cpic" }, h("img", { src: img(c.img), alt: "" }));
-      if (c.food) pic.append(h("img", { class: "cfood", src: img(c.food), alt: "" }));
-      const q = h("div", { class: "cq" }, c.q);
-      const a = h("div", { class: "csent ca" }, h("b", {}, c.chunk), " " + c.a.slice(c.chunk.length + 1));
-      a.style.visibility = "hidden";
-      const card = h("button", { class: "ccard" }, pic, h("div", { class: "ctext" }, q, a));
-      card.onclick = async () => {
-        grid.querySelectorAll(".ccard").forEach((x) => x.classList.remove("now")); card.classList.add("now");
-        a.style.visibility = "hidden";
-        await Audio_.speak(c.q, "narrator");
-        a.style.visibility = "visible"; a.animate([{ opacity: 0, transform: "translateY(6px)" }, { opacity: 1, transform: "none" }], { duration: 300 });
-        await Audio_.speak(c.a, "kim");
-        heard.add(k); draw();
-      };
-      grid.append(card);
-    });
-    ready.onclick = () => { Results.put(step.id, { heard: [...heard], total: step.cards.length, skipped: heard.size < step.cards.length }); next(); };
-    draw();
-    Kim.say(step.instruction);
-  };
-
-  /* ---------- NAMES (FL listening): hear "What is Nick eating? — He's eating…" → tap the right friend ---------- */
-  TYPES.names = function (step, run) {
-    const field = h("div", { class: "field namefield" });
-    const tray = makeTray(); const dots = tray.el; main.append(dots);
-    const spk = h("button", { class: "speak big", "aria-label": "Listen again", html: ICON.speaker });
-    const tag = h("div", { class: "nametag" });
-    const crowd = h("div", { class: "crowd" });
-    const aaTxt = h("div", { class: "aa psent" });
-    field.append(h("div", { class: "row" }, spk, tag), aaTxt, crowd);
-    main.append(field);
-    const rounds = shuffle(step.rounds); const res = []; let r = 0;
-    const kidEls = {};
-    shuffle(step.kids).forEach((k) => {
-      const b = h("button", { class: "kid" }, h("img", { src: img(k.img), alt: "" }), h("span", { class: "ktag" }));
-      b.dataset.k = k.id; kidEls[k.id] = b; crowd.append(b);
-    });
-    const drawDots = () => { tray.update(r, res, rounds.length); };
-    const play = async () => { const it = rounds[r]; spk.classList.add("playing"); await Audio_.speak(it.q, "narrator"); await sleep(150); await Audio_.speak(it.a, "kim"); spk.classList.remove("playing"); };
-    spk.onclick = play;
-    let wrong = 0, locked = false;
-    function round() {
-      if (!alive(run)) return;
-      if (r >= rounds.length) return finish();
-      drawDots(); wrong = 0; locked = false;
-      const it = rounds[r];
-      aaTxt.textContent = it.q + " — " + it.a; aaTxt.classList.remove("shown");
-      tag.textContent = it.name; tag.animate([{ transform: "scale(.6)", opacity: 0 }, { transform: "scale(1)", opacity: 1 }], { duration: 300 });
-      Object.values(kidEls).forEach((b) => b.classList.remove("hint"));
-      sleep(300).then(() => intro).then(() => { if (!alive(run)) return; field.classList.remove("pre"); play(); });
-    }
-    Object.values(kidEls).forEach((b) => {
-      b.onclick = async () => {
-        if (locked || r >= rounds.length || b.classList.contains("named")) return;
-        const it = rounds[r];
-        if (b.dataset.k === it.kid) {
-          locked = true; res[r] = wrong === 0;
-          Audio_.sfx("name-reveal"); tray.fill(r, b.querySelector("img").src, b, res[r]); aaTxt.classList.add("shown"); b.classList.add("named"); b.querySelector(".ktag").textContent = it.name;
-          await sleep(600); if (!alive(run)) return; r++; round();
-        } else {
-          wrong++; Audio_.sfx("practice-wrong"); Kim.pose("think"); setTimeout(() => Kim.poseNow === "think" && Kim.pose("idle"), 1200);
-          b.classList.remove("wrong"); void b.offsetWidth; b.classList.add("wrong");
-          locked = true; await sleep(900); locked = false; b.classList.remove("wrong");
-          if (wrong >= 2) kidEls[it.kid].classList.add("hint");
-          play();
-        }
-      };
-    });
-    async function finish() {
-      drawDots(); tag.textContent = "";
-      const score = res.filter(Boolean).length;
-      Results.put(step.id, { firstTry: score, total: rounds.length });
-      field.append(h("div", { class: "reveal" }, h("div", { class: "card" }, h("div", { class: "w", style: "color:var(--ink)" }, "⭐ " + score + " / " + rounds.length))));
-      await Kim.say(score >= rounds.length - 1 ? "Super listening!" : "Good job!");
-      await sleep(500); if (alive(run)) next();
-    }
-    const intro = Kim.say(step.intro);
-    field.classList.add("pre"); round();
-  };
-
-  /* ---------- ANSWER (FL speaking): Kim asks → mic opens → check BE + every food ---------- */
+  /* ---------- speaking checks used by ANSWER: BE + every food (+ verb), or the short answer ---------- */
   const BE_RX = { he: /\bhe ?'?s\b|\bhe is\b|\bhis\b|\bhes\b/, she: /\bshe ?'?s\b|\bshe is\b|\bshes\b/, i: /\bi ?'?m\b|\bi am\b|\bim\b|\bam\b/ };
   const PRON = { he: "He's", she: "She's", i: "I'm" };
   function judgeSentence(alts, subj, foods, verbs) {
@@ -1236,221 +1146,479 @@
     if (norm.some(yn)) return "short";
     return "yn";
   }
-  TYPES.answer = function (step, run) {
+  /* ---------- BUBBLES (P1): listen → pop the right bubble (template: Nghe & chọn đáp án) ---------- */
+  TYPES.bubbles = function (step, run) {
+    const P = practice(step, { cls: "px-listen" });
+    const targets = shuffle(step.targets); const res = []; let r = 0;
+    const sayT = () => Audio_.word(targets[r]);
+    const spk = P.speaker("xl", sayT);
+    const grid = h("div", { class: "px-grid round", "data-n": step.options });
+    P.body.append(h("div", { class: "px-head" }, spk), h("div", { class: "px-opts" }, grid));
+    P.aa(step.instruction || step.intro);
+    function optionsFor(t) {
+      const set = [t, L.confusable[t]];
+      const rest = shuffle(Object.keys(L.words).filter((w) => !set.includes(w)));
+      while (set.length < step.options) set.push(rest.pop());
+      return shuffle(set);
+    }
+    const intro = P.intro(step.intro || step.instruction);
+    async function round() {
+      if (!alive(run)) return;
+      if (r >= targets.length) { const score = res.filter(Boolean).length; Results.put(step.id, { firstTry: score, total: targets.length }); return P.finish(score, targets.length, score >= targets.length - 1 ? "Super listening!" : "Good job!"); }
+      P.progress(r, targets.length); grid.innerHTML = "";
+      const t = targets[r]; let wrong = 0, locked = false;
+      optionsFor(t).forEach((w) => {
+        const b = h("button", { class: "px-bub", type: "button", "aria-label": "Bubble" }, h("img", { src: img(L.words[w].img), alt: "" }));
+        b.dataset.w = w;
+        b.onclick = async () => {
+          if (locked) return;
+          if (w === t) {
+            locked = true; res[r] = wrong === 0;
+            Audio_.sfx("sticker-place"); b.classList.add("ok");
+            grid.querySelectorAll(".px-bub").forEach((x) => x !== b && x.classList.add("fade"));
+            await P.sheet({ ok: true, text: L.words[t].label, play: () => Audio_.word(t), auto: async (still) => { await sleep(250); if (still()) await Audio_.word(t); } });
+            if (!alive(run)) return; r++; round();
+          } else {
+            wrong++; locked = true; P.wrong(b);
+            await P.retry(); locked = false;
+            if (wrong >= 2) grid.querySelector(`[data-w="${t}"]`).classList.add("px-hint");
+            P.play(spk, sayT);
+          }
+        };
+        grid.append(b);
+      });
+      await intro; if (!alive(run)) return;
+      P.play(spk, sayT);
+    }
+    round();
+  };
+
+  /* ---------- PICK (P2): hear a sentence → tap 1 of 3 pictures (wrong ones differ by food OR person) ---------- */
+  TYPES.pick = function (step, run) {
+    const P = practice(step, { cls: "px-listen" });
+    const items = shuffle(step.items); const res = []; let r = 0;
+    const sayIt = () => Audio_.speak(items[r].say, "narrator");
+    const spk = P.speaker("xl", sayIt);
+    const grid = h("div", { class: "px-grid cards" });
+    P.body.append(h("div", { class: "px-head" }, spk), h("div", { class: "px-opts" }, grid));
+    P.aa(step.instruction || step.intro);
+    const intro = P.intro(step.intro);
+    async function round() {
+      if (!alive(run)) return;
+      if (r >= items.length) { const score = res.filter(Boolean).length; Results.put(step.id, { firstTry: score, total: items.length }); return P.finish(score, items.length, score >= items.length - 1 ? "Super listening!" : "Good job!"); }
+      P.progress(r, items.length); grid.innerHTML = "";
+      const it = items[r]; let wrong = 0, locked = false;
+      grid.dataset.n = it.opts.length;
+      shuffle(it.opts.map((o, k) => k)).forEach((k) => {
+        const b = h("button", { class: "px-card", type: "button", "aria-label": "Picture " + (k + 1) }, h("img", { src: img(it.opts[k]), alt: "" }));
+        b.dataset.k = k;
+        b.onclick = async () => {
+          if (locked) return;
+          if (k === it.answer) {
+            locked = true; res[r] = wrong === 0;
+            Audio_.sfx("name-reveal"); b.classList.add("ok");
+            grid.querySelectorAll(".px-card").forEach((x) => x !== b && x.classList.add("fade"));
+            await P.sheet({ ok: true, text: it.say, play: sayIt, auto: async (still) => { await sleep(250); if (still()) await sayIt(); } });
+            if (!alive(run)) return; r++; round();
+          } else {
+            wrong++; locked = true; P.wrong(b);
+            await P.retry(); locked = false;
+            if (wrong >= 2) grid.querySelector(`[data-k="${it.answer}"]`).classList.add("px-hint");
+            P.play(spk, sayIt);
+          }
+        };
+        grid.append(b);
+      });
+      await intro; if (!alive(run)) return;
+      P.play(spk, sayIt);
+    }
+    round();
+  };
+
+  /* ---------- NAMES (P3): hear "What is Nick eating? — He's eating…" → tap the right friend, the name goes there ---------- */
+  TYPES.names = function (step, run) {
+    const P = practice(step, { cls: "px-listen px-names" });
+    const rounds = shuffle(step.rounds); const res = []; let r = 0;
+    const sayIt = async () => { const it = rounds[r]; await Audio_.speak(it.q, "narrator"); await sleep(150); await Audio_.speak(it.a, "kim"); };
+    const spk = P.speaker("lg", sayIt);
+    const tag = h("span", { class: "px-chip px-name" });
+    const grid = h("div", { class: "px-grid kids", "data-n": step.kids.length });
+    P.body.append(h("div", { class: "px-head row" }, spk, tag), h("div", { class: "px-opts" }, grid));
+    P.aa(step.instruction || step.intro);
+    const kidEls = {};
+    shuffle(step.kids).forEach((k) => {
+      const b = h("button", { class: "px-card kid", type: "button", "aria-label": "Friend" }, h("img", { src: img(k.img), alt: "" }), h("span", { class: "px-ktag" }));
+      b.dataset.k = k.id; kidEls[k.id] = b; grid.append(b);
+    });
+    let wrong = 0, locked = true;
+    const intro = P.intro(step.intro);
+    async function round() {
+      if (!alive(run)) return;
+      if (r >= rounds.length) { const score = res.filter(Boolean).length; Results.put(step.id, { firstTry: score, total: rounds.length }); return P.finish(score, rounds.length, score >= rounds.length - 1 ? "Super listening!" : "Good job!"); }
+      P.progress(r, rounds.length); wrong = 0;
+      const it = rounds[r];
+      tag.textContent = it.name; tag.animate([{ transform: "scale(.7)", opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 300 });
+      Object.values(kidEls).forEach((b) => b.classList.remove("px-hint"));
+      await intro; if (!alive(run)) return;
+      locked = false; P.play(spk, sayIt);
+    }
+    Object.values(kidEls).forEach((b) => {
+      b.onclick = async () => {
+        if (locked || r >= rounds.length || b.classList.contains("named")) return;
+        const it = rounds[r];
+        if (b.dataset.k === it.kid) {
+          locked = true; res[r] = wrong === 0;
+          Audio_.sfx("name-reveal"); b.classList.add("named"); b.querySelector(".px-ktag").textContent = it.name;
+          await P.sheet({ ok: true, text: it.a, play: sayIt });
+          if (!alive(run)) return; r++; round();
+        } else {
+          wrong++; locked = true; P.wrong(b);
+          await P.retry(); locked = false;
+          if (wrong >= 2) kidEls[it.kid].classList.add("px-hint");
+          P.play(spk, sayIt);
+        }
+      };
+    });
+    round();
+  };
+
+  /* ---------- SPEAKING (P10–P13: say · lid · answer · race) — one flow for every speaking screen ----------
+   * item → Kim asks (voice) → the mic opens by itself → keyword check (the same checks as before).
+   * Wrong → Kim's hint (voice + one short line over the mic) → mic again; 2nd miss → "Almost!" sheet with the model answer.
+   * Silence ≈5 s after the prompt → the mic pulses, "Your turn! Tap and say it.", the prompt plays once more.
+   * No mic on this device / browser → say it out loud, then tap the mic → model answer (as the old "Check").
+   * "Can't speak now" → the rest of this exercise is skipped without penalty: only the items done are scored. */
+  const SR_OFF = ["not-allowed", "service-not-allowed", "audio-capture", "network"];
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  function speaking(step, run, P, cfg) {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     let mode = SR ? "mic" : "self";
-    const field = h("div", { class: "sayfield" });
-    const tray = makeTray(); const dots = tray.el; main.append(dots);
-    const pic = h("div", { class: "apic" });
-    const qtxt = h("div", { class: "cq big" });
-    const ans = h("div", { class: "answer" });
-    const heardTxt = h("div", { class: "heardtxt" });
-    const mic = h("button", { class: "mic", "aria-label": "Say it", html: ICON.mic });
-    const check = h("button", { class: "ctl primary", hidden: true }, "✓ Check");
-    const hint = h("button", { class: "ctl", hidden: true }, "👂 Listen");
-    const nxt = h("button", { class: "ctl go", hidden: true }, "Next ▶");
-    const note = h("div", { class: "note", hidden: true });
-    field.append(pic, qtxt, ans, heardTxt, h("div", { class: "row" }, mic, hint, check, nxt), note);
-    let board = null, pawnAt = 0;
-    if (step.board) {
-      board = h("div", { class: "raceboard" });
-      for (let k = 0; k <= step.items.length; k++) board.append(h("span", { class: "sq" + (k === step.items.length ? " home" : "") }, k === step.items.length ? "🏠" : String(k + 1)));
-      board.firstChild.append(h("span", { class: "pawn" }, "🙂"));
-      field.prepend(board);
-    }
-    const movePawn = () => { if (!board) return; pawnAt = Math.min(pawnAt + 1, step.items.length); const p = board.querySelector(".pawn"); board.children[pawnAt].append(p); p.animate([{ transform: "translateY(-14px) scale(1.2)" }, { transform: "none" }], { duration: 400 }); };
-    main.append(field);
-    const items = shuffle(step.items).map((it) => Object.assign({}, it, { foods: it.foods || it.plate || (it.parts ? it.parts.flatMap((p) => p.foods) : []) }));
-    const res = []; let r = 0, tries = 0, quiet = 0, rec = null, tok = 0;
+    const items = cfg.items, res = [], spk = cfg.speaker;
+    let r = 0, tries = 0, quiet = 0, nudged = false, rec = null, tok = 0, silT = 0, busy = true, asking = false;
     const live = (tk) => alive(run) && tk === tok;
+    const F = P.micFoot();
+    const note = h("div", { class: "px-note", hidden: true }, "Thiết bị này chưa cho dùng micro — HV nói to, rồi bấm micro để nghe câu mẫu.");
+    P.body.prepend(note);
+    const SELF_LINE = "Say it out loud. Then tap the mic!";
+    function setSelf() {
+      if (mode !== "self") { mode = "self"; stopRec(); }
+      note.hidden = false; F.mic.classList.add("self"); F.mic.setAttribute("aria-label", "I said it — tap to check");
+      if (!busy) F.line(SELF_LINE, "blue");
+    }
+    function stopRec() { if (rec) { const x = rec; rec = null; try { x.abort(); } catch (e) {} } F.listening(false); }
+    const ask = (it) => P.play(spk, () => cfg.ask(it, mode));
+    function armSilence(it, tk) {
+      clearTimeout(silT);
+      silT = setTimeout(async () => {
+        if (!live(tk) || busy) return;
+        F.pulse(true); F.line(mode === "self" ? "Your turn! Say it, then tap the mic." : "Your turn! Tap and say it.", "blue");
+        if (nudged) return;
+        nudged = true; quiet = Math.max(quiet, 1); stopRec();
+        await ask(it);
+        if (live(tk) && !busy && mode === "mic") listen(it, tk);
+      }, 5000);
+    }
+    function listen(it, tk) {
+      stopRec(); Audio_.stop();
+      const R = new SR(); rec = R;
+      R.lang = "en-GB"; R.interimResults = false; R.maxAlternatives = 5; R.continuous = false;
+      let got = false;
+      F.listening(true);
+      R.onspeechstart = () => { if (rec !== R) return; clearTimeout(silT); F.pulse(false); F.line(""); };
+      R.onresult = (e) => {
+        if (rec !== R || !live(tk)) return;
+        got = true; F.listening(false); clearTimeout(silT); F.pulse(false);
+        const alts = []; for (const x of e.results) for (const a of x) alts.push(a.transcript);
+        const v = cfg.judge(alts, it);
+        if (v === true) { res[r] = tries === 0; return reveal(it, tk, true); }
+        tries++; Audio_.sfx("practice-wrong");
+        if (tries >= 2) { res[r] = false; return reveal(it, tk, false); }
+        retry(it, tk, v);
+      };
+      R.onerror = (e) => { if (rec !== R) return; F.listening(false); if (SR_OFF.includes(e.error)) setSelf(); };
+      R.onend = () => {
+        if (rec !== R || !live(tk)) return;
+        F.listening(false); rec = null;
+        if (got || mode !== "mic" || busy) return;
+        quiet++;
+        if (quiet <= 1) retry(it, tk, "I can't hear you. Say it again!");
+        else { F.line("Tap the mic and say it!", "blue"); F.pulse(true); }
+      };
+      /* safety: never leave the mic open too long */
+      setTimeout(() => { if (rec === R) { try { R.stop(); } catch (e) {} } }, cfg.maxMs || 8000);
+      try { R.start(); } catch (e) { F.listening(false); setSelf(); }
+    }
+    async function retry(it, tk, msg) {
+      busy = true; clearTimeout(silT); F.line(msg, "red");
+      await P.voice(msg); await sleep(250);
+      if (!live(tk)) return;
+      busy = false;
+      if (mode === "mic") listen(it, tk);
+      armSilence(it, tk);
+    }
+    async function reveal(it, tk, good) {
+      busy = true; stopRec(); clearTimeout(silT); F.pulse(false); F.line("");
+      if (cfg.onReveal) cfg.onReveal(it, good);
+      Audio_.sfx(good ? "name-reveal" : "sticker-place");
+      const k = r, model = cfg.model(it);
+      if (good) await P.sheet({ ok: true, text: model, play: () => cfg.playModel(it),
+        auto: async (still) => { await sleep(400); if (!still()) return; await cfg.playModel(it); await sleep(150); if (still()) await Audio_.speak(cfg.praise[k % cfg.praise.length], "kim"); } });
+      else await P.sheet({ ok: false, title: "Almost!", html: "Correct answer: <u>" + esc(model) + "</u>", button: "GOT IT",
+        auto: async (still) => { await sleep(400); for (const l of cfg.missLines ? cfg.missLines(it) : [null]) { if (!still()) return; await (l ? Audio_.speak(l, "kim") : cfg.playModel(it)); await sleep(120); } } });
+      if (!live(tk)) return;
+      r++; show();
+    }
+    async function show() {
+      if (!alive(run)) return;
+      if (r >= items.length) return finish();
+      const tk = ++tok; const it = items[r];
+      tries = 0; quiet = 0; nudged = false; busy = true; stopRec(); clearTimeout(silT);
+      F.pulse(false); F.line("");
+      P.progress(r, items.length); P.aa(cfg.aa(it));
+      P.root.__model = cfg.model(it);           /* test hook (JS property only, not in the page) */
+      await cfg.paint(it, tk, true);            /* Snack Machine spins here */
+      if (!live(tk)) return;
+      F.mic.onclick = () => {
+        if (busy && !asking) return;
+        if (asking) { asking = false; busy = false; Audio_.stop(); }   /* the child may answer before Kim has finished asking */
+        clearTimeout(silT); F.pulse(false);
+        if (mode === "self") { res[r] = true; return reveal(it, tk, true); }
+        quiet = 0; F.line(""); listen(it, tk);
+      };
+      spk.onclick = async () => {
+        if (busy) return;
+        stopRec(); clearTimeout(silT);
+        await ask(it);
+        if (!live(tk) || busy) return;
+        if (mode === "mic") listen(it, tk);
+        armSilence(it, tk);
+      };
+      asking = true; await ask(it);
+      if (!live(tk) || !asking) return;
+      asking = false; busy = false;
+      if (mode === "mic") listen(it, tk); else F.line(SELF_LINE, "blue");
+      armSilence(it, tk);
+    }
+    function finish() {
+      stopRec(); clearTimeout(silT); busy = true;
+      const score = res.filter(Boolean).length;
+      Results.put(step.id, Object.assign({ said: score, total: items.length, mode }, cfg.extra ? cfg.extra() : {}));
+      P.finish(score, items.length, cfg.doneLine);
+    }
+    /* "Can't speak now": skip the rest of this exercise, no penalty */
+    F.cant.onclick = () => {
+      tok++; stopRec(); clearTimeout(silT); Audio_.stop();
+      const said = res.slice(0, r).filter(Boolean).length;
+      Results.put(step.id, Object.assign({ said, total: r, skipped: items.length - r, mode: "skipped" }, cfg.extra ? cfg.extra() : {}));
+      next();
+    };
+    if (mode === "self") setSelf();
+    /* the first item is on screen (dimmed) while Kim reads the instruction — never an empty frame */
+    cfg.paint(items[0], 0, false); P.progress(0, items.length); P.aa(cfg.aa(items[0]));
+    (async () => { await P.intro(cfg.intro); await sleep(250); if (alive(run)) show(); })();
+    return {
+      cleanup: () => { tok++; stopRec(); clearTimeout(silT); },
+      /* pause the mic for a hint sound (💡), then listen again */
+      async hold(fn) {
+        if (busy) return;
+        const tk = tok; stopRec(); clearTimeout(silT); await playSafe(fn);
+        if (live(tk) && !busy && mode === "mic") listen(items[r], tk);
+      }
+    };
+  }
+
+  /* ---------- SAY (P10): picture → the child says the word ---------- */
+  TYPES.say = function (step, run) {
+    const P = practice(step, { cls: "px-speak" });
+    const spk = P.speaker("md");
+    const pic = h("img", { alt: "" });
+    P.body.append(h("div", { class: "px-head" }, spk), h("div", { class: "px-stage" }, h("div", { class: "px-obj big" }, pic)));
+    function matches(list, w) {
+      const word = L.words[w];
+      return list.some((t) => {
+        const s = " " + t.toLowerCase().replace(/[^a-z ]/g, " ") + " ";
+        if (word.reject && word.reject.some((x) => s.includes(x))) return false;
+        return word.say.some((k) => s.includes(k));
+      });
+    }
+    return speaking(step, run, P, {
+      items: shuffle(step.items), speaker: spk, intro: step.intro || step.instruction, maxMs: 7000,
+      doneLine: "Well done! You said all the food words!", praise: ["Great!", "Well done!", "Yes!", "Super!"],
+      aa: () => step.instruction || step.ask || "What's this?",
+      paint: (w, tk, anim) => { pic.src = img(L.words[w].img); if (anim) pic.animate([{ transform: "scale(.7)", opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 300, easing: "ease-out" }); },
+      ask: (w, mode) => Audio_.speak(mode === "mic" ? (step.ask || "What's this?") : "What's this? Say it out loud!", "kim"),
+      judge: (alts, w) => matches(alts, w) || "Hmm… try again!",
+      model: (w) => L.words[w].label,
+      playModel: (w) => Audio_.word(w),
+      missLines: () => ["Listen!", null, "Say it with me next time!"]
+    }).cleanup;
+  };
+
+  /* ---------- LID (P11): shadow on the plate → full sentence (BE + food) → the lid lifts · Snack Machine (style "slot") ---------- */
+  TYPES.lid = function (step, run) {
+    const slot = step.style === "slot";
+    const P = practice(step, { cls: "px-speak" + (slot ? " px-snack" : "") });
+    const pron = { he: "He", she: "She", i: "I" };
+    const BE = { he: /\bhe ?'?s\b|\bhe is\b|\bhis\b|\bhes\b/, she: /\bshe ?'?s\b|\bshe is\b|\bshes\b|\bshe was\b/, i: /\bi ?'?m\b|\bi am\b|\bim\b|\bam\b/ };
+    /* random kid × food each attempt (anti-memory) */
+    const boys = shuffle(step.boys), girls = shuffle(step.girls), foods = shuffle(step.foods);
+    const items = shuffle(step.subjects).map((s, k) => ({ s, f: foods[k], kid: s === "he" ? boys.pop() : s === "she" ? girls.pop() : step.me }));
+    const spk = P.speaker("md");
+    const kid = h("img", { alt: "" });
+    const shadow = h("img", { class: "shadow", alt: "" }), food = h("img", { class: "lfood", alt: "" });
+    const plate = h("div", { class: "px-plate" + (slot ? " slot" : "") }, food, shadow, h("div", { class: "px-lidtop" }));
+    /* 💡 hint: shows (and says) the food word, so a child who can't read the shadow can still build the sentence */
+    const bulb = h("button", { class: "px-bulb", type: "button", "aria-label": "Hint", hidden: true }, "💡");
+    const wordChip = h("div", { class: "px-chip px-wordchip", hidden: true });
+    const kidBox = h("div", { class: "px-kidbox" }, kid);
+    P.body.append(h("div", { class: "px-head" }, spk),
+      h("div", { class: "px-stage px-lid" }, kidBox, h("div", { class: "px-platebox" }, plate, bulb, wordChip)));
+    let hints = 0;
+    const verbOf = (f) => L.words[f].verb || "eating";
+    const model = (it) => `${pron[it.s]}${it.s === "i" ? "'m" : "'s"} ${verbOf(it.f)} ${L.words[it.f].label}.`;
+    function judge(alts, it) {
+      const norm = alts.map((t) => " " + t.toLowerCase().replace(/[’`]/g, "'").replace(/[^a-z' ]/g, " ") + " ");
+      const w = L.words[it.f];
+      const hasFood = (t) => !(w.reject && w.reject.some((x) => t.includes(x))) && w.say.some((k) => t.includes(k));
+      const vb = verbOf(it.f), other = vb === "eating" ? "drinking" : "eating";
+      const verbOk = (t) => !step.checkVerb || (new RegExp("\\b" + vb.slice(0, -3)).test(t) && !new RegExp("\\b" + other.slice(0, -3)).test(t));
+      if (norm.some((t) => BE[it.s].test(t) && hasFood(t) && verbOk(t))) return true;
+      if (step.checkVerb && norm.some((t) => hasFood(t) && !verbOk(t))) return "Eating or drinking? Try again!";   /* "drinking ice cream" — the I3 STS Insights error */
+      if (norm.some(hasFood)) return it.s === "i" ? "Don't forget “am”! Say the full sentence." : "Don't forget “is”! Say the full sentence.";   /* food right, BE missing */
+      return "Look at the shadow again. Try again!";
+    }
+    function paint(it) {
+      kid.src = img(it.kid); kidBox.classList.toggle("me", it.s === "i");
+      food.src = img(L.words[it.f].img);
+      shadow.src = slot ? img(L.words[it.f].img) : img("shadow-" + it.f);
+      plate.classList.remove("open");
+      wordChip.hidden = true; wordChip.textContent = L.words[it.f].label; bulb.dataset.f = it.f;
+    }
+    /* Snack Machine: person and item roll like a slot machine, then stop */
+    async function spin(it, tk) {
+      const pool = shuffle(step.foods), kidsPool = shuffle(step.boys.concat(step.girls));
+      Audio_.sfx("region-enter");
+      for (let k = 0; k < 12; k++) {
+        if (!alive(run)) return;
+        shadow.src = img(L.words[pool[k % pool.length]].img); kid.src = img(kidsPool[k % kidsPool.length]); kidBox.classList.remove("me");
+        await sleep(60 + k * 12);
+      }
+      paint(it); Audio_.sfx("sticker-place");
+    }
+    const ctl = speaking(step, run, P, {
+      items, speaker: spk, intro: step.intro, maxMs: 8000,
+      doneLine: "Well done! Great sentences!", praise: ["Great!", "Well done!", "Super!"],
+      aa: () => step.instruction || step.intro,
+      paint: async (it, tk, live) => {
+        paint(it); bulb.hidden = !live; bulb.classList.remove("used");
+        if (live) kidBox.parentNode.animate([{ opacity: 0, transform: "translateY(10px)" }, { opacity: 1, transform: "none" }], { duration: 300 });
+        if (live && slot) await spin(it, tk);
+      },
+      ask: (it) => Audio_.speak(it.s === "he" ? "Look at him!" : it.s === "she" ? "Look at her!" : "Look! It's you!", "kim"),
+      judge, model, playModel: (it) => Audio_.speak(model(it), it.s === "i" ? "kim" : "narrator"),
+      onReveal: () => { plate.classList.add("open"); bulb.hidden = true; wordChip.hidden = true; },
+      extra: () => ({ hints })
+    });
+    bulb.onclick = () => {
+      if (!bulb.classList.contains("used")) hints++;
+      bulb.classList.add("used"); wordChip.hidden = false;
+      wordChip.animate([{ opacity: 0, transform: "translate(-50%,8px) scale(.8)" }, { opacity: 1, transform: "translate(-50%,0)" }], { duration: 300 });
+      ctl.hold(() => Audio_.word(bulb.dataset.f));
+    };
+    return ctl.cleanup;
+  };
+
+  /* ---------- ANSWER (P12) + RACE HOME (P13, step.board): Kim asks → full sentence (BE + every food) or short answer ---------- */
+  TYPES.answer = function (step, run) {
+    const P = practice(step, { cls: "px-speak" + (step.board ? " px-race" : "") });
+    const spk = P.speaker("md");
+    const pic = h("div", { class: "px-stage" });
+    const head = h("div", { class: "px-head" });
+    let board = null, token = null, pawnAt = 0;
+    if (step.board) {
+      board = h("div", { class: "px-board", "aria-label": "Race home" });
+      for (let k = 0; k <= step.items.length; k++) board.append(h("span", { class: k === step.items.length ? "home" : "" }, k === step.items.length ? "🏠" : String(k + 1)));
+      token = h("img", { class: "px-token", src: ver("assets/common/kim/kim-head-cheer.webp"), alt: "" });
+      board.firstChild.append(token);
+      head.append(board);
+    }
+    head.append(spk);
+    P.body.append(head, pic);
+    const movePawn = () => {
+      if (!board) return;
+      board.children[pawnAt].classList.add("on");
+      pawnAt = Math.min(pawnAt + 1, step.items.length); board.children[pawnAt].append(token);
+      token.animate([{ transform: "translate(-50%,-14px) scale(1.2)" }, { transform: "translate(-50%,0)" }], { duration: 400 });
+    };
+    const items = shuffle(step.items).map((it) => Object.assign({}, it, { foods: it.foods || it.plate || (it.parts ? it.parts.flatMap((p) => p.foods) : []) }));
     const join = (fs) => fs.map((f) => L.words[f].label).join(" and ");
     const vOf = (f) => L.words[f].verb || "eating";
     /* parts: one sentence per verb — "She's eating rice. She's drinking milk." (same verb → one sentence with "and") */
     const partsOf = (it) => it.parts || [{ verb: it.verb || vOf(it.foods[0]), foods: it.foods }];
     const model = (it) => it.short ? it.short : partsOf(it).map((p) => `${PRON[it.s]} ${p.verb} ${join(p.foods)}.`).join(" ");
-    const drawDots = () => { tray.update(r, res, items.length); };
-    function setSelf() { mode = "self"; mic.hidden = true; check.hidden = false; note.hidden = false; note.textContent = "Máy hoặc trình duyệt này chưa cho dùng micro. HV trả lời to cả câu, rồi bấm Check để nghe câu mẫu."; }
-    function stopRec() { if (rec) { const x = rec; rec = null; try { x.abort(); } catch (e) {} } (mic.classList.remove("listening"), Kim.poseNow === "listen" && Kim.pose("idle")); }
-    async function reveal(it, tk, good) {
-      stopRec(); mic.hidden = true; hint.hidden = true; check.hidden = true;
-      ans.className = "answer " + (good ? "ok" : "soft"); ans.textContent = (good ? "✓ " : "") + model(it);
-      tray.fill(r, img(it.trayImg || L.words[it.foods[0]].img), pic, good);
-      Audio_.sfx(good ? "name-reveal" : "sticker-place"); await sleep(350); if (!live(tk)) return;
-      await Audio_.speak(model(it), "narrator"); if (!live(tk)) return;
-      if (good) { movePawn(); await Kim.say(["Great answer!", "Well done!", "Super!"][r % 3]); await sleep(300); if (live(tk)) { r++; show(); } }
-      else nxt.hidden = false;
-    }
-    async function retry(it, tk, msg) { hint.hidden = false; await Kim.say(msg); await sleep(250); if (live(tk) && mode === "mic") listen(it, tk); }
-    function listen(it, tk) {
-      stopRec(); Audio_.stop();
-      const R = new SR(); rec = R; R.lang = "en-GB"; R.interimResults = false; R.maxAlternatives = 5;
-      let got = false; (mic.classList.add("listening"), Kim.pose("listen")); heardTxt.textContent = "🎤 Listening…";
-      R.onresult = (e) => {
-        if (rec !== R || !live(tk)) return;
-        got = true; (mic.classList.remove("listening"), Kim.poseNow === "listen" && Kim.pose("idle"));
-        const alts = []; for (const x of e.results) for (const a of x) alts.push(a.transcript);
-        heardTxt.textContent = "I heard: “" + (alts[0] || "") + "”";
-        const v = it.short ? judgeShort(alts, it) : judgeSentence(alts, it.s, it.foods, step.checkVerb ? [...new Set(partsOf(it).map((p) => p.verb))] : null);
-        if (v === "ok") { res[r] = tries === 0; return reveal(it, tk, true); }
-        tries++; Audio_.sfx("practice-wrong");
-        if (tries >= 2) { res[r] = false; return reveal(it, tk, false); }
-        retry(it, tk, v === "verb" ? "Eating or drinking? Try again!" : v === "yn" ? "Yes or no? Look again!" : v === "short" ? (it.short.startsWith("Yes") ? `Say: Yes, ${it.s} is!` : `Say: No, ${it.s} isn't!`) : v === "be" ? (it.s === "i" ? "Full sentence, please! I'm eating…" : `Full sentence, please! ${PRON[it.s]} eating…`)
-          : v === "more" ? "Good! Say all the food on the plate!" : "Look at the picture again. Try again!");
-      };
-      R.onerror = (e) => { if (rec !== R) return; (mic.classList.remove("listening"), Kim.poseNow === "listen" && Kim.pose("idle")); if (["not-allowed", "service-not-allowed", "audio-capture"].includes(e.error)) { heardTxt.textContent = ""; setSelf(); } };
-      R.onend = () => {
-        if (rec !== R || !live(tk)) return;
-        (mic.classList.remove("listening"), Kim.poseNow === "listen" && Kim.pose("idle")); rec = null;
-        if (got || mode !== "mic") return;
-        quiet++;
-        if (quiet <= 1) retry(it, tk, "I can't hear you. Say it again!");
-        else { heardTxt.textContent = "Tap the mic and answer!"; hint.hidden = false; }
-      };
-      setTimeout(() => { if (rec === R) { try { R.stop(); } catch (e) {} } }, 9000);
-      try { R.start(); } catch (e) { setSelf(); }
-    }
-    async function show() {
-      if (r >= items.length) return finish();
-      const tk = ++tok; const it = items[r];
-      tries = 0; quiet = 0; drawDots(); stopRec();
-      field.classList.remove("pre");
-      paintPic(it);
-      pic.animate([{ opacity: 0, transform: "scale(.9)" }, { opacity: 1, transform: "none" }], { duration: 300 });
-      qtxt.textContent = it.q;
-      ans.className = "answer"; ans.textContent = ""; heardTxt.textContent = "";
-      hint.hidden = true; nxt.hidden = true; mic.hidden = mode !== "mic"; check.hidden = mode === "mic";
-      mic.onclick = () => { quiet = 0; listen(it, tk); };
-      hint.onclick = async () => { stopRec(); ans.className = "answer soft"; ans.textContent = model(it); await Audio_.speak(model(it), "narrator"); if (live(tk) && mode === "mic") listen(it, tk); };
-      check.onclick = () => { res[r] = true; reveal(it, tk, true); };
-      await Kim.say(it.q); await sleep(200);
-      if (live(tk) && mode === "mic") listen(it, tk);
-    }
-    nxt.onclick = () => { r++; show(); };
-    async function finish() {
-      stopRec(); drawDots(); pic.innerHTML = ""; qtxt.textContent = ""; mic.hidden = true; hint.hidden = true; check.hidden = true; nxt.hidden = true; heardTxt.textContent = ""; note.hidden = true;
-      const score = res.filter(Boolean).length;
-      Results.put(step.id, { said: score, total: items.length, mode });
-      ans.className = "answer"; ans.textContent = "⭐ " + score + " / " + items.length;
-      await Kim.say("Well done! You can ask and answer!"); await sleep(400); if (alive(run)) next();
-    }
     function paintPic(it) {
       pic.innerHTML = "";
-      pic.className = "apic" + (it.s === "i" ? " me" : "");
-      pic.append(h("img", { class: "aimg", src: img(it.img), alt: "" }));
-      if (it.plate) { const pl = h("div", { class: "aplate" }); it.plate.forEach((f) => pl.append(h("img", { src: img(L.words[f].img), alt: "" }))); pic.append(pl); }
+      if (it.plate) {
+        /* "What are you eating?": the hand points at the child, the plate shows the food */
+        const pl = h("div", { class: "px-aplate" }); it.plate.forEach((f) => pl.append(h("img", { src: img(L.words[f].img), alt: "" })));
+        pic.append(h("div", { class: "px-me" }, h("img", { class: "hand", src: img(it.img), alt: "" }), pl));
+      } else pic.append(picture(it.img, "photo"));
     }
-    mic.hidden = true;
-    paintPic(items[0]); qtxt.textContent = items[0].q || ""; field.classList.add("pre"); drawDots();
-    (async () => { await Kim.say(step.intro); await sleep(300); if (alive(run)) show(); })();
-    return () => { tok++; stopRec(); };
+    return speaking(step, run, P, {
+      items, speaker: spk, intro: step.intro, maxMs: 9000,
+      doneLine: "Well done! You can ask and answer!", praise: ["Great answer!", "Well done!", "Super!"],
+      aa: (it) => it.q,
+      paint: (it, tk, live) => { paintPic(it); if (live) pic.animate([{ opacity: 0, transform: "scale(.96)" }, { opacity: 1, transform: "none" }], { duration: 300 }); },
+      ask: (it) => Audio_.speak(it.q, "kim"),
+      judge: (alts, it) => {
+        const v = it.short ? judgeShort(alts, it) : judgeSentence(alts, it.s, it.foods, step.checkVerb ? [...new Set(partsOf(it).map((p) => p.verb))] : null);
+        if (v === "ok") return true;
+        return v === "verb" ? "Eating or drinking? Try again!" : v === "yn" ? "Yes or no? Look again!" : v === "short" ? (it.short.startsWith("Yes") ? `Say: Yes, ${it.s} is!` : `Say: No, ${it.s} isn't!`)
+          : v === "be" ? (it.s === "i" ? "Full sentence, please! I'm eating…" : `Full sentence, please! ${PRON[it.s]} eating…`)
+          : v === "more" ? "Good! Say all the food on the plate!" : "Look at the picture again. Try again!";
+      },
+      model, playModel: (it) => Audio_.speak(model(it), "narrator"),
+      onReveal: (it, good) => { if (good) movePawn(); }
+    }).cleanup;
   };
 
-  /* ---------- DONE: end of a block ---------- */
-  TYPES.done = function (step) {
-    const box = h("div", { class: "recap donebox" });
-    const score = h("div", { class: "score" });
-    (step.scores || []).forEach(([id, label]) => {
-      const r = Results.get(id); const n = r ? (r.firstTry != null ? r.firstTry : r.said) : null;
-      score.append(h("div", {}, label, h("span", { class: "num" }, r ? `${n}/${r.total}` : "–")));
-    });
-    const nextB = h("button", { class: "ctl primary", onclick: () => next() }, "🗺️ Back to the map");
-    const again = h("button", { class: "ctl" }, "↻ Do this part again");
-    const first = steps.findIndex((s) => s.block === step.block);
-    again.onclick = () => go(first);
-    box.append(h("div", { class: "trophy" }, "🏆"), h("h2", {}, step.title), score, h("div", { class: "controls" }, again, h("span", { class: "spacer" }), nextB));
-    main.append(box);
-    Audio_.sfx("complete");
-    Kim.say(step.title);
-  };
-
-  /* ======================= HOME: units → lessons → lesson map ======================= */
-  const SKILL = { L: "🎧", S: "🗣️", R: "📖", W: "✏️" };
-  const skillLabel = (sk, review) => review ? "⭐ Ôn tổng hợp" : sk.includes("R") ? "📖✏️ Đọc – Viết" : "🎧🗣️ Nghe – Nói";
-  const sumOf = (id) => { try { return JSON.parse(localStorage.getItem("explore-hw:sum:" + id)) || null; } catch (e) { return null; } };
-  function homeShell(view) {
-    runId++; Audio_.stop(); Kim.hide();
-    if (cleanup) { try { cleanup(); } catch (e) {} cleanup = null; }
-    main.innerHTML = "";
-    document.body.dataset.view = view; document.body.classList.remove("contain"); document.body.classList.add("framed");
-  }
-  function showUnits() {
-    homeShell("units");
-    try { history.replaceState(null, "", "#units"); } catch (e) {}
-    const grid = h("div", { class: "unitgrid" });
-    CAT.units.forEach((u) => {
-      const card = h("button", { class: "unitcard" + (u.ready ? "" : " soon"), disabled: !u.ready },
-        h("span", { class: "ucover" }, u.cover ? h("img", { src: u.cover, alt: "" }) : h("span", { class: "uletter" }, u.id)),
-        h("span", { class: "utext" }, h("b", {}, "Unit " + u.id), h("span", {}, u.title), u.ready ? null : h("em", {}, "Sắp có")));
-      card.onclick = () => showUnit(u.id);
-      grid.append(card);
-    });
-    main.append(h("div", { class: "homehead" }, h("span", { class: "eyebrow" }, "EXPLORE · Homework"), h("h1", {}, "Choose a unit"),
-      h("button", { class: "backlink voicelink", onclick: showVoices }, "🎧 Nghe audio (GV)")), grid);
-    const first = grid.querySelector(".unitcard:not(.soon)");
-    if (first) requestAnimationFrame(() => first.scrollIntoView({ block: "center" }));
-    Kim.say("Hi! Choose a unit!");
-  }
-  function showUnit(uid) {
-    const u = CAT.units.find((x) => x.id === uid);
-    if (!u || !u.ready) return showUnits();
-    homeShell("unit");
-    try { history.replaceState(null, "", "#unit-" + uid.toLowerCase()); } catch (e) {}
-    const list = h("div", { class: "lessonlist" });
-    let nextUp = null;
-    u.lessons.forEach((l, k) => {
-      const sum = sumOf(l.id);
-      const st = !l.ready ? "Sắp có" : !sum || !sum.done ? "Chưa làm" : sum.complete ? "★".repeat(Math.round((sum.stars / sum.max) * 3)) + "☆".repeat(3 - Math.round((sum.stars / sum.max) * 3)) : `Đang làm ${sum.done}/${sum.total}`;
-      if (l.ready && !(sum && sum.complete) && !nextUp) nextUp = l.id;
-      const card = h("button", { class: "lessoncard" + (l.ready ? "" : " soon") + (sum && sum.complete ? " done" : ""), disabled: !l.ready },
-        h("span", { class: "lnum" }, l.id),
-        h("span", { class: "ltext" }, h("b", {}, l.title), h("span", { class: "lskill" }, skillLabel(l.skills, l.review))),
-        h("span", { class: "lstate" }, st));
-      card.dataset.id = l.id;
-      card.onclick = () => openLesson(l.id);
-      list.append(card);
-    });
-    main.append(h("div", { class: "homehead" }, h("button", { class: "backlink", onclick: showUnits }, "← Units"),
-      h("span", { class: "eyebrow" }, "Unit " + u.id), h("h1", {}, u.title)), list);
-    if (nextUp) list.querySelector(`[data-id="${nextUp}"]`).classList.add("current");
-    Kim.say("Choose a lesson!");
-  }
+  /* ======================= Open a lesson / routes ======================= */
+  const lessonMeta = (lid) => { for (const u of CAT.units) for (const l of (u.lessons || [])) if (l.id === lid) return Object.assign({ unit: u }, l); return null; };
   const loadScript = (src) => new Promise((res) => { const sc = document.createElement("script"); sc.src = src + (window.EXPLORE_BUILD ? "?v=" + window.EXPLORE_BUILD : ""); sc.onload = () => res(true); sc.onerror = () => res(false); document.head.append(sc); });
   async function openLesson(lid, stepId) {
-    const u = CAT.units.find((x) => (x.lessons || []).some((l) => l.id === lid));
-    const meta = u && u.lessons.find((l) => l.id === lid);
+    const meta = lessonMeta(lid);
     if (!meta || !meta.ready) return showUnits();
     if (L.id !== lid) {
       window.LESSON = null;
       const ok = await loadScript(meta.file);
-      if (!ok || !window.LESSON) { Kim.say("Oops! This lesson is not ready yet."); return; }
+      if (!ok || !window.LESSON) { kimVoice("Oops! This lesson is not ready yet."); return; }
       await loadScript(meta.file.replace(/\.js$/, ".voice.js"));
       L = window.LESSON;
       Results.data = Store.load();
       buildSteps();
-      $("#bg").style.backgroundImage = `url("${img(L.backdrop || "scene-street")}")`;
     }
     const at = stepId ? steps.findIndex((s) => s.id === stepId) : -1;
     if (at >= 0) go(at); else showMap();
   }
   /* Audio check page for authors: every recorded line, grouped by voice */
   async function showVoices() {
-    homeShell("voices");
+    screen("voices");
     try { history.replaceState(null, "", "#voices"); } catch (e) {}
     for (const u of CAT.units) for (const l of (u.lessons || [])) if (l.ready) await loadScript(l.file.replace(/\.js$/, ".voice.js"));
     const entries = Object.entries(window.VOICE || {});
-    const box = h("div", { class: "recap voicelist" });
+    const box = h("div", { class: "nv-voices" });
     const groups = { kim: "Kim (Blondie)", narrator: "Người dẫn (Sally)" };
     let playing = null;
     const playRow = async (row, src) => { if (playing) playing.classList.remove("on"); playing = row; row.classList.add("on"); await Audio_.file(src); row.classList.remove("on"); };
     const all = [];
-    box.append(h("button", { class: "backlink", onclick: showUnits }, "← Units"), h("h2", {}, `Nghe toàn bộ audio · ${entries.length} câu`));
-    const playAll = h("button", { class: "ctl primary" }, "▶ Phát lần lượt tất cả");
-    box.append(h("div", { class: "controls" }, playAll, h("span", { class: "note" }, "Bấm vào câu bất kỳ để nghe riêng câu đó.")));
+    box.append(h("button", { class: "nv-link", type: "button", onclick: showUnits }, "← Units"), h("h2", {}, `Nghe toàn bộ audio · ${entries.length} câu`));
+    const playAll = h("button", { class: "nv-btn red", type: "button" }, "▶ Phát lần lượt tất cả");
+    box.append(h("div", { class: "nv-vctl" }, playAll, h("span", {}, "Bấm vào câu bất kỳ để nghe riêng câu đó.")));
     Object.entries(groups).forEach(([who, label]) => {
       const list = entries.filter(([k]) => k.startsWith(who + "|"));
       box.append(h("h3", {}, `${label} · ${list.length}`));
       list.forEach(([k, src]) => {
-        const row = h("button", { class: "vrow" }, h("span", { class: "vplay" }, "▶"), h("span", {}, k.slice(who.length + 1)));
+        const row = h("button", { class: "nv-vrow", type: "button" }, h("span", { class: "p" }, "▶"), h("span", {}, k.slice(who.length + 1)));
         row.onclick = () => playRow(row, src);
         all.push([row, src]); box.append(row);
       });
@@ -1461,7 +1629,7 @@
       if (!pack) continue;
       const ws = Object.values(pack.words || {});
       box.append(h("h3", {}, `Từ vựng ${pack.id} (audio DOL) · ${ws.length}`));
-      ws.forEach((w) => { const src = pack.aud + w.audio + ".mp3"; const row = h("button", { class: "vrow" }, h("span", { class: "vplay" }, "▶"), h("span", {}, w.label)); row.onclick = () => playRow(row, src); all.push([row, src]); box.append(row); });
+      ws.forEach((w) => { const src = (w.audio.startsWith("@") ? "assets/" + w.audio.slice(1) : pack.aud + w.audio) + ".mp3"; const row = h("button", { class: "nv-vrow", type: "button" }, h("span", { class: "p" }, "▶"), h("span", {}, w.label)); row.onclick = () => playRow(row, src); all.push([row, src]); box.append(row); });
     }
     playAll.onclick = async () => { const r = runId; for (const [row, src] of all) { if (r !== runId) return; row.scrollIntoView({ block: "center", behavior: "smooth" }); await playRow(row, src); await sleep(300); } };
     main.append(box);
@@ -1476,28 +1644,37 @@
     showUnits();
   }
 
-  /* ======================= Menu (jump to any step) ======================= */
-  $("#mapBtn").onclick = () => (L.id === "HOME" ? showUnits() : showMap());
-  $("#menuBtn").onclick = () => {
-    const ov = h("div", { class: "overlay" });
-    const m = h("div", { class: "menu" }, h("h3", {}, "Steps"), h("small", {}, "Dành cho GV/người duyệt: nhảy tới bước bất kỳ."));
-    m.append(h("button", { onclick: () => { ov.remove(); showUnits(); } }, "🏠 Units"));
-    if (L.id === "HOME") { ov.onclick = (e) => { if (e.target === ov) ov.remove(); }; ov.append(m); document.body.append(ov); return; }
-    if (skipped.length) m.append(h("small", { class: "warn" }, "⚠️ Đã bỏ qua bài sai kỹ năng của lesson: " + skipped.join("; ")));
-    m.append(h("button", { onclick: () => { ov.remove(); showMap(); } }, "🗺️ Map"));
-    steps.forEach((s, i) => m.append(h("button", { onclick: () => { ov.remove(); go(i); } }, `${s.block.name} · ${s.title}`)));
-    m.append(h("button", { onclick: () => { try { localStorage.removeItem(Store.key); } catch (e) {} Results.data = {}; ov.remove(); showMap(); } }, "↺ Xoá kết quả & làm lại từ đầu"));
-    ov.onclick = (e) => { if (e.target === ov) ov.remove(); };
+  /* ======================= Menu (teachers / reviewers: jump to any step) ======================= */
+  function openMenu() {
+    const ov = h("div", { class: "overlay nv-menuov" });
+    const close = () => ov.remove();
+    const m = h("div", { class: "nv-menubox", role: "dialog", "aria-label": "Steps" }, h("h3", {}, "Steps"), h("small", {}, "Dành cho GV/người duyệt: nhảy tới bước bất kỳ."));
+    m.append(h("button", { type: "button", onclick: () => { close(); showUnits(); } }, "🏠 Units"));
+    if (L.id === "HOME") m.append(h("button", { type: "button", onclick: () => { close(); showVoices(); } }, "🎧 Nghe audio (GV)"));
+    else {
+      if (skipped.length) m.append(h("small", { class: "warn" }, "⚠️ Đã bỏ qua bài sai kỹ năng của lesson: " + skipped.join("; ")));
+      m.append(h("button", { type: "button", onclick: () => { close(); showMap(); } }, "🗺️ Map"));
+      steps.forEach((s, i) => m.append(h("button", { type: "button", onclick: () => { close(); go(i); } }, `${s.block.name} · ${s.title}`)));
+      m.append(h("button", { type: "button", onclick: () => { try { localStorage.removeItem(Store.key); } catch (e) {} Results.data = {}; close(); showMap(); } }, "↺ Xoá kết quả & làm lại từ đầu"));
+      m.append(h("button", { type: "button", onclick: () => { close(); showVoices(); } }, "🎧 Nghe audio (GV)"));
+    }
+    ov.onclick = (e) => { if (e.target === ov) close(); };
     ov.append(m); document.body.append(ov);
-  };
+  }
 
   /* ======================= Add-on step types (types-rw.js) ======================= */
-  window.EXPLORE_API = { TYPES, FRAME, h, sleep, shuffle, img, ICON, Audio_, Kim, Results, makeTray, next: () => next(), alive: (r) => alive(r), main, get L() { return L; } };
+  window.EXPLORE_API = { TYPES, V3, h, sleep, shuffle, img, ver, ICON3, Audio_, Results, practice, picture, isObj, playSafe, esc, next: () => next(), alive: (r) => alive(r), main, get L() { return L; } };
   (window.EXPLORE_ADDONS || []).forEach((f) => f(window.EXPLORE_API));
 
-  /* ======================= Boot ======================= */
-  Kim.init();
-  $("#bg").style.backgroundImage = `url("${img("scene-street")}")`;
+  /* ======================= Boot: splash (N1) ======================= */
+  /* splash background: the opened lesson's / unit's `bg` (people-free theme art), else the catalog's */
+  (function splashBg() {
+    const hsh = (location.hash || "").slice(1).toUpperCase();
+    const meta = lessonMeta((hsh.match(/^([A-J]\d)/) || [])[1]);
+    const unit = meta ? meta.unit : CAT.units.find((u) => hsh === "UNIT-" + u.id);
+    const src = (meta && meta.bg) || (unit && unit.bg) || (CAT.splash && CAT.splash.bg) || BG_FALLBACK;
+    const el = $("#startBg"); if (el) el.style.backgroundImage = `url("${ver(src)}")`;
+  })();
   $("#startBtn").onclick = () => {
     $("#start").remove();
     /* unlock audio on iOS: play a silent utterance inside the tap */

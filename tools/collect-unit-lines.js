@@ -51,6 +51,7 @@ for (const id of lessons) {
     if (s.type === "lid") for (const sub of new Set(s.subjects)) for (const f of s.foods)
       add(sub === "i" ? "kim" : "narrator", `${PR[sub]}${sub === "i" ? "'m" : "'s"} ${L.words[f].verb || "eating"} ${label(f)}.`);
     (s.lines || []).forEach((l) => sayLine(l));
+    (s.pages || []).forEach((pg) => sayLine(pg.line));   /* gaptext pages (v3) */
     (s.trays || []).forEach((t) => add("narrator", t.say || t.label));
     [].concat(s.after || []).forEach((l) => sayLine(l));
   }

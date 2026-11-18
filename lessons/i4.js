@@ -32,10 +32,18 @@
     backdrop: "scene-street5",
     finishLine: "Hooray! You can read and write drinks and desserts!",
     plan: [
-      { id: "vocab",   label: "Vocabulary", img: "item-chocolate",   awning: "#e5534b" },
+      { id: "vocab",   label: "Vocabulary", img: "item-chocolate", frame: "cart-dessert",   awning: "#e5534b" },
       { id: "grammar", label: "Grammar",    img: "sc-bill-water",    awning: "#e8b33a" },
       { id: "fl",      label: "Let's Talk", img: "sc-sue-ice-cream", awning: "#4aa3a2" }
     ],
+    /* v3 (2026-11-18): focus = what each scene picture is about, in % of the picture {x,y,w,h} — the Watch camera keeps it in view
+     * and Explore cards centre on it; frame = the picture on the roadmap milestone of a part. */
+    focus: (function () {
+      const f = { "cart-drinks": { x: 30, y: 4, w: 42, h: 84 }, "cart-dessert": { x: 28, y: 2, w: 46, h: 86 } };
+      const who = { sue: { x: 12, y: 4, w: 50, h: 90 }, tony: { x: 15, y: 4, w: 52, h: 90 }, bill: { x: 16, y: 4, w: 48, h: 90 }, pat: { x: 14, y: 4, w: 54, h: 90 } };
+      ["water", "milk", "juice", "lemonade", "cake", "ice-cream", "chocolate", "sweets"].forEach((d) => Object.keys(who).forEach((k) => { f["sc-" + k + "-" + d] = who[k]; }));
+      return f;
+    })(),
     mapDeco: [{ img: "item-juice", x: 72, y: 6, r: 12 }, { img: "item-cake", x: 6, y: 46, r: -10 }, { img: "item-milk", x: 80, y: 80, r: 18 }],
     words: W,
     confusable: CONF,

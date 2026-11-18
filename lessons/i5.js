@@ -47,10 +47,16 @@
     backdrop: "sky",
     finishLine: "Hooray! You finished Food Street!",
     plan: [
-      { id: "vocab",   label: "Vocabulary", img: "icon-breakfast", awning: "#e5534b" },
+      { id: "vocab",   label: "Vocabulary", img: "icon-breakfast", frame: "sky", awning: "#e5534b" },
       { id: "grammar", label: "Grammar",    img: "model1",         awning: "#e8b33a" },
       { id: "fl",      label: "Let's Talk", img: "tony-dinner",    awning: "#4aa3a2" }
     ],
+    /* v3 (2026-11-18): focus = what each scene picture is about, in % of the picture {x,y,w,h} — the Watch camera keeps it in view
+     * and Explore cards centre on it; frame = the picture on the roadmap milestone of a part. */
+    focus: {
+      "sky-breakfast": { x: 0, y: 0, w: 31, h: 100 }, "sky-lunch": { x: 31, y: 0, w: 38, h: 100 }, "sky-dinner": { x: 69, y: 0, w: 31, h: 100 },
+      "model1": { x: 15, y: 4, w: 62, h: 88 }, "model2": { x: 28, y: 8, w: 62, h: 86 }, "model3": { x: 20, y: 4, w: 72, h: 86 }, "tony-dinner": { x: 28, y: 4, w: 68, h: 88 }
+    },
     mapDeco: [{ img: "@i3/img/item-juice", x: 72, y: 6, r: 12 }, { img: "@i1/img/food-egg", x: 6, y: 46, r: -10 }, { img: "@i3/img/item-cake", x: 80, y: 80, r: 18 }],
     words: W,
     confusable: { meat: "meatballs", meatballs: "meat", juice: "lemonade", lemonade: "juice", water: "milk", milk: "water", sweets: "chocolate", chocolate: "sweets", cake: "ice-cream", "ice-cream": "cake", burger: "sausage", sausage: "burger", chicken: "fish", fish: "chicken", rice: "bread", bread: "rice" },
@@ -124,8 +130,15 @@
           /* P2 · Reading — A Day at Food Street: each gap offers words; only one fits the verb */
           { type: "gaptext", id: "g-p2", skill: "R", title: "Tom's day", heading: "Tom's day", wordsOnly: true,
             intro: "Read about Tom's day. Tap the word that fits the gap!",
-            text: "It's breakfast time. Tom is eating {bread|water,juice}. He is drinking {milk|chicken,cake}. At lunch, Tom is eating {rice|lemonade,milk}. He is drinking {lemonade|fish,sweets}. At dinner, he is eating a burger and {chips|water,juice}. Then he is eating {cake|milk,lemonade}. Yummy!",
-            lines: ["It's breakfast time. Tom is eating bread. He is drinking milk.", "At lunch, Tom is eating rice. He is drinking lemonade.", "At dinner, he is eating a burger and chips. Then he is eating cake. Yummy!"] },
+            /* v3 (2026-11-18, decision #55): max ~3 sentences per page → one page per meal, same words as before */
+            pages: [
+              { img: "sky-breakfast", text: "It's breakfast time. Tom is eating {bread|water,juice}. He is drinking {milk|chicken,cake}.",
+                line: "It's breakfast time. Tom is eating bread. He is drinking milk." },
+              { img: "sky-lunch", text: "At lunch, Tom is eating {rice|lemonade,milk}. He is drinking {lemonade|fish,sweets}.",
+                line: "At lunch, Tom is eating rice. He is drinking lemonade." },
+              { img: "sky-dinner", text: "At dinner, he is eating a burger and {chips|water,juice}. Then he is eating {cake|milk,lemonade}. Yummy!",
+                line: "At dinner, he is eating a burger and chips. Then he is eating cake. Yummy!" }
+            ] },
           /* P3 · Writing — Food Street Snapshots (DLP Ex7): build the sentence, choose the verb */
           { type: "build", id: "g-p3", skill: "W", title: "Write it", intro: "Look at the picture. Eating or drinking? Build the sentence!",
             items: [

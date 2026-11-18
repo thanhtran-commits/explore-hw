@@ -1,0 +1,373 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:PJS;font-weight:400;src:url(../fonts/fontsource-plus-jakarta-sans-5.3.0/package/files/plus-jakarta-sans-latin-400-normal.woff2)}
+@font-face{font-family:PJS;font-weight:700;src:url(../fonts/fontsource-plus-jakarta-sans-5.3.0/package/files/plus-jakarta-sans-latin-700-normal.woff2)}
+@font-face{font-family:PJS;font-weight:800;src:url(../fonts/fontsource-plus-jakarta-sans-5.3.0/package/files/plus-jakarta-sans-latin-800-normal.woff2)}
+@font-face{font-family:PJS;font-weight:400;src:url(../fonts/fontsource-plus-jakarta-sans-5.3.0/package/files/plus-jakarta-sans-vietnamese-400-normal.woff2);unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}
+@font-face{font-family:PJS;font-weight:700;src:url(../fonts/fontsource-plus-jakarta-sans-5.3.0/package/files/plus-jakarta-sans-vietnamese-700-normal.woff2);unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}
+@font-face{font-family:PJS;font-weight:800;src:url(../fonts/fontsource-plus-jakarta-sans-5.3.0/package/files/plus-jakarta-sans-vietnamese-800-normal.woff2);unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}
+@font-face{font-family:AND;font-weight:400;src:url(../fonts/fontsource-andika-5.3.0/package/files/andika-latin-400-normal.woff2)}
+@font-face{font-family:AND;font-weight:700;src:url(../fonts/fontsource-andika-5.3.0/package/files/andika-latin-700-normal.woff2)}
+:root{--red:#E05848;--redD:#C8443A;--redL:#FDECE9;--blue:#4A6FD6;--blueD:#3756B5;--blueL:#EDF1FC;--ink:#242938;--mute:#6C7885;--line:#E3E7ED;--surf:#F4F5F7;--paper:#FFFDF8;--green:#3FA45B;--greenL:#E4F6E8;--gold:#F2B33D;--goldD:#C98B12}
+*{box-sizing:border-box}
+body{margin:0;padding:28px 30px;background:#e9e9e9;font-family:"DejaVu Sans",sans-serif;color:var(--ink)}
+section{margin-bottom:36px}
+h1{font:800 32px PJS,"DejaVu Sans";margin:0 0 4px}
+.sub{font-size:18px;color:#555;margin:0 0 18px}
+.row{display:flex;flex-wrap:wrap;gap:30px 26px;align-items:flex-start}
+.col{display:flex;flex-direction:column;gap:8px;width:410px}
+.col.wide{width:1300px}
+.lab{font:800 21px "DejaVu Sans"}.lab i{font-style:normal;background:var(--ink);color:#fff;border-radius:8px;padding:2px 8px;margin-right:6px}
+.lab em{font-style:normal;font-size:13px;background:var(--red);color:#fff;border-radius:6px;padding:2px 6px;margin-left:6px;vertical-align:middle}
+.note{font-size:15px;color:#444;line-height:1.35;min-height:40px}
+.dev{position:relative;overflow:hidden;border:10px solid #1d1d1f;border-radius:34px;background:#fff;width:410px;height:864px}
+.dev.lap{width:1300px;height:740px;border-radius:20px}
+.scr{position:absolute;inset:0;font-family:PJS,sans-serif}
+.rd{font-family:AND,PJS,sans-serif}
+/* top bar */
+.top{position:absolute;top:0;left:0;right:0;height:64px;padding:0 14px;display:flex;gap:12px;align-items:center;z-index:5}
+.x{font-size:24px;color:#9aa3ad;font-weight:700;width:28px;text-align:center}
+.prog{flex:1;height:12px;border-radius:7px;background:var(--line)}.prog i{display:block;height:100%;background:var(--blue);border-radius:7px}
+.aa{width:42px;height:42px;border-radius:12px;background:var(--surf);border:1.5px solid var(--line);display:grid;place-items:center;font-weight:800;font-size:16px;color:var(--ink)}
+.aa.on{background:var(--blueL);border-color:var(--blue);color:var(--blueD)}
+/* buttons */
+.btn{position:absolute;left:16px;right:16px;bottom:22px;height:56px;border-radius:16px;font-weight:800;font-size:18px;display:flex;gap:10px;align-items:center;justify-content:center;letter-spacing:.3px;z-index:6}
+.btn.p{background:var(--red);color:#fff;box-shadow:0 3px 0 var(--redD)}
+.btn.off{background:var(--surf);color:#aab2bb}
+.btn.g{background:var(--green);color:#fff;box-shadow:0 3px 0 #2f8547}
+.btn.s{background:#fff;border:1.5px solid var(--line);color:var(--ink)}
+.card{border-radius:18px;border:1.5px solid var(--line);background:#fff center/contain no-repeat;background-origin:content-box;padding:8px;box-shadow:0 2px 0 var(--line)}
+.spk{display:grid;place-items:center;background:var(--blue);border-radius:22px;color:#fff;box-shadow:0 3px 0 var(--blueD)}
+.spk svg{width:46%;height:46%}
+.chip{display:inline-block;border:1.5px solid var(--line);border-radius:14px;padding:9px 14px;font-weight:700;font-size:19px;background:#fff;box-shadow:0 2px 0 var(--line);font-family:AND,PJS}
+.chip.ghost{background:var(--surf);color:var(--surf);box-shadow:none}
+.hl{color:var(--blueD);border-bottom:3px dashed var(--blue)}
+.cam{position:absolute;inset:0;background:no-repeat center/auto 100%}
+.pill{background:#fff;border-radius:22px;padding:8px 14px;font-weight:800;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.ib{width:42px;height:42px;border-radius:12px;background:#fff;display:grid;place-items:center;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.cap{position:absolute;left:12px;right:12px;bottom:18px;background:rgba(255,255,255,.97);border-radius:22px;padding:12px;display:flex;gap:12px;align-items:center;box-shadow:0 6px 18px rgba(0,0,0,.22);z-index:5}
+.cap .t{flex:1;font-weight:800;font-size:20px;line-height:1.3;font-family:AND,PJS}
+.go{width:56px;height:54px;border-radius:16px;background:var(--red);box-shadow:0 3px 0 var(--redD);color:#fff;display:grid;place-items:center;font-size:24px;flex:none}
+.kh{border-radius:50%;background:#f3edff center/cover;flex:none;border:3px solid #fff;box-shadow:0 0 0 2px var(--line)}
+.dots{display:flex;gap:8px;justify-content:center}.dots i{width:10px;height:10px;border-radius:5px;background:var(--line)}.dots i.on{background:var(--blue);width:28px}
+.tag{font-size:12px;font-weight:800;color:var(--redD);letter-spacing:.6px}
+.mic{position:absolute;left:50%;bottom:58px;transform:translateX(-50%);width:96px;height:96px;border-radius:50%;background:var(--red);box-shadow:0 4px 0 var(--redD);display:grid;place-items:center;font-size:40px;color:#fff;z-index:6}
+.mic.pulse{box-shadow:0 4px 0 var(--redD),0 0 0 14px rgba(224,88,72,.25),0 0 0 30px rgba(224,88,72,.12)}
+.cant{position:absolute;left:0;right:0;bottom:22px;text-align:center;font-weight:700;color:var(--mute);font-size:14px;text-decoration:underline}
+.sheet{position:absolute;left:0;right:0;bottom:0;padding:18px 16px 96px;z-index:5;border-radius:22px 22px 0 0}
+.sheet.ok{background:var(--greenL)}.sheet.bad{background:var(--redL)}
+.sheet h3{margin:0 0 8px;font-size:22px;display:flex;gap:10px;align-items:center}
+.ok h3{color:#2f8547}.bad h3{color:var(--redD)}
+.slot{display:inline-block;vertical-align:bottom;width:44px;height:56px;border-bottom:4px solid var(--ink);margin:0 4px;text-align:center;font-size:38px;font-weight:700;line-height:56px;font-family:AND}
+.slot.empty{border-bottom-color:var(--blue);background:var(--blueL);border-radius:8px 8px 0 0}
+.aaline{position:absolute;left:16px;right:16px;bottom:96px;z-index:7;background:var(--ink);color:#fff;border-radius:14px;padding:12px 16px;font:700 17px AND,PJS;text-align:center}
+.line{height:2px;background:var(--line)}
+.tile{border:1.5px solid var(--line);border-radius:16px;text-align:center;padding:8px 4px;font-weight:700;font-size:14px;background:#fff;font-family:AND,PJS}
+.tile div{height:62px;background:center/contain no-repeat;margin-bottom:4px}
+.bub{border-radius:50%;background:radial-gradient(circle at 30% 28%,#fff 0 14%,rgba(255,255,255,0) 15%),radial-gradient(circle,#eef3ff 55%,#c7d5f7);box-shadow:inset 0 0 0 3px #b4c6f2;display:grid;place-items:center;position:absolute}
+.bub i{width:60%;height:60%;background:center/contain no-repeat}
+.board{display:flex;gap:6px;justify-content:center;align-items:flex-end}
+.board span{width:40px;height:40px;border-radius:12px;border:1.5px solid var(--line);display:grid;place-items:center;font-weight:800;color:#b5bcc4;background:#fff}
+.board span.on{background:var(--gold);border-color:var(--goldD);color:#fff}
+.tray{border:2px dashed #cfd5dc;border-radius:18px;height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-weight:800;font-size:13px;color:#9aa3ad;background:#fff}
+.tray div{width:60px;height:60px;background:center/contain no-repeat}
+.tipbox{position:absolute;z-index:7;background:var(--ink);color:#fff;border-radius:14px;padding:12px 14px;font-weight:700;font-size:16px;line-height:1.35}
+.tipbox::before{content:"";position:absolute;top:-7px;right:18px;width:14px;height:14px;background:var(--ink);transform:rotate(45deg)}
+/* map */
+.bgscene{position:absolute;inset:0;background:center/cover no-repeat}
+.wash{position:absolute;inset:0;background:linear-gradient(rgba(255,253,248,.55),rgba(255,253,248,.7))}
+.ln{position:absolute;width:112px;height:112px;border-radius:50%;background:center/cover;border:6px solid #fff;z-index:2}
+.ln.done{box-shadow:0 0 0 4px var(--gold),0 6px 0 4px var(--goldD)}
+.ln.now{box-shadow:0 0 0 4px var(--red),0 6px 0 4px var(--redD),0 0 0 14px rgba(224,88,72,.22)}
+.ln.lock{box-shadow:0 0 0 4px #d6dbe1,0 6px 0 4px #b9c0c8;filter:grayscale(1);opacity:.85}
+.ll{position:absolute;z-index:2;background:rgba(255,255,255,.92);border-radius:12px;padding:6px 10px;max-width:170px}
+.ll small{display:block;font-size:11px;font-weight:800;color:var(--redD);letter-spacing:.5px}.ll b{font-size:15px;line-height:1.2}
+.star{position:absolute;z-index:3;width:32px;height:32px;border-radius:50%;background:var(--gold);color:#fff;display:grid;place-items:center;font-size:17px;border:3px solid #fff}
+.tip{position:absolute;z-index:4;background:var(--red);border-radius:12px;padding:6px 12px;font-weight:800;color:#fff;font-size:14px;box-shadow:0 3px 0 var(--redD)}
+.fn{position:absolute;width:66px;height:62px;border-radius:50%;background:#fff center/68% no-repeat;z-index:2}
+.fn.done{box-shadow:0 0 0 4px var(--gold),0 5px 0 4px var(--goldD)}
+.fn.now{box-shadow:0 0 0 4px var(--red),0 5px 0 4px var(--redD),0 0 0 12px rgba(224,88,72,.22)}
+.fn.lock{box-shadow:0 0 0 4px #d6dbe1,0 5px 0 4px #b9c0c8;filter:grayscale(1)}
+.chk{position:absolute;z-index:3;width:22px;height:22px;border-radius:50%;background:var(--gold);color:#fff;font-size:13px;display:grid;place-items:center;border:2px solid #fff}
+.mile{position:absolute;z-index:3;width:150px;text-align:center}
+.mile .pic{width:150px;height:150px;border-radius:28px;background:#fff center/cover;border:6px solid #fff;box-shadow:0 8px 18px rgba(0,0,0,.18)}
+.mile .flag{margin:-18px auto 0;position:relative;display:inline-block;background:var(--red);color:#fff;font-weight:800;font-size:13px;letter-spacing:.6px;padding:6px 14px;border-radius:10px;box-shadow:0 3px 0 var(--redD)}
+.mile.lock .pic{filter:grayscale(1);opacity:.85}.mile.lock .flag{background:#9aa3ad;box-shadow:0 3px 0 #7d868f}
+.mile.done .pic{box-shadow:0 0 0 4px var(--gold),0 8px 18px rgba(0,0,0,.18)}
+.kimb{position:absolute;background:center bottom/contain no-repeat;z-index:3}
+.topbar{position:absolute;top:0;left:0;right:0;height:60px;padding:0 14px;display:flex;gap:10px;align-items:center;z-index:6;background:rgba(255,255,255,.92);border-bottom:1px solid var(--line)}
+.topbar b{font-size:16px}
+/* reward */
+.stamp{border-radius:50%;display:grid;place-items:center;text-align:center;font-weight:800;color:var(--redD);border:3px dashed var(--redD);background:rgba(224,88,72,.06)}
+.ropt{border-radius:20px;border:1.5px solid var(--line);background:#fff;overflow:hidden;box-shadow:0 2px 0 var(--line)}
+.ropt .p{height:150px;background:center/cover}
+.ropt .t{padding:8px;text-align:center;font-weight:800;font-size:15px}
+.ropt.sel{border:3px solid var(--red);box-shadow:0 0 0 5px rgba(224,88,72,.18)}
+.pal{display:flex;gap:10px;flex-wrap:wrap}
+.sw{width:150px;border-radius:14px;overflow:hidden;background:#fff;border:1px solid #ddd;font-size:13px}
+.sw div{height:70px}.sw p{margin:0;padding:8px;font-family:PJS;font-weight:700}
+.sw p span{display:block;font-weight:400;color:#666}
+</style></head><body>
+<div id="out"></div>
+<script>
+const A=p=>`url(file:///home/claude/explore-hw/assets/${p}.webp)`;
+const SPK=`<svg viewBox="0 0 24 24" fill="#fff"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M16.5 12A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4z"/><path d="M14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>`;
+const KH=(s,pose='wave')=>`<div class="kh" style="width:${s}px;height:${s}px;background-image:${A('common/kim/kim-head-'+pose)}"></div>`;
+const tp=(p=30,aa=true,on=false)=>`<div class="top"><span class="x">✕</span><div class="prog"><i style="width:${p}%"></i></div>${aa?`<div class="aa ${on?'on':''}">Aa</div>`:''}</div>`;
+const spk=(w,h,css='')=>`<div class="spk" style="width:${w}px;height:${h}px;${css}">${SPK}</div>`;
+const bigSpk=(top=110)=>spk(124,116,`position:absolute;top:${top}px;left:50%;transform:translateX(-50%)`);
+const card=(img,css,cls='')=>`<div class="card ${cls}" style="${css};background-image:${A(img)}"></div>`;
+const camTop=(label)=>`<div class="top" style="height:70px"><div class="pill">${label}</div><div style="flex:1"></div><div class="ib">🗺️</div><div class="ib">☰</div></div>`;
+const road=(d,w=28)=>`<svg style="position:absolute;left:0;top:0;z-index:1" width="390" height="844"><path d="${d}" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="${w+8}" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#efe2c8" stroke-width="${w}" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="9 12" stroke-linecap="round"/></svg>`;
+const mic=(pulse)=>`<div class="mic ${pulse?'pulse':''}">🎤</div><div class="cant">Can't speak now</div>`;
+const sections=[
+['0. BỘ NHẬN DIỆN EXPLORE','Đỏ san hô lấy từ tranh (nút hành động) · xanh royal dịu (mọi thứ để nghe: loa, micro, tiến độ) · khung phẳng kiểu DOL · tiêu đề Plus Jakarta Sans (font DOL) · chữ HV đọc dùng Andika',[
+['ID','Bảng màu & chữ','',`
+<div style="position:absolute;inset:0;padding:22px;display:flex;flex-direction:column;gap:16px">
+<div class="pal">
+<div class="sw"><div style="background:var(--red)"></div><p>Đỏ san hô #E05848<span>Nút hành động: START, NEXT, CONTINUE</span></p></div>
+<div class="sw"><div style="background:var(--blue)"></div><p>Xanh royal dịu #4A6FD6<span>Nghe: loa, micro, tiến độ</span></p></div>
+<div class="sw"><div style="background:var(--ink)"></div><p>Chữ #242938<span>Màu chữ DOL</span></p></div>
+<div class="sw"><div style="background:var(--surf);border-bottom:1px solid #ddd"></div><p>Nền thẻ #F4F5F7<span>Khung phẳng như DOL</span></p></div>
+</div>
+<div style="font:800 30px PJS">Plus Jakarta Sans</div><div style="font-size:15px;color:#666;margin-top:-12px">Tiêu đề, nút — font của DOL</div>
+<div style="font:700 32px AND">a g — She's eating.</div><div style="font-size:15px;color:#666;margin-top:-12px">Andika — chữ HV đọc (a, g viết như chữ tay)</div>
+<div style="display:flex;gap:10px"><div style="flex:1;height:52px;border-radius:14px;background:var(--red);box-shadow:0 3px 0 var(--redD);color:#fff;font:800 17px PJS;display:grid;place-items:center">CONTINUE</div>${spk(56,52,'border-radius:14px')}<div class="aa" style="width:52px;height:52px">Aa</div></div>
+</div>`],
+]],
+['A. ĐIỀU HƯỚNG','Roadmap có hình nền theo theme · chặng = cột mốc lớn, khác hẳn các nút nhỏ',[
+['N1','Màn chào','<b>Sửa:</b> bỏ dòng chữ tiếng Việt; Kim vẫy tay (không nhảy); nền không người.',`
+<div class="bgscene" style="background-image:${A('i1/img/cart-rice')};filter:blur(2px)"></div><div class="wash" style="background:rgba(255,253,248,.78)"></div>
+<div class="kimb" style="top:120px;left:80px;right:80px;height:380px;background-image:${A('common/kim/kim-wave')}"></div>
+<div style="position:absolute;top:530px;left:24px;right:24px;text-align:center"><div class="tag" style="font-size:14px">DOL EXPLORE · HOMEWORK</div>
+<div style="font-weight:800;font-size:36px;margin:8px 0">Hi! I'm Kim.</div></div>
+<div class="btn p">START</div>`],
+['N2','Chọn unit','Unit đang học là thẻ lớn; nút 🛂 mở hộ chiếu.',`
+<div style="position:absolute;top:18px;left:18px;right:18px;display:flex;align-items:center"><b style="font-size:26px;flex:1">My units</b><div class="aa" style="width:auto;padding:0 12px;gap:6px;display:flex">🛂 <span style="font-size:14px">Passport</span></div></div>
+<div class="card" style="position:absolute;top:76px;left:16px;right:16px;padding:0;overflow:hidden">
+<div style="height:170px;background:${A('i1/img/scene-main')} center 30%/cover"></div>
+<div style="padding:14px 16px;display:flex;flex-direction:column;gap:4px"><span class="tag">UNIT I · 5 LESSONS</span><b style="font-size:24px">Food &amp; drink</b>
+<div style="height:10px;border-radius:6px;background:var(--line);margin-top:6px"><i style="display:block;width:20%;height:100%;border-radius:6px;background:var(--blue)"></i></div>
+<div style="font-size:13px;color:var(--mute)">1 / 5 lessons</div>
+<div style="margin-top:8px;height:52px;border-radius:14px;background:var(--red);box-shadow:0 3px 0 var(--redD);color:#fff;font-weight:800;display:grid;place-items:center">CONTINUE</div></div></div>
+<div style="position:absolute;top:460px;left:20px;font-weight:800;color:var(--mute);font-size:13px;letter-spacing:.5px">COMING SOON</div>
+<div style="position:absolute;top:486px;left:16px;right:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+${[['A','At school'],['B','Unit B'],['C','At the farm'],['D','Unit D'],['E','Transport'],['F','People'],['G','Appearance'],['H','Clothes'],['J','Actions']].map(([l,t])=>`<div class="tile" style="color:#b5bcc4;font-family:PJS"><b style="font-size:24px;display:block">${l}</b>${t}</div>`).join('')}</div>`],
+['N3','Đường học của unit','<b>Sửa:</b> nền cảnh không người, làm mờ đều toàn màn.',`
+<div class="bgscene" style="background-image:${A('i3/img/cart-dessert')};filter:blur(3px)"></div><div class="wash"></div>
+<div class="topbar"><span class="x">←</span><b>Unit I · Food &amp; drink</b></div>
+${road('M120 150 C 300 200, 300 250, 260 300 S 100 380, 130 450 S 300 540, 260 600 S 110 700, 130 790')}
+<div class="ln done" style="top:96px;left:56px;background-image:${A('i1/img/scene-main')}"></div><div class="star" style="top:92px;left:146px">★</div>
+<div class="ll" style="top:126px;left:192px"><small>LESSON 1</small><b>What are they eating?</b></div>
+<div class="ln now" style="top:246px;left:206px;background-image:${A('i1/img/g-bill-burger')}"></div><div class="tip" style="top:222px;left:226px">START</div>
+<div class="ll" style="top:276px;left:24px"><small>LESSON 2</small><b>Read and write: food</b></div>
+<div class="ln lock" style="top:396px;left:70px;background-image:${A('i3/img/scene-street5')}"></div>
+<div class="ll" style="top:426px;left:206px"><small>LESSON 3</small><b>Eating or drinking?</b></div>
+<div class="ln lock" style="top:546px;left:206px;background-image:${A('i4/img/fs-scene')}"></div>
+<div class="ll" style="top:576px;left:24px"><small>LESSON 4</small><b>Drinks &amp; desserts</b></div>
+<div class="ln lock" style="top:700px;left:70px;background-image:${A('i5/img/sky-lunch')}"></div>
+<div class="ll" style="top:730px;left:206px"><small>LESSON 5</small><b>Breakfast, lunch, dinner</b></div>`],
+['N4','Roadmap của Lesson 1','<b>Sửa:</b> nền không người, mờ đều; Kim đứng chỉ vào bài tiếp theo.',`
+<div class="bgscene" style="background-image:${A('i1/img/cart-rice')};filter:blur(3px)"></div><div class="wash"></div>
+<div class="topbar"><span class="x">←</span><b>Lesson 1 · What are they eating?</b></div>
+${road('M195 150 C 300 190, 320 240, 260 290 S 100 330, 120 380 S 290 420, 250 470 S 120 520, 195 560 C 280 610, 300 660, 250 700 S 110 760, 150 820')}
+<div class="mile done" style="top:74px;left:120px"><div class="pic" style="background-image:${A('i1/img/cart-bread')}"></div><div class="flag">1 · VOCABULARY</div></div>
+<div class="fn done" style="top:262px;left:240px;background-image:${A('i1/img/food-bread')}"></div><div class="chk" style="top:258px;left:292px">✓</div>
+<div class="fn done" style="top:330px;left:86px;background-image:${A('i1/img/food-egg')}"></div><div class="chk" style="top:326px;left:138px">✓</div>
+<div class="fn now" style="top:404px;left:226px;background-image:${A('i1/img/food-burger')}"></div><div class="tip" style="top:420px;left:120px">START ▸</div>
+<div style="position:absolute;top:392px;left:300px;z-index:4;display:flex;flex-direction:column;align-items:center"><div class="kh" style="width:64px;height:64px;background-image:${A('common/kim/kim-head-point')};box-shadow:0 0 0 3px var(--red),0 4px 10px rgba(0,0,0,.2)"></div><div style="width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:12px solid var(--red);margin-top:-1px"></div></div>
+<div class="fn lock" style="top:470px;left:120px;background-image:${A('i1/img/food-chips')}"></div>
+<div class="mile lock" style="top:556px;left:120px"><div class="pic" style="background-image:${A('i1/img/g-sue-chicken')}"></div><div class="flag">2 · GRAMMAR</div></div>
+<div class="fn lock" style="top:752px;left:96px;background-image:${A('i1/img/food-chicken')}"></div>`],
+]],
+['B. KỂ CHUYỆN','Kim chỉ dẫn dắt ở Watch. Explore không có đầu Kim / hướng dẫn',[
+['S1','Watch (Vocab)','Giữ như bản trước.',`
+<div class="cam" style="background-image:${A('i1/img/scene-main')};background-position:8% 0"></div>${camTop('I1 · Vocabulary')}
+<div class="cap">${KH(62)}<div class="t">This is the bread cart. What food is here?</div><div class="go">➜</div></div>`],
+['S2','Watch (Grammar)','Kim nói tới ai, khung chuyển sang người đó (hiện trọn hình, không zoom sát). Câu đổi dần He is → He\'s ngay trên màn.',`
+<div class="cam" style="background-image:${A('i1/img/g-bill-burger')};background-size:cover;filter:blur(16px) brightness(1.25) saturate(.8);transform:scale(1.15)"></div><div class="wash" style="background:rgba(255,253,248,.7)"></div>
+<div style="position:absolute;top:190px;left:0;right:0;height:390px;background:${A('i1/img/g-bill-burger')} 30% 50%/auto 100% no-repeat;box-shadow:0 0 30px rgba(0,0,0,.15)"></div>${camTop('I1 · Grammar')}
+<div style="position:absolute;bottom:118px;left:0;right:0;display:flex;justify-content:center;gap:8px;align-items:center;z-index:5;font:800 18px AND"><span style="background:#fff;border-radius:10px;padding:4px 10px;text-decoration:line-through;color:var(--mute)">He is</span>➜<span style="background:var(--blue);color:#fff;border-radius:10px;padding:4px 10px">He's</span></div>
+<div class="cap">${KH(62)}<div class="t">He… is… <span class="hl">He's!</span> He's eating a burger.</div><div class="go">➜</div></div>`],
+['S3','Explore (Vocab)','<b>Sửa:</b> khung ôm đúng xe (bản thật lấy toạ độ từ bài). Thanh từ tự xuống 2 hàng khi nhiều từ (10 từ = 2 × 5).',`
+<div class="cam" style="background-image:${A('i1/img/scene-main')};background-position:20% 0"></div>
+<div style="position:absolute;top:10px;left:10px;right:10px;z-index:5;display:flex;gap:8px;align-items:flex-start">
+<span class="x" style="color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.6);margin-top:12px">✕</span>
+<div style="flex:1;border-radius:16px;background:rgba(255,255,255,.95);box-shadow:0 2px 10px rgba(0,0,0,.15);padding:6px 10px">
+<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;justify-items:center">
+${['bread','egg','meatballs',0,0,0,0,0,0,0].map(f=>f?`<div style="width:32px;height:32px;background:${A('i1/img/food-'+f)} center/contain no-repeat"></div>`:`<div style="width:32px;height:32px;display:grid;place-items:center"><i style="width:14px;height:14px;border-radius:50%;background:var(--line)"></i></div>`).join('')}</div>
+<div style="text-align:right;font-size:12px;font-weight:800;color:var(--mute);margin-top:2px">3 / 10</div></div></div>
+<div style="position:absolute;top:118px;left:14px;width:160px;height:104px;border-radius:18px;border:4px solid #fff;box-shadow:0 0 0 5px rgba(74,111,214,.55)"></div>
+<div style="position:absolute;top:238px;left:40px;background:#fff;border-radius:14px;padding:8px 14px;font:700 22px AND;box-shadow:0 4px 12px rgba(0,0,0,.2)">🔊 bread</div>`],
+['S3b','Bấm thanh trên cùng → lưới tất cả món','Chốt cách 2: mở lưới tất cả thẻ món, bấm thẻ nào nghe thẻ đó. Khi đủ 10/10 thì hiện nút I\'M READY.',`
+<div class="cam" style="background-image:${A('i1/img/scene-main')};background-position:20% 0;filter:blur(3px)"></div><div style="position:absolute;inset:0;background:rgba(36,41,56,.35)"></div>
+<div style="position:absolute;top:70px;left:12px;right:12px;bottom:12px;background:#fff;border-radius:24px;padding:16px;z-index:5">
+<div style="display:flex;align-items:center;margin-bottom:12px"><b style="font-size:20px;flex:1">Food Street words</b><span class="x">✕</span></div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">${['bread','egg','meatballs','sausage','burger','chips','rice','chicken','fish','meat'].map(f=>`<div class="tile"><div style="background-image:${A('i1/img/food-'+f)}"></div>🔊 ${f==='egg'?'an egg':f==='sausage'?'a sausage':f==='burger'?'a burger':f}</div>`).join('')}</div>
+<div class="btn p" style="left:16px;right:16px;bottom:16px">I'M READY</div></div>`],
+['S4','Explore (Grammar) — 1 thẻ/màn','<b>Sửa:</b> bỏ đầu Kim + dòng hướng dẫn.',`
+${tp(20,false)}
+<div style="position:absolute;top:84px;left:16px;right:16px;aspect-ratio:1/1;border-radius:20px;border:1.5px solid var(--line);background:${A('i1/img/g-sue-chicken')} center/cover"></div>
+<div style="position:absolute;top:490px;left:20px;right:10px;display:flex;gap:14px;align-items:center;font-weight:700;font-size:27px;white-space:nowrap" class="rd">${spk(48,48,'border-radius:14px;flex:none')}<span><span class="hl">She's eating</span> chicken.</span></div>
+<div class="dots" style="position:absolute;bottom:100px;left:0;right:0"><i class="on"></i><i></i><i></i></div><div class="btn p">NEXT</div>`],
+['S5','Explore (Let\'s Talk) — 1 thẻ/màn','<b>Sửa:</b> bỏ đầu Kim + hướng dẫn.',`
+${tp(20,false)}
+<div style="position:absolute;top:84px;left:16px;right:16px;aspect-ratio:1/1;border-radius:20px;border:1.5px solid var(--line);background:${A('i1/img/fl-tony-chips')} center/cover"></div>
+<div style="position:absolute;top:484px;left:20px;right:10px;display:flex;flex-direction:column;gap:12px;font-weight:700;font-size:24px" class="rd">
+<div style="display:flex;gap:12px;align-items:center;color:var(--redD)">${spk(44,44,'border-radius:12px;flex:none')}What is he eating?</div>
+<div style="display:flex;gap:12px;align-items:center">${spk(44,44,'border-radius:12px;flex:none')}<span><span class="hl">He's eating</span> chips.</span></div></div>
+<div class="dots" style="position:absolute;bottom:100px;left:0;right:0"><i class="on"></i><i></i><i></i></div><div class="btn p">NEXT</div>`],
+['S6','Tổng kết 3 câu','<b>Sửa:</b> bỏ đầu Kim + "Look! What changes?".',`
+${tp(60,false)}
+<div style="position:absolute;top:80px;left:16px;right:16px;display:flex;flex-direction:column;gap:12px">
+${[['g-sue-chicken',"She's eating",'chicken.'],['g-bill-burger',"He's eating",'a burger.'],['g-girl-plate',"I'm eating",'meatballs.']].map(([i,a,b])=>`<div class="card" style="padding:0;display:flex;align-items:center;gap:14px;overflow:hidden;height:170px"><div style="width:160px;height:100%;background:${A('i1/img/'+i)} center/cover;flex:none"></div><b class="rd" style="font-size:23px;line-height:1.4"><span class="hl">${a}</span><br>${b}</b></div>`).join('')}</div>
+<div class="btn p">I'M READY</div>`],
+]],
+['C. LUYỆN TẬP — NGHE / ĐỌC','Bỏ đầu Kim + chữ hướng dẫn. Luôn có loa. Nút Aa (góc phải) bấm mới hiện chữ',[
+['P1','Pop the bubble','',`${tp(30)}${bigSpk(120)}
+<div class="bub" style="width:150px;height:150px;top:330px;left:30px"><i style="background-image:${A('i1/img/food-egg')}"></i></div>
+<div class="bub" style="width:150px;height:150px;top:330px;right:30px"><i style="background-image:${A('i1/img/food-fish')}"></i></div>
+<div class="bub" style="width:150px;height:150px;top:510px;left:120px"><i style="background-image:${A('i1/img/food-chicken')}"></i></div>`],
+['P2','Nghe và chọn hình','',`${tp(30)}${bigSpk(120)}
+<div style="position:absolute;top:290px;left:24px;right:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+${card('i1/img/hw-q1a','height:200px')}${card('i1/img/hw-q1b','height:200px')}${card('i1/img/hw-q1c','height:200px;grid-column:1/3;justify-self:center;width:calc(50% - 8px)')}</div>`],
+['P2·Aa','Khi bấm Aa','<b>Sửa:</b> chữ hiện thành 1 dòng ở đáy màn, không đẩy hình.',`${tp(30,true,true)}${bigSpk(120)}
+<div style="position:absolute;top:290px;left:24px;right:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+${card('i1/img/hw-q1a','height:200px')}${card('i1/img/hw-q1b','height:200px')}${card('i1/img/hw-q1c','height:200px;grid-column:1/3;justify-self:center;width:calc(50% - 8px)')}</div>
+<div class="aaline" style="bottom:24px">Who is it? Listen and tap.</div>`],
+['P3','Nghe tên, chọn bạn','',`${tp(40)}
+<div style="position:absolute;top:90px;left:0;right:0;display:flex;gap:14px;justify-content:center;align-items:center">${spk(90,84)}<div class="chip" style="font-size:32px;padding:10px 24px">Nick</div></div>
+<div style="position:absolute;top:212px;left:24px;right:24px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+${['hw-q2a','hw-q2c','hw-q1c','hw-q1b','hw-q2b','hw-q1a'].map(n=>card('i1/img/'+n,'height:168px')).join('')}</div>`],
+['P4','Đọc từ, chọn hình','',`${tp(30)}
+<div style="position:absolute;top:100px;left:0;right:0;display:flex;gap:14px;justify-content:center;align-items:center">${spk(60,56,'border-radius:16px')}<span class="chip" style="font-size:42px;padding:12px 30px">fish</span></div>
+<div style="position:absolute;top:240px;left:24px;right:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+${card('i1/img/food-fish','height:190px;padding:24px')}${card('i1/img/food-chicken','height:190px;padding:24px')}${card('i1/img/food-burger','height:190px;padding:24px;grid-column:1/3;justify-self:center;width:calc(50% - 8px)')}</div>`],
+['P5','Nhìn và đọc ✓ / ✗','',`${tp(40)}
+${card('i1/img/hw-q2b','position:absolute;top:90px;left:50px;right:50px;height:300px')}
+<div style="position:absolute;top:412px;left:16px;right:16px;display:flex;gap:12px;justify-content:center;align-items:center;font-weight:700;font-size:26px" class="rd">${spk(44,44,'border-radius:12px;flex:none')}She is eating meatballs.</div>
+<div style="position:absolute;top:500px;left:40px;right:40px;display:grid;grid-template-columns:1fr 1fr;gap:20px">
+<div class="card" style="height:120px;display:grid;place-items:center;font-size:56px;color:var(--green)">✔</div><div class="card" style="height:120px;display:grid;place-items:center;font-size:56px;color:var(--red)">✘</div></div>`],
+['P6','Đánh vần','',`${tp(50)}${spk(60,56,'position:absolute;top:84px;left:20px;border-radius:16px')}
+${card('i1/img/food-bread','position:absolute;top:100px;left:90px;right:90px;height:240px;padding:30px')}
+<div style="position:absolute;top:380px;left:0;right:0;text-align:center"><span class="slot">b</span><span class="slot">r</span><span class="slot empty"></span><span class="slot empty"></span><span class="slot">d</span></div>
+<div style="position:absolute;top:490px;left:0;right:0;display:flex;gap:12px;justify-content:center">${['a','e','i','o'].map(l=>`<span class="chip" style="font-size:30px;padding:10px 20px">${l}</span>`).join('')}</div>
+<div class="btn off">CHECK</div>`],
+['P7','Ráp câu','',`${tp(50)}${spk(60,56,'position:absolute;top:84px;left:20px;border-radius:16px;z-index:3')}
+${card('i1/img/g-bill-burger','position:absolute;top:84px;left:16px;right:16px;height:240px;padding:0;background-size:cover')}
+<div style="position:absolute;top:350px;left:16px;right:16px"><div style="display:flex;gap:8px;flex-wrap:wrap;min-height:52px"><span class="chip">He</span><span class="chip">is</span></div><div class="line" style="margin-top:6px"></div><div class="line" style="margin-top:54px"></div></div>
+<div style="position:absolute;top:500px;left:16px;right:16px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><span class="chip ghost">He</span><span class="chip">a burger.</span><span class="chip ghost">is</span><span class="chip">eating</span><span class="chip">drinking</span><span class="chip">She</span></div>
+<div class="btn off">CHECK</div>`],
+['P8','Xếp 3 khay','1 món mỗi lượt; tên khay hiện sau như bài gốc.',`${tp(40)}
+${card('i3/img/item-juice','position:absolute;top:90px;left:100px;right:100px;height:220px;padding:26px')}
+<div style="position:absolute;top:330px;left:0;right:0;display:flex;gap:12px;justify-content:center;align-items:center;font-weight:700;font-size:28px" class="rd">${spk(44,44,'border-radius:12px')}juice</div>
+<div style="position:absolute;top:420px;left:16px;right:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+<div class="tray"><div style="background-image:${A('i1/img/food-bread')}"></div>?</div><div class="tray"><div style="background-image:${A('i3/img/item-milk')}"></div>?</div><div class="tray"><div style="background-image:${A('i3/img/item-cake')}"></div>?</div></div>
+<div style="position:absolute;top:566px;left:0;right:0;font-size:14px;color:var(--mute);font-weight:700;text-align:center">11 more</div>`],
+['P9','Đọc đoạn, điền từ','<b>Sửa:</b> có hình ở trên; mỗi trang ~3 câu, đoạn dài tách trang (chấm trang).',`${tp(60)}
+${card('i5/img/sky-breakfast','position:absolute;top:76px;left:16px;right:16px;height:190px;padding:0;background-size:cover')}
+<div class="card rd" style="position:absolute;top:282px;left:16px;right:16px;padding:16px 18px;font-size:21px;line-height:1.9">
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:2px">${spk(38,38,'border-radius:12px')}<b style="font-size:22px;font-family:PJS">Tom's day</b><span style="margin-left:auto;font:800 13px PJS;color:var(--mute)">1 / 2</span></div>It's breakfast time. Tom is eating <span style="display:inline-block;width:80px;border-bottom:3px solid var(--blue);background:var(--blueL);border-radius:6px 6px 0 0">&nbsp;</span>. He is drinking <span style="display:inline-block;width:70px;border-bottom:3px solid var(--line)">&nbsp;</span>.</div>
+<div style="position:absolute;top:530px;left:16px;right:16px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><span class="chip">bread</span><span class="chip">water</span><span class="chip">juice</span></div>
+<div class="dots" style="position:absolute;bottom:96px;left:0;right:0"><i class="on"></i><i></i></div>
+<div class="btn off">CHECK</div>`],
+]],
+['D. LUYỆN TẬP — NÓI','Loa ở trên để nghe lại · micro tròn to ở đáy · "Can\'t speak now" chữ nhỏ dưới cùng · Aa để xem chữ',[
+['P10','Say it','',`${tp(60)}${spk(76,70,'position:absolute;top:90px;left:50%;transform:translateX(-50%)')}
+${card('i1/img/food-meatballs','position:absolute;top:190px;left:50px;right:50px;height:320px;padding:40px')}${mic(false)}`],
+['P10b','HV chưa nói','Sau vài giây im lặng: micro nhấp nháy + Kim nhắc lại câu cần nói (tự phát loa).',`${tp(60)}${spk(76,70,'position:absolute;top:90px;left:50%;transform:translateX(-50%);box-shadow:0 3px 0 var(--blueD),0 0 0 8px rgba(74,111,214,.2)')}
+${card('i1/img/food-meatballs','position:absolute;top:190px;left:50px;right:50px;height:320px;padding:40px')}
+<div style="position:absolute;bottom:176px;left:0;right:0;text-align:center;font-weight:800;color:var(--blueD);font-size:16px">🎤 Your turn! Tap and say it.</div>${mic(true)}`],
+['P11','Lift the lid / Snack Machine','',`${tp(60)}${spk(76,70,'position:absolute;top:90px;left:50%;transform:translateX(-50%)')}
+<div style="position:absolute;top:180px;left:16px;right:16px;height:330px;display:flex;align-items:flex-end;justify-content:center;gap:10px">
+<div class="kimb" style="position:relative;width:150px;height:310px;background-image:${A('i1/img/kid-sue')}"></div>
+<div style="width:170px;height:170px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#dfe7ee);box-shadow:0 8px 0 #c9d3db;display:grid;place-items:center;font-size:40px">🍽️</div></div>${mic(false)}`],
+['P12','Answer Kim','Chỉ có loa ở giữa; câu hỏi chỉ hiện khi bấm Aa.',`${tp(60)}${spk(76,70,'position:absolute;top:90px;left:50%;transform:translateX(-50%)')}
+${card('i1/img/fl-pat-egg','position:absolute;top:190px;left:16px;right:16px;height:320px;padding:0;background-size:cover')}${mic(false)}`],
+['P13','Race home','Như P12, thêm bàn cờ ở trên.',`${tp(60)}
+<div style="position:absolute;top:70px;left:0;right:0" class="board"><span class="on">1</span><span class="on">2</span><span>3</span><span>4</span><span>5</span><span>6</span><span style="font-size:22px">🏠</span></div>
+<div class="kimb" style="top:48px;left:118px;width:30px;height:30px;background-image:${A('common/kim/kim-head-cheer')}"></div>
+${spk(76,70,'position:absolute;top:132px;left:50%;transform:translateX(-50%)')}
+${card('i5/img/p3','position:absolute;top:226px;left:16px;right:16px;height:300px;padding:0;background-size:cover')}${mic(false)}`],
+]],
+['E. PHẢN HỒI, KẾT THÚC & PHẦN THƯỞNG','Con dấu cuối mỗi chặng · chọn 1 món theme unit cuối mỗi lesson · gom thành con phố riêng · hộ chiếu trong app',[
+['F1','Trả lời đúng','',`${tp(40)}${bigSpk(120)}
+<div style="position:absolute;top:290px;left:24px;right:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+${card('i1/img/hw-q1a','height:200px;border:3px solid var(--green);background-color:var(--greenL)')}${card('i1/img/hw-q1b','height:200px;opacity:.45')}</div>
+<div class="sheet ok"><h3>✔ Great job!</h3><div class="rd" style="display:flex;gap:10px;align-items:center;font-weight:700;font-size:20px;color:#2f8547">${spk(38,38,'border-radius:10px;flex:none;background:var(--green);box-shadow:0 3px 0 #2f8547')}<span>She's eating meatballs.</span></div></div><div class="btn g">CONTINUE</div>`],
+['F2','Trả lời sai','',`${tp(40)}${spk(60,56,'position:absolute;top:84px;left:20px;border-radius:16px')}
+${card('i1/img/food-bread','position:absolute;top:100px;left:90px;right:90px;height:240px;padding:30px')}
+<div style="position:absolute;top:380px;left:0;right:0;text-align:center"><span class="slot">b</span><span class="slot">r</span><span class="slot" style="color:var(--red)">a</span><span class="slot" style="color:var(--red)">e</span><span class="slot">d</span></div>
+<div class="sheet bad"><h3>Almost!</h3><p class="rd" style="margin:0;font-size:20px;font-weight:700;color:var(--redD)">Correct answer: <u>bread</u></p></div><div class="btn p">GOT IT</div>`],
+['F3','Ôn từ cuối Vocab','',`${tp(100,false)}<div style="position:absolute;top:66px;left:20px;font-weight:800;font-size:25px">Food Street words</div>
+<div style="position:absolute;top:116px;left:16px;right:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+${['bread','egg','meatballs','sausage','burger','chips','rice','chicken','fish'].map(f=>`<div class="tile"><div style="background-image:${A('i1/img/food-'+f)}"></div>🔊 ${f==='egg'?'an egg':f==='sausage'?'a sausage':f==='burger'?'a burger':f}</div>`).join('')}</div>
+<div class="btn s" style="bottom:92px">PLAY AGAIN</div><div class="btn p">CONTINUE</div>`],
+['F4','Xong 1 chặng → con dấu','Dấu "cộp" xuống trang hộ chiếu; màu mực theo kết quả (xanh / bạc / vàng). Bấm dấu = nghe lại câu.',`
+<div class="bgscene" style="background-image:${A('i1/img/scene-main')};filter:blur(3px)"></div><div class="wash" style="background:rgba(255,253,248,.85)"></div>
+<div style="position:absolute;top:70px;left:0;right:0;text-align:center;font-weight:800;font-size:30px">Grammar done!</div>
+<div style="position:absolute;top:130px;left:45px;right:45px;height:330px;background:#fbf4e4;border-radius:14px;border:1.5px solid #e6d9bc;box-shadow:0 8px 20px rgba(0,0,0,.12);padding:14px">
+<div style="font-size:12px;font-weight:800;color:#a8915f;letter-spacing:1px">PASSPORT · UNIT I · LESSON 1</div>
+<div class="stamp" style="position:absolute;top:60px;left:24px;width:110px;height:110px;color:#3756B5;border-color:#3756B5;transform:rotate(-8deg);background:${A('i1/img/cart-bread')} center/70% no-repeat;font-size:11px;align-content:end;padding-bottom:6px">VOCAB</div>
+<div class="stamp" style="position:absolute;top:110px;left:140px;width:140px;height:140px;color:var(--goldD);border:4px solid var(--goldD);transform:rotate(10deg);background:#fff8e6 ${A('i1/img/g-bill-burger')} center/cover;box-shadow:0 0 0 6px rgba(242,179,61,.25)"></div>
+<div style="position:absolute;top:242px;left:150px;background:var(--goldD);color:#fff;font-weight:800;font-size:12px;border-radius:8px;padding:4px 8px;transform:rotate(10deg)">GRAMMAR · GOLD</div>
+<div style="position:absolute;top:200px;left:30px;width:96px;height:96px;border-radius:50%;border:3px dashed #d6c79f;display:grid;place-items:center;color:#c2b183;font-size:11px;font-weight:800">LET'S TALK</div></div>
+<div style="position:absolute;top:486px;left:20px;right:20px;display:flex;gap:10px">
+<div class="card" style="flex:1;text-align:center;padding:10px"><small style="color:var(--mute);font-weight:700">CORRECT</small><b style="display:block;font-size:22px;color:var(--green)">90%</b></div>
+<div class="card" style="flex:1;text-align:center;padding:10px"><small style="color:var(--mute);font-weight:700">TIME</small><b style="display:block;font-size:22px;color:var(--blueD)">4:12</b></div></div>
+<div class="kimb" style="bottom:90px;right:10px;width:90px;height:150px;background-image:${A('common/kim/kim-cheer')}"></div>
+<div class="btn s" style="bottom:92px;right:110px">DO THIS PART AGAIN</div><div class="btn p">CONTINUE</div>`],
+['R1','Xong lesson → chọn 1 món','HV tự chọn 1 trong 3–4 món theo theme unit (Unit I: các xe đồ ăn; Unit Transport: các loại xe).',`
+<div class="bgscene" style="background-image:${A('i1/img/scene-street')};filter:blur(3px)"></div><div class="wash" style="background:rgba(255,253,248,.88)"></div>
+<div class="kimb" style="top:30px;left:20px;width:80px;height:120px;background-image:${A('common/kim/kim-cheer')}"></div>
+<div style="position:absolute;top:50px;left:110px;right:16px"><div class="tag">LESSON 1 COMPLETE!</div><b style="font-size:24px;line-height:1.25">Pick a cart for your Food Street!</b></div>
+<div style="position:absolute;top:180px;left:16px;right:16px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+<div class="ropt"><div class="p" style="background-image:${A('i1/img/cart-bread')}"></div><div class="t">Bread cart</div></div>
+<div class="ropt sel"><div class="p" style="background-image:${A('i1/img/cart-burger')}"></div><div class="t">Burger cart ✓</div></div>
+<div class="ropt"><div class="p" style="background-image:${A('i1/img/cart-rice')}"></div><div class="t">Rice cart</div></div>
+<div class="ropt"><div class="p" style="background-image:${A('i3/img/cart-dessert')}"></div><div class="t">Dessert cart</div></div></div>
+<div class="btn p">ADD TO MY STREET</div>`],
+['R2','Con phố của tôi','Nền lớn là con phố trống có 5 chỗ; xe chọn ở mỗi lesson đặt vào chỗ của lesson đó. Điện thoại vuốt ngang để đi dọc phố.',`
+<div class="topbar"><span class="x">←</span><b>My Food Street</b><span style="margin-left:auto;font-weight:800;color:var(--mute);font-size:14px">2 / 5</span></div>
+<div style="position:absolute;top:60px;left:-200px;width:1000px;height:600px;background:${A('i3/img/cart-drinks')} 0 0/cover;filter:saturate(.7) brightness(1.08)"></div>
+<div style="position:absolute;top:60px;left:0;right:0;height:600px;background:rgba(255,253,248,.35)"></div>
+<div style="position:absolute;top:330px;left:-20px;width:200px;height:200px;background:${A('i1/img/cart-burger')} center/cover;border-radius:20px;border:4px solid #fff;box-shadow:0 8px 18px rgba(0,0,0,.2)"></div>
+<div style="position:absolute;top:296px;left:24px;background:var(--gold);color:#fff;font-weight:800;font-size:13px;border-radius:8px;padding:3px 8px">L1</div>
+<div style="position:absolute;top:330px;left:196px;width:200px;height:200px;background:${A('i3/img/cart-dessert')} center/cover;border-radius:20px;border:4px solid #fff;box-shadow:0 8px 18px rgba(0,0,0,.2)"></div>
+<div style="position:absolute;top:296px;left:204px;background:var(--gold);color:#fff;font-weight:800;font-size:13px;border-radius:8px;padding:3px 8px">L2</div>
+<div style="position:absolute;top:250px;left:40px;background:#fff;border-radius:12px;padding:6px 10px;font:700 15px AND;box-shadow:0 3px 10px rgba(0,0,0,.15)">🔊 He's eating a burger.</div>
+<div style="position:absolute;top:440px;right:8px;background:rgba(36,41,56,.75);color:#fff;border-radius:16px;padding:6px 12px;font-weight:800;font-size:14px">L3 · L4 · L5 ➜</div>
+<div style="position:absolute;top:680px;left:16px;right:16px;display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
+${[1,2,3,4,5].map(n=>`<div style="height:56px;border-radius:14px;border:2px ${n<3?'solid var(--gold)':'dashed #cfd5dc'};display:grid;place-items:center;font-weight:800;color:${n<3?'var(--goldD)':'#b5bcc4'};background:#fff">L${n}</div>`).join('')}</div>
+<div style="position:absolute;top:752px;left:20px;right:20px;color:var(--mute);font-size:14px;line-height:1.4;text-align:center">Fill all 5 spots to get the <b style="color:var(--ink)">Food Street logo</b>!</div>`],
+['R3','Hộ chiếu — trang bìa','<b>Sửa:</b> lưới logo các unit A → J (mỗi unit 1 logo). Bấm logo đã có → trang của unit đó (con phố + con dấu chặng).',`
+<div class="topbar"><span class="x">←</span><b>My Passport</b></div>
+<div style="position:absolute;top:76px;left:16px;right:16px;bottom:20px;background:#fbf4e4;border-radius:18px;border:1.5px solid #e6d9bc;padding:18px 14px">
+<div style="text-align:center;font-size:12px;font-weight:800;color:#a8915f;letter-spacing:1.5px">DOL EXPLORE · PASSPORT</div>
+<div style="text-align:center;font-size:20px;font-weight:800;margin:4px 0 16px">1 / 10 units</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px 10px">
+${[['A','At school','🎒'],['B','Unit B','📦'],['C','The farm','🐄'],['D','Unit D','📦'],['E','Transport','🚌'],['F','People','👪'],['G','Looks','👀'],['H','Clothes','👕'],['I','Food Street',''],['J','Actions','🏃']].map(([l,t,e])=>l==='I'?`<div style="text-align:center"><div style="aspect-ratio:1;border-radius:50%;border:4px solid var(--red);background:#fff ${A('i1/img/cart-burger')} center/150% no-repeat;box-shadow:0 0 0 5px rgba(224,88,72,.18);transform:rotate(-6deg)"></div><b style="font-size:12px;color:var(--redD)">I · ${t}</b></div>`:`<div style="text-align:center"><div style="aspect-ratio:1;border-radius:50%;border:3px dashed #d6c79f;display:grid;place-items:center;font-size:30px;filter:grayscale(1);opacity:.45">${e}</div><b style="font-size:12px;color:#c2b183">${l} · ${t}</b></div>`).join('')}</div>
+<div style="margin-top:12px;font-size:13px;color:#a8915f;text-align:center">Logo vẽ riêng cho từng unit (Image Pipeline)</div></div>`],
+]],
+];
+const lap=[
+['L4','Roadmap lesson trên laptop','<b>Sửa:</b> cùng một thiết kế với bản điện thoại, chỉ giãn rộng: nền mờ đều toàn màn, không còn cột riêng.',`
+<div class="bgscene" style="background-image:${A('i1/img/cart-rice')};filter:blur(3px)"></div><div class="wash"></div>
+<div class="topbar" style="background:rgba(255,255,255,.85)"><span class="x">←</span><b>Lesson 1 · What are they eating?</b></div>
+<svg style="position:absolute;left:0;top:0;z-index:1" width="1280" height="720"><path d="M220 230 C 330 330, 420 330, 470 300 S 600 250, 640 330 S 760 470, 840 420 S 960 300, 1060 380" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="36" stroke-linecap="round"/><path d="M220 230 C 330 330, 420 330, 470 300 S 600 250, 640 330 S 760 470, 840 420 S 960 300, 1060 380" fill="none" stroke="#efe2c8" stroke-width="28" stroke-linecap="round"/><path d="M220 230 C 330 330, 420 330, 470 300 S 600 250, 640 330 S 760 470, 840 420 S 960 300, 1060 380" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="9 12"/></svg>
+<div class="mile done" style="top:110px;left:146px"><div class="pic" style="background-image:${A('i1/img/cart-bread')}"></div><div class="flag">1 · VOCABULARY</div></div>
+<div class="fn done" style="top:300px;left:330px;background-image:${A('i1/img/food-bread')}"></div>
+<div class="fn done" style="top:262px;left:450px;background-image:${A('i1/img/food-egg')}"></div>
+<div class="fn now" style="top:300px;left:606px;background-image:${A('i1/img/food-burger')}"></div><div class="tip" style="top:236px;left:600px">START</div>
+<div class="kimb" style="top:330px;left:520px;width:90px;height:150px;background-image:${A('common/kim/kim-point')}"></div>
+<div class="fn lock" style="top:410px;left:740px;background-image:${A('i1/img/food-chips')}"></div>
+<div class="mile lock" style="top:300px;left:990px"><div class="pic" style="background-image:${A('i1/img/g-sue-chicken')}"></div><div class="flag">2 · GRAMMAR</div></div>`],
+['L2','Bài luyện trên laptop','Cột giữa; loa to; Aa góc phải.',`
+<div class="top" style="left:190px;right:190px;top:10px"><span class="x">✕</span><div class="prog"><i style="width:30%"></i></div><div class="aa">Aa</div></div>
+${spk(140,130,'position:absolute;top:110px;left:50%;transform:translateX(-50%)')}
+<div style="position:absolute;top:290px;left:0;right:0;display:flex;gap:24px;justify-content:center">${card('i1/img/hw-q1a','width:240px;height:280px')}${card('i1/img/hw-q1b','width:240px;height:280px')}${card('i1/img/hw-q1c','width:240px;height:280px')}</div>`],
+];
+let html='';
+for(const [h,sub,items] of sections){html+=`<section><h1>${h}</h1><p class="sub">${sub}</p><div class="row">`+items.map(([id,t,n,inner])=>`<div class="col"><div class="lab"><i>${id}</i>${t}</div><div class="note">${n}</div><div class="dev"><div class="scr">${inner}</div></div></div>`).join('')+`</div></section>`}
+html+=`<section><h1>F. LAPTOP / iPAD NGANG</h1><p class="sub">Cùng hệ thiết kế; màn ngang dùng cột giữa</p><div class="row">`+lap.map(([id,t,n,inner])=>`<div class="col wide"><div class="lab"><i>${id}</i>${t}</div><div class="note" style="min-height:0">${n}</div><div class="dev lap"><div class="scr">${inner}</div></div></div>`).join('')+`</div></section>`;
+document.getElementById('out').innerHTML=html;
+</script></body></html>
