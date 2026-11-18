@@ -743,22 +743,32 @@
       const axis = (size, S, v0, v1, f0, f1, t) => {
         const fLo = v0 - f0 * size - t * (f1 - f0) * size, fHi = v1 - f1 * size + t * (f1 - f0) * size;
         const sLo = size >= S ? S - size : 0, sHi = size >= S ? 0 : S - size;
-        const want = (v0 + v1) / 2 - ((f0 + f1) / 2) * size;
+        /* the whole picture fits in the band → the picture is centred in the band; it fits on the screen → centred on
+           the screen (then kept so the focus stays in the band); else the focus is centred. A centred frame keeps the
+           caption / button column centred on it, and no odd strip of blur shows on one side only. */
+        const want = size <= v1 - v0 + 0.5 ? (v0 + v1 - size) / 2 : size <= S ? (S - size) / 2 : (v0 + v1) / 2 - ((f0 + f1) / 2) * size;
         const lo = Math.max(fLo, sLo), hi = Math.min(fHi, sHi);
         return { pos: lo <= hi ? Math.min(hi, Math.max(lo, want)) : Math.min(fHi, Math.max(fLo, want)), ok: lo <= hi + 0.5 };
       };
       const tol = m.tol != null ? m.tol : 0.05;
       const place = (cw, t) => {
         const ch = cw / ar;
-        const x = axis(cw, W, side, W - side, fx, fx + fw, t), y = axis(ch, H, y0, y1, fy, fy + fh, t);
+        /* a focus that reaches the picture's own edge needs no side margin there (else a strip of blur shows on one side) */
+        const x = axis(cw, W, fx <= 0.005 ? 0 : side, fx + fw >= 0.995 ? W : W - side, fx, fx + fw, t), y = axis(ch, H, y0, y1, fy, fy + fh, t);
         return { cw, ch, left: x.pos, top: y.pos, ok: x.ok && y.ok };
       };
       /* cover when the focus box fits inside the free area (a little tolerance), else shrink until it fits */
       let g = place(Math.max(W, H * ar), tol), mode = "cover";
-      if (!g.ok) { mode = "fit"; g = place(Math.min(vw / fw, (vh / fh) * ar, Math.max(W, H * ar)), 0); }
+      if (!g.ok) {
+        mode = "fit"; g = place(Math.min(vw / fw, (vh / fh) * ar, Math.max(W, H * ar)), 0);
+        /* a framed picture a few px narrower than the screen but wider than the side band → exactly the band, so it sits centred */
+        if (side && g.cw > vw && g.cw < W) g = place(vw, 0);
+      }
       if (animate != null) canvas.classList.toggle("anim", !!animate);   /* null (a resize): keep the running move */
       Object.assign(canvas.style, { width: g.cw + "px", height: g.ch + "px", left: g.left + "px", top: g.top + "px" });
       cam.dataset.mode = mode;
+      /* the visible frame (the picture ∩ the screen), so the bottom column can share its edges */
+      if (api.onFrame) api.onFrame({ W, H, left: Math.max(0, g.left), right: Math.max(0, W - g.left - g.cw), top: Math.max(0, g.top), bottom: Math.max(0, H - g.top - g.ch), mode, animate: !!animate });
     }
     const resized = () => { if (api.onResize) api.onResize(); fit(null); };
     const ro = window.ResizeObserver ? new ResizeObserver(resized) : null;
@@ -803,6 +813,35 @@
     return [m[1] + { "'s": " is", "'m": " am", "'re": " are" }[m[2]], m[1] + m[2]];
   }
 
+  /* the bottom column of a scene screen (Watch caption, Explore button / tray) shares the visible frame's edges:
+   * exactly the frame's width, centred on it; where the frame reaches a screen edge, both sides come in by the same
+   * amount so it keeps 12px from that edge (continuous: no jump when a frame grows to the screen edge).
+   * Never narrower than minW (then centred on the frame). Sets --bl / --br (px from the screen's left / right). */
+  function frameColumn(el, f, minW) {
+    const pad = Math.max(0, 12 - Math.min(f.left, f.right));
+    let L = f.left + pad, R = f.right + pad;
+    const m = Math.min(f.W - 24, minW);
+    if (f.W - L - R < m) { const c = L + (f.W - L - R) / 2; L = clampN(12, c - m / 2, f.W - 12 - m); R = f.W - L - m; }
+    const old = [parseFloat(el.style.getPropertyValue("--bl")), parseFloat(el.style.getPropertyValue("--br"))];
+    if (Math.abs(old[0] - L) < 1 && Math.abs(old[1] - R) < 1) return;
+    el.classList.toggle("glide", f.animate);
+    el.style.setProperty("--bl", L.toFixed(1) + "px"); el.style.setProperty("--br", R.toFixed(1) + "px");
+  }
+
+  /* the foods of a cart on its counter (Explore vocab and Watch use the same row: same places, same labels) */
+  function cartCounter(c, tag) {
+    const counter = h("div", { class: "st-counter", "data-n": c.foods.length });
+    const items = {};
+    c.foods.forEach((f, n) => {
+      const el = h(tag, { class: "st-cfood", style: `animation-delay:${n * 90}ms` }, h("img", { src: img(L.words[f].img), alt: "" }), h("span", { class: "lbl px-read", html: wlabel(L.words[f]) }));
+      if (tag === "button") { el.type = "button"; el.setAttribute("aria-label", L.words[f].label); }
+      items[f] = el; counter.append(el);
+    });
+    return { counter, items };
+  }
+  /* camera framing of an open cart: landscape = the whole counter row; upright = the cart's own focus */
+  const CART_WIDE = { x: 10, y: 10, w: 80, h: 88 };
+
   /* ======================= Step types ======================= */
   const TYPES = {};
 
@@ -814,15 +853,16 @@
     const top = sceneTop(step);
     const board = h("div", { class: "st-board", hidden: true });
     const chips = h("div", { class: "st-chips", hidden: true });
-    const foods = h("div", { class: "st-foods", hidden: true });
     const head = h("button", { class: "st-head", type: "button", "aria-label": "Listen again" }, kimHead("wave"));
     const txt = h("div", { class: "st-txt", "aria-live": "polite" });
     const goBtn = iconBtn("st-go", UI.next, "Next", () => next());
     const cap = h("div", { class: "st-cap" }, head, txt, goBtn);
-    const bottom = h("div", { class: "st-bottom" }, board, chips, foods, cap);
+    const bottom = h("div", { class: "st-bottom" }, board, chips, cap);
     root.append(top, bottom);
     cam.margins(() => ({ top: top.offsetHeight + 4, bottom: bottom.offsetHeight + 14 }));
     cam.watch(bottom);
+    /* caption column = the visible picture frame (same edges, centred on it) */
+    cam.onFrame = (f) => frameColumn(bottom, f, 440);
 
     const cues = step.cues;
     let i = 0, token = 0;
@@ -831,9 +871,50 @@
       else if (c.food) await Audio_.word(c.food);
       else if (c.line) await Audio_.line(c.line);
     };
+    /* an open cart: its foods stand on the counter as Kim names them (same row as Explore vocab) */
+    const cartOf = (scene) => (L.street && L.street.carts ? L.street.carts.find((x) => x.scene === scene) : null) || null;
+    const upright = () => cam.cam.clientWidth < cam.cam.clientHeight * 0.9;
+    let wc = null;   /* { cart, counter, items } of the cart on screen */
+    /* landscape: the whole counter row (as Explore); upright: the cart itself, the row narrowed to it */
+    function cartFrame(ct) {
+      if (ct.focus) return ct.focus;
+      if (!upright()) return CART_WIDE;
+      const f = focusOf(ct.scene); return union(f, { x: f.x, y: 84, w: f.w, h: 14 });
+    }
+    function placeRow() {
+      if (!wc) return;
+      const up = upright() && !wc.cart.focus, f = focusOf(wc.cart.scene);
+      wc.counter.classList.toggle("tight", up);
+      const m = f.w * 0.05;   /* a little in from the cart's edges, so the ring never touches the screen edge */
+      Object.assign(wc.counter.style, up ? { left: f.x + m + "%", right: 100 - f.x - f.w + m + "%" } : { left: "", right: "" });
+    }
+    function drawCart(c, list, now) {
+      const ct = cartOf(c.scene);
+      if (wc && (!ct || wc.cart !== ct)) { wc.counter.remove(); wc = null; }
+      if (!ct) return false;
+      if (!wc) { wc = { cart: ct, ...cartCounter(ct, "span") }; wc.counter.classList.add("watch"); cam.canvas.append(wc.counter); placeRow(); }
+      ct.foods.forEach((f) => {
+        const el = wc.items[f], on = list.includes(f);
+        el.style.animationDelay = "0ms";
+        el.classList.toggle("wait", !on);
+        el.classList.toggle("sel", f === now); el.classList.toggle("heard", f === now);
+      });
+      return true;
+    }
+    cam.onResize = () => {
+      const was = wc && wc.counter.classList.contains("tight"); placeRow();
+      if (wc && was !== wc.counter.classList.contains("tight")) { const c = cues[Math.min(i, cues.length - 1)]; cam.show(c.scene, focusCue(c)); }
+    };
     /* what the cue talks about: a cart / a sign point / the actors + bubble / the scene's own focus */
     function focusCue(c) {
       if (c.focus) return c.focus;
+      const ct = cartOf(c.scene);
+      /* on an open cart the counter row stays in view; a sign point is framed together with it */
+      if (ct && !(c.actors && c.actors.length)) {
+        const fr = cartFrame(ct);
+        if (c.point && c.point.startsWith("sign:")) { const p = L.street.signRice[c.point.split(":")[1]]; return union(fr, { x: p.x - 10, y: Math.max(0, p.y - 15), w: 20, h: 30 }); }
+        return fr;
+      }
       if (c.point) {
         const [kind, id] = c.point.split(":");
         if (kind === "cart") { const k = L.street.carts.find((x) => x.id === id).hot; return pad(k, 3); }
@@ -853,14 +934,20 @@
       if (cues[k] && cues[k].clear) list = [];
       return list;
     }
-    /* foods heard at this cart: a row of small cards over the caption (so any framing keeps them visible) */
-    function drawFoods(list, popLast) {
-      foods.innerHTML = ""; foods.hidden = !list.length;
-      list.forEach((f, n) => {
-        const w = L.words[f];
-        const el = h("span", { class: "st-food" + (popLast && n === list.length - 1 ? " now" : "") }, h("img", { src: img(w.img), alt: "" }), h("span", { class: "px-read", html: wlabel(w) }));
-        foods.append(el);
-      });
+    /* foods heard at this cart: on the cart's counter (drawCart); a scene without a cart (I5's sky) shows the word's
+       picture + label on the scene itself, at the bottom of the part the cue looks at — never a card row */
+    let solo = null;
+    function drawFoods(c, list, popLast) {
+      if (solo) { solo.remove(); solo = null; }
+      if (drawCart(c, list, popLast ? list[list.length - 1] : null)) return;
+      if (list.length) {
+        const f = focusOf(c.scene), m = f.w * 0.05;
+        solo = cartCounter({ foods: list }, "span").counter;
+        solo.classList.add("watch", "tight", "solo");
+        Object.assign(solo.style, { left: f.x + m + "%", right: 100 - f.x - f.w + m + "%" });
+        const last = solo.lastChild; last.style.animationDelay = "0ms"; if (popLast) last.classList.add("sel", "heard");
+        cam.canvas.append(solo);
+      }
     }
     function drawLayer(c) {
       cam.layer.innerHTML = "";
@@ -898,7 +985,7 @@
         if (!alive(run) || tk !== token) return;
         const c = cues[i];
         drawLayer(c); drawText(c);
-        drawFoods(foodsBefore(i).concat(c.food ? [c.food] : []), !!c.food);
+        drawFoods(c, foodsBefore(i).concat(c.food ? [c.food] : []), !!c.food);
         cam.show(c.scene, focusCue(c));
         head.classList.add("talk"); head.firstChild.style.backgroundImage = `url("${kimArt("head-point")}")`;
         await cueSound(c, tk);
@@ -923,23 +1010,24 @@
     const total = all.length;
     /* bar: icons of the words heard (empty dots for the rest), ≤ 6 per row; tap → every word */
     const cols = total <= 6 ? total : Math.ceil(total / 2);
-    const slots = h("div", { class: "st-slots", style: `--cols:${Math.min(6, cols)}` });
+    const slots = h("div", { class: "st-slots", style: `--cols:${Math.min(6, cols)};--all:${total}` });
     const slotOf = {};
     all.forEach((w) => { const s = h("span", { class: "st-slot", title: L.words[w].label }); slotOf[w] = s; slots.append(s); });
     const count = h("small", { class: "st-count" });
     const bar = h("button", { class: "st-wbar", type: "button", "aria-label": "All the words" }, slots, count);
     const close = iconBtn("st-x", "✕", "Back to the map", () => showMap());
     const backBtn = h("button", { class: "st-back", type: "button", hidden: true }, h("span", { html: UI.back }), L.street.name || "Food Street");
-    const top = h("div", { class: "st-etop" }, h("div", { class: "st-erow" }, close, bar), backBtn);
+    const top = h("div", { class: "st-etop" }, h("div", { class: "st-eleft" }, close, backBtn), bar);
     const ready = h("button", { class: "st-ready px-btn red", type: "button", hidden: true }, "I'M READY");
     /* upright screens: the foods of an open cart sit as big cards under the picture (landscape: on the cart's counter) */
     const tray = h("div", { class: "st-tray", hidden: true });
     root.append(top, tray, ready);
     cam.margins(() => ({ top: top.offsetHeight + 10, bottom: (ready.hidden ? 12 : ready.offsetHeight + 28) + (tray.hidden ? 0 : tray.offsetHeight + 14), side: 8, tol: 0 }));
     cam.watch(top); cam.watch(tray);
+    cam.onFrame = (f) => frameColumn(root, f, 0);
     let counter = null, cart = null;
     const upright = () => cam.cam.clientWidth < cam.cam.clientHeight * 0.9;
-    const cartFocus = () => cart.focus || (upright() ? focusOf(cart.scene) : { x: 10, y: 10, w: 80, h: 88 });
+    const cartFocus = () => cart.focus || (upright() ? focusOf(cart.scene) : CART_WIDE);
     function placeCounter() {
       const up = !!counter && upright();
       if (counter && up && counter.parentNode !== tray) tray.append(counter);
@@ -1000,16 +1088,16 @@
       visited.add(c.id); cart = c;
       backBtn.hidden = false;
       cam.layer.innerHTML = ""; tray.innerHTML = "";
-      counter = h("div", { class: "st-counter", "data-n": c.foods.length });
-      c.foods.forEach((f, n) => {
-        const el = h("button", { class: "st-cfood" + (heard.has(f) ? " heard" : ""), type: "button", "aria-label": L.words[f].label, style: `animation-delay:${n * 90}ms` },
-          h("img", { src: img(L.words[f].img), alt: "" }), h("span", { class: "lbl px-read", html: wlabel(L.words[f]) }));
+      const row = cartCounter(c, "button");
+      counter = row.counter;
+      c.foods.forEach((f) => {
+        const el = row.items[f];
+        el.classList.toggle("heard", heard.has(f));
         el.onclick = () => {
           counter.querySelectorAll(".st-cfood").forEach((x) => x.classList.toggle("sel", x === el));
           el.classList.add("heard"); el.classList.remove("bounce"); void el.offsetWidth; el.classList.add("bounce");
           hear(f, el.querySelector("img"));
         };
-        counter.append(el);
       });
       placeCounter();
       cam.show(c.scene, cartFocus());
@@ -1060,7 +1148,7 @@
   const chunkHtml = (sent, chunk) => { const s = esc(sent), k = s.indexOf(esc(chunk)); return k < 0 ? s : s.slice(0, k) + `<span class="hl">${esc(chunk)}</span>` + s.slice(k + esc(chunk).length); };
   const fullChunk = (chunk) => chunk.replace(/^(He|She|It)'s/, "$1 is").replace(/^I'm/, "I am").replace(/^(You|We|They)'re/, "$1 are");
   function cards(step, run, qa) {
-    const root = h("div", { class: "st st-cards" });
+    const root = h("div", { class: "st st-cards" + (qa ? " qa" : "") });
     const bar = h("i");
     root.append(h("div", { class: "px-top st-ctop" }, iconBtn("px-x", "✕", "Back to the map", () => showMap()), h("span", { class: "px-prog", role: "progressbar" }, bar)));
     const body = h("div", { class: "st-cbody" });

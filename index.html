@@ -455,7 +455,7 @@ button.px-card:active{transform:translateY(2px)}
 .st-ring{position:absolute;pointer-events:none;border:4px solid #fff;border-radius:18px;animation:stRing 1.3s ease-in-out infinite}
 .st-ring:not(.box){width:13cqw;height:13cqw;border-radius:50%;transform:translate(-50%,-50%)}
 
-/* -- 2. watch: pill · map · menu on top; chips / board / foods + caption at the bottom -- */
+/* -- 2. watch: pill · map · menu on top; chips / board + caption at the bottom (foods stand on the scene: section 3) -- */
 .st-top{position:absolute;z-index:5;top:0;left:0;right:0;display:flex;align-items:center;gap:10px;
   padding:calc(env(safe-area-inset-top,0px) + 12px) max(12px,env(safe-area-inset-right,0px)) 0 max(12px,env(safe-area-inset-left,0px))}
 .st-sp{flex:1}
@@ -464,9 +464,11 @@ button.px-card:active{transform:translateY(2px)}
 .st-ib svg{width:22px;height:22px}
 .st-x{font-size:20px;font-weight:700;color:#8a949f}
 .st-x.dark{box-shadow:none;background:var(--surf)}
-.st-bottom{position:absolute;z-index:5;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;gap:10px;pointer-events:none;
-  padding:0 max(12px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 14px) max(12px,env(safe-area-inset-left,0px))}
-.st-bottom > *{pointer-events:auto;max-width:min(100%,940px)}
+/* left / right = the visible picture frame's edges (--bl / --br from frameColumn): the caption is exactly as wide as the frame */
+.st-bottom{position:absolute;z-index:5;left:max(var(--bl,12px),env(safe-area-inset-left,0px));right:max(var(--br,12px),env(safe-area-inset-right,0px));bottom:0;display:flex;flex-direction:column;align-items:center;gap:10px;pointer-events:none;
+  padding:0 0 calc(env(safe-area-inset-bottom,0px) + 14px)}
+.st-bottom.glide{transition:left .7s cubic-bezier(.4,0,.2,1),right .7s cubic-bezier(.4,0,.2,1)}
+.st-bottom > *{pointer-events:auto;max-width:100%}
 .st-cap{width:100%;display:flex;align-items:center;gap:12px;padding:10px;border-radius:22px;background:rgba(255,255,255,.97);box-shadow:0 6px 18px rgba(36,41,56,.2)}
 .st-head{flex:none;width:max(58px,calc(62 * var(--u)));height:max(58px,calc(62 * var(--u)));border-radius:50%}
 .st-head .kh,.st-cheer .kh{width:100%;height:100%;border:3px solid #fff;box-shadow:0 0 0 2px var(--line)}
@@ -484,19 +486,17 @@ button.px-card:active{transform:translateY(2px)}
 .st-board{background:rgba(255,255,255,.97);border-radius:16px;padding:8px 16px;box-shadow:0 4px 14px rgba(36,41,56,.16);
   font:700 max(18px,calc(19 * var(--u)))/1.45 var(--read);text-align:center;text-wrap:balance}
 .st-board.in{animation:stPop .35s ease both}
-.st-foods{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-.st-food{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 9px 6px;border-radius:14px;background:rgba(255,255,255,.97);box-shadow:0 3px 10px rgba(36,41,56,.16);
-  font-size:max(15px,calc(16 * var(--u)))}
-.st-food img{width:max(44px,calc(50 * var(--u)));height:max(44px,calc(50 * var(--u)));object-fit:contain}
-.st-food.now{animation:stPop .45s cubic-bezier(.3,1.6,.5,1) both;box-shadow:0 0 0 3px var(--blue),0 3px 10px rgba(36,41,56,.16);color:var(--blue-d)}
 
 /* -- 3. explore vocab: thin word bar on top, the scene uncovered -- */
-.st-etop{position:absolute;z-index:6;top:0;left:0;right:0;display:flex;flex-direction:column;align-items:flex-start;gap:8px;pointer-events:none;
+/* ✕ (and ‹ Food Street) on the left · the word bar centred on the screen · an empty cell as wide as the left one */
+.st-etop{position:absolute;z-index:6;top:0;left:0;right:0;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;gap:8px;pointer-events:none;
   padding:calc(env(safe-area-inset-top,0px) + 10px) max(10px,env(safe-area-inset-right,0px)) 0 max(10px,env(safe-area-inset-left,0px))}
-.st-etop > *{pointer-events:auto}
-.st-erow{width:100%;display:flex;gap:8px;align-items:flex-start;pointer-events:none}
-.st-erow > *{pointer-events:auto}
-.st-wbar{flex:1;max-width:560px;margin-right:auto;border-radius:16px;background:rgba(255,255,255,.96);box-shadow:0 2px 10px rgba(36,41,56,.16);padding:6px 10px 4px;text-align:right}
+.st-etop > *,.st-eleft > *{pointer-events:auto}
+.st-eleft{display:contents}
+.st-etop .st-x{grid-column:1;grid-row:1;justify-self:start}
+.st-etop .st-wbar{grid-column:2;grid-row:1}
+.st-etop .st-back{grid-column:1 / -1;grid-row:2;justify-self:start}
+.st-wbar{min-height:44px;border-radius:16px;background:rgba(255,255,255,.96);box-shadow:0 2px 10px rgba(36,41,56,.16);padding:6px 10px 4px;text-align:right}
 .st-wbar:active{transform:translateY(1px)}
 .st-slots{display:grid;grid-template-columns:repeat(var(--cols),1fr);gap:3px;justify-items:center}
 .st-slot{width:max(30px,calc(32 * var(--u)));height:max(30px,calc(32 * var(--u)));display:grid;place-items:center}
@@ -513,12 +513,24 @@ button.px-card:active{transform:translateY(2px)}
   font-size:clamp(12px,2.1cqw,20px);box-shadow:0 2px 6px rgba(36,41,56,.2)}
 .st-hotname.visited::after{content:" ✓";color:var(--green)}
 .st-hot.sel{border:4px solid #fff;animation:none;box-shadow:0 0 0 5px rgba(74,111,214,.6)}
-.st-counter{position:absolute;left:6%;right:6%;bottom:4%;display:flex;justify-content:center;align-items:flex-end;gap:2.5%}
+.st-counter{position:absolute;left:6%;right:6%;bottom:4%;display:flex;justify-content:center;align-items:flex-end;gap:2.5%;container-type:inline-size}
 .st-cfood{position:relative;width:20%;display:flex;flex-direction:column;align-items:center;gap:3px;animation:stPop .45s cubic-bezier(.3,1.6,.5,1) both}
 .st-cfood img{width:100%;aspect-ratio:1;object-fit:contain;filter:drop-shadow(0 6px 6px rgba(36,41,56,.25))}
-.st-cfood .lbl{background:#fff;border-radius:999px;padding:.15em .6em;white-space:nowrap;font-size:clamp(12px,2.5cqw,24px);box-shadow:0 2px 6px rgba(36,41,56,.2)}
+.st-cfood .lbl{background:#fff;border-radius:999px;padding:.15em .6em;white-space:nowrap;font-size:clamp(12px,2.84cqw,24px);box-shadow:0 2px 6px rgba(36,41,56,.2)}
 .st-cfood.heard .lbl{color:var(--blue-d)}
-.st-cfood.sel::before{content:"";position:absolute;left:-6%;right:-6%;top:-6%;aspect-ratio:1;border:4px solid #fff;border-radius:20px;box-shadow:0 0 0 5px rgba(74,111,214,.6)}
+/* the ring frames the food AND its label (never cuts through the word) */
+.st-cfood.sel::before{content:"";position:absolute;inset:-6% -8% -7%;border:4px solid #fff;border-radius:20px;box-shadow:0 0 0 5px rgba(74,111,214,.6);pointer-events:none}
+/* Watch: the foods appear on the counter one by one as Kim names them; upright screens narrow the row to the cart */
+.st-counter.watch .st-cfood.wait{visibility:hidden;animation:none}
+.st-counter.watch .st-cfood.sel::before{inset:-5% -7% -6%}
+.st-counter.tight{gap:2%}
+/* a scene without a cart (I5's sky): the one word's picture + label stand on the part Kim looks at, no ring */
+.st-counter.solo{bottom:7%}
+.st-counter.solo .st-cfood{width:62%}
+.st-counter.solo .st-cfood.sel::before{display:none}
+.st-counter.solo .st-cfood .lbl{font-size:clamp(15px,9cqw,26px)}
+.st-counter.tight .st-cfood{width:23%}
+.st-counter.tight .st-cfood .lbl{font-size:clamp(13px,4.2cqw,22px);padding:.1em .45em}
 .st-cfood.bounce img{animation:stBounce .5s ease}
 .st-tray{position:absolute;z-index:5;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 16px);max-width:560px;margin:0 auto}
 .st-explore.all .st-tray{bottom:calc(env(safe-area-inset-bottom,0px) + 16px + max(52px,calc(56 * var(--u))) + 14px)}
@@ -528,7 +540,8 @@ button.px-card:active{transform:translateY(2px)}
 .st-tray .st-cfood img{width:auto;height:max(60px,calc(74 * var(--u)));filter:drop-shadow(0 4px 4px rgba(36,41,56,.18))}
 .st-tray .st-cfood .lbl{box-shadow:none;padding:0;font-size:max(17px,calc(18 * var(--u)))}
 .st-tray .st-cfood.sel::before{left:-3px;right:-3px;top:-3px;bottom:-3px;aspect-ratio:auto;border-radius:20px;border:0;box-shadow:0 0 0 4px rgba(74,111,214,.7)}
-.st-ready{position:absolute;z-index:6;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);transform:translateX(-50%);width:min(380px,calc(100% - 32px))}
+.st-ready{position:absolute;z-index:6;left:var(--bl,12px);right:var(--br,12px);margin:0 auto;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);width:min(380px,calc(100% - var(--bl,12px) - var(--br,12px) - 8px))}
+.st-explore.glide .st-ready{transition:left .7s cubic-bezier(.4,0,.2,1),right .7s cubic-bezier(.4,0,.2,1)}
 .st-ready.in{animation:stUp .35s ease both}
 /* panel: every word (S3b) */
 .st-panel{position:absolute;inset:0;z-index:20;background:rgba(36,41,56,.38);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);opacity:0;transition:opacity .2s;
@@ -558,16 +571,19 @@ button.px-card:active{transform:translateY(2px)}
 .st-cards,.st-recap{display:flex;flex-direction:column;max-width:var(--col);margin:0 auto;
   padding:env(safe-area-inset-top,0px) max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px))}
 .st-cbody{flex:1;min-height:0;display:flex;flex-direction:column;padding-top:calc(14 * var(--u))}
-.st-card{flex:1;min-height:0;display:flex;flex-direction:column;gap:calc(22 * var(--u))}
-.st-card > .st-pic{flex:1 1 auto;min-height:120px;width:100%;max-width:calc(560 * var(--u));align-self:center;max-height:calc(380 * var(--u) + 60px)}
+/* one column: the card is exactly as wide as its picture, so the sentence row shares the picture's edges.
+   A one-line sentence (S4) is centred under the picture; question + answer (S5) start at the picture's left edge. */
+.st-card{flex:1;min-height:0;width:100%;max-width:calc(560 * var(--u));margin:0 auto;display:flex;flex-direction:column;justify-content:safe center;gap:calc(22 * var(--u))}
+.st-card > .st-pic{flex:1 1 auto;min-height:120px;width:100%;max-height:calc(380 * var(--u) + 60px)}
 .st-pic{position:relative;overflow:hidden;border-radius:20px;border:1.5px solid var(--line);background:#fff;box-shadow:0 2px 0 var(--line)}
 .st-pic > img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .st-pic.obj > img:first-child{inset:6%;width:88%;height:88%;object-fit:contain}
 .st-pic .st-cfoodimg{position:absolute;left:50%;top:62%;width:24%;transform:translate(-50%,-50%);object-fit:contain}
 .st-pic.obj > img[src*="i-hand"]:first-child{inset:5% 16% 44%;height:51%;width:68%}
 .st-pic.obj > img[src*="i-hand"] ~ .st-cfoodimg{top:76%;width:auto;height:38%}
-.st-lines{flex:none;display:flex;flex-direction:column;gap:calc(14 * var(--u));padding:0 4px}
+.st-lines{flex:none;display:flex;flex-direction:column;gap:calc(14 * var(--u))}
 .st-line{display:flex;align-items:center;gap:14px}
+.st-cards:not(.qa) .st-line{justify-content:center}
 .st-line.ans{opacity:.18;transition:opacity .3s}
 .st-line.ans.in{opacity:1}
 .st-sent{font-size:max(22px,calc(27 * var(--u)));line-height:1.3}
@@ -614,16 +630,20 @@ button.px-card:active{transform:translateY(2px)}
 
 /* -- 6. phone held sideways: the card goes picture-left / words-right; summary rows smaller -- */
 @media (orientation:landscape) and (max-height:520px){
-  .st-card{flex-direction:row;align-items:center;gap:24px}
-  .st-card > .st-pic{height:100%;max-height:none;width:auto;aspect-ratio:10/9;flex:none;min-height:0}
-  .st-lines{flex:1}
+  /* one card: picture on the left (full height); the sentence, then dots + NEXT, centred in the right column */
+  .st-cards:not(.sum){display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;column-gap:24px}
+  .st-cards:not(.sum) > .px-top{grid-column:1 / -1}
+  .st-cards:not(.sum) > .st-cbody,.st-cards:not(.sum) .st-card{display:contents}
+  .st-cards:not(.sum) .st-card > .st-pic{grid-column:1;grid-row:2 / 4;height:auto;max-height:none;width:auto;aspect-ratio:10/9;min-height:0;align-self:stretch;
+    margin:4px 0 calc(env(safe-area-inset-bottom,0px) + 12px)}
+  .st-cards:not(.sum) .st-lines{grid-column:2;grid-row:2;align-self:center;justify-self:center;max-width:100%}
+  .st-cards:not(.sum) > .st-cfoot{grid-column:2;grid-row:3;gap:10px;padding-top:6px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 12px)}
   .st-cfoot{flex-direction:row;justify-content:space-between;padding-top:8px}
+  .st-cards:not(.sum) > .st-cfoot{flex-direction:column;justify-content:flex-end}
   .st-cfoot .px-btn{max-width:300px;height:48px}
   .st-cfoot.two{justify-content:center}
-  /* explore: ✕ · word bar · back in one row, smaller word icons */
-  .st-etop{flex-direction:row;align-items:flex-start}
-  .st-erow{width:auto;flex:0 1 auto}
-  .st-wbar{max-width:330px;min-width:150px;padding:4px 8px 3px}
+  /* explore: smaller word icons (✕ · back · bar in one row: section 3b) */
+  .st-wbar{padding:4px 8px}
   .st-slot{width:24px;height:24px}
   .st-slot:empty::before{width:9px;height:9px}
   .st-count{font-size:11px}
@@ -634,8 +654,22 @@ button.px-card:active{transform:translateY(2px)}
   .st-cheer{width:96px;height:96px}
   .st-burst i{transform:rotate(var(--a)) translateY(-66px)}
 }
+/* 3b. landscape screens (laptop, iPad sideways, phone sideways): ✕ · ‹ Food Street on the left, every word in ONE row + "n / 10" at its end */
+@media (orientation:landscape){
+  .st-eleft{display:flex;gap:8px;grid-column:1;grid-row:1;justify-self:start;min-width:0}
+  .st-etop .st-back{grid-column:auto;grid-row:auto}
+  .st-wbar{display:flex;align-items:center;gap:10px;padding:5px 12px}
+  .st-wbar .st-slots{grid-template-columns:repeat(var(--all),1fr)}
+  .st-wbar .st-count{white-space:nowrap;font-size:13px}
+}
 /* wide screens: one card keeps a calm width */
 @media (orientation:landscape) and (min-height:521px){
+  /* explore word bar scales with the screen: icons 44–64px slots (≈44–56px of drawing), counter ≥ 15px, padding to match (still one row) */
+  .st-wbar{--sl:clamp(44px, min(3.8vw, 5.8vh), 64px);gap:calc(var(--sl) * .25);padding:calc(var(--sl) * .14) calc(var(--sl) * .3);border-radius:calc(var(--sl) * .36)}
+  .st-wbar .st-slots{gap:calc(var(--sl) * .1)}
+  .st-wbar .st-slot{width:var(--sl);height:var(--sl)}
+  .st-wbar .st-slot:empty::before{width:calc(var(--sl) * .26);height:calc(var(--sl) * .26)}
+  .st-wbar .st-count{font-size:clamp(15px, calc(var(--sl) * .33), 19px)}
   .st-cards,.st-recap{--col:760px}
 }
 
@@ -1021,7 +1055,7 @@ button.px-card:active{transform:translateY(2px)}
 
 @keyframes stPop{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
 .st-chips,.st-board.in{transform-origin:50% 100%}
-@keyframes stUp{from{opacity:0;transform:translate(-50%,16px)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes stUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 @keyframes stMerge{0%{letter-spacing:.3em;transform:scale(.92)}60%{letter-spacing:-.02em;transform:scale(1.1)}100%{letter-spacing:0;transform:none}}
 @keyframes stTalk{from{transform:translateY(0) rotate(-2deg)}to{transform:translateY(-3px) rotate(2deg)}}
 @keyframes stGo{0%,100%{box-shadow:0 3px 0 var(--red-d),0 0 0 0 rgba(224,88,72,.45)}50%{box-shadow:0 3px 0 var(--red-d),0 0 0 12px rgba(224,88,72,0)}}
