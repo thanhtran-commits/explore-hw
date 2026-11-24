@@ -1,14 +1,19 @@
 /* Collect every spoken line of a unit's lesson packs (+ the engine's fixed Kim lines) for the Voice Pipeline.
- * usage: node tools/collect-unit-lines.js i2 i3 i4 i5   → tools/unit-lines.json  [{ id, voice, text }]
- * Lines already recorded (in any lessons/*.voice.js) are skipped; tools/reuse.json lists them with their file.
+ * usage: node tools/collect-unit-lines.js i2 i3 i4 i5             → tools/unit-lines.json  [{ id, voice, text }]
+ *        node tools/collect-unit-lines.js --unit h h1 h2 h3      → tools/unit-lines-h.json (another unit: its own files, Unit I's stay as they are)
+ * Lines already recorded (in any lessons/*.voice.js) are skipped; tools/reuse(-<unit>).json lists them with their file.
  * Spoken by:  narrator = line / prompt / model sentences;  kim = intros, instructions, Kim.say feedback, answers with who:"kim".
  */
 const fs = require("fs"), path = require("path");
 const root = path.join(__dirname, "..");
 const window = {};
 global.window = window;
-const LIST = process.argv[2] === "--list";
-const lessons = process.argv.slice(LIST ? 3 : 2);
+const argv = process.argv.slice(2);
+let UNIT = "";
+if (argv[0] === "--unit") { UNIT = argv[1]; argv.splice(0, 2); }
+const LIST = argv[0] === "--list";
+const lessons = argv.slice(LIST ? 1 : 0);
+const SUF = UNIT && UNIT !== "i" ? "-" + UNIT : "";
 const out = new Map();   // key "voice|text"
 const add = (voice, text) => { if (!text) return; text = String(text).replace(/\s+/g, " ").trim(); if (text) out.set(voice + "|" + text, { voice, text }); };
 const sayLine = (l, def = "narrator") => { if (!l) return; if (typeof l === "string") add(def, l); else if (l.text) add(l.who || def, l.text); };
@@ -30,22 +35,29 @@ for (const id of lessons) {
   const L = window.LESSON;
   const label = (w) => L.words[w].label;
   add("kim", L.finishLine);
+  /* words with no recording of their own (Unit H on): the engine speaks the label (narrator) */
+  Object.values(L.words).forEach((w) => { if (!w.audio) add("narrator", w.label); });
   for (const b of L.blocks) for (const s of b.steps) {
     add("kim", s.intro); add("kim", s.instruction); add("kim", s.doneLine);
+    add("kim", s.ask); add("kim", s.verbLine); add("kim", s.moreLine);   /* say: Kim's question · answer: hints */
+    (s.rounds || []).forEach((r) => { add("narrator", r.q); add("kim", r.a); });   /* names: question, then Kim's answer */
     if (s.type === "done") add("kim", s.title);
     (s.cues || []).forEach((c) => sayLine(c.line));
     (s.cards || []).forEach((c) => { if (c.full) { add(c.who || "narrator", c.full); add(c.who || "narrator", c.short); } if (c.q) { add("narrator", c.q); add("kim", c.a); } });
     (s.items || []).forEach((it) => {
       if (typeof it !== "object") return;
       if (it.prompt) { [].concat(it.prompt.say || []).forEach((l) => sayLine(l)); }
+      if (s.type === "pick") sayLine(it.say);
       [].concat(it.after || []).forEach((l) => sayLine(l));
       if (it.whyWrong) Object.values(it.whyWrong).forEach((t) => add("kim", t));
       if (s.type === "build") sayLine(it.say || { text: it.tiles.join(" ").replace(/\s+([.,?!])/g, "$1"), who: it.who });
       if (s.type === "answer") {
         add("kim", it.q);
         const join = (fs2) => fs2.map(label).join(" and ");
-        const parts = it.parts || [{ verb: it.verb || L.words[(it.foods || it.plate)[0]].verb || "eating", foods: it.foods || it.plate }];
+        const parts = it.short ? [] : it.parts || [{ verb: it.verb || L.words[(it.foods || it.plate)[0]].verb || "eating", foods: it.foods || it.plate }];
         add("narrator", it.short || parts.map((p) => `${PRON[it.s]} ${p.verb} ${join(p.foods)}.`).join(" "));
+        /* the "full sentence, please" hint uses the verb of the first thing (engine: answer judge) */
+        if (!it.short) { const f0 = (it.foods || it.plate || parts[0].foods)[0]; add("kim", `Full sentence, please! ${PRON[it.s]} ${L.words[f0].verb || "eating"}…`); }
       }
     });
     if (s.type === "lid") for (const sub of new Set(s.subjects)) for (const f of s.foods)
@@ -67,6 +79,6 @@ for (const f of fs.readdirSync(path.join(root, "lessons")).filter((f) => f.endsW
 const todo = [], reuse = {};
 for (const [k, v] of out) { if (rec[k]) reuse[k] = rec[k]; else todo.push(v); }
 todo.forEach((v, n) => (v.id = "u" + String(n + 1).padStart(3, "0")));
-fs.writeFileSync(path.join(__dirname, "unit-lines.json"), JSON.stringify(todo, null, 1));
-fs.writeFileSync(path.join(__dirname, "reuse.json"), JSON.stringify(reuse, null, 1));
+fs.writeFileSync(path.join(__dirname, "unit-lines" + SUF + ".json"), JSON.stringify(todo, null, 1));
+fs.writeFileSync(path.join(__dirname, "reuse" + SUF + ".json"), JSON.stringify(reuse, null, 1));
 console.log("lines:", out.size, "already recorded:", Object.keys(reuse).length, "to record:", todo.length);

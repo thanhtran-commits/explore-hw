@@ -1355,12 +1355,13 @@
   /* ---------- speaking checks used by ANSWER: BE + every food (+ verb), or the short answer ---------- */
   const BE_RX = { he: /\bhe ?'?s\b|\bhe is\b|\bhis\b|\bhes\b/, she: /\bshe ?'?s\b|\bshe is\b|\bshes\b/, i: /\bi ?'?m\b|\bi am\b|\bim\b|\bam\b/ };
   const PRON = { he: "He's", she: "She's", i: "I'm" };
-  function judgeSentence(alts, subj, foods, verbs) {
+  /* pool: the verbs this step tells apart (default eating / drinking; H3: wearing / holding via step.verbSet) */
+  function judgeSentence(alts, subj, foods, verbs, pool = ["eating", "drinking"]) {
     const norm = alts.map((t) => " " + t.toLowerCase().replace(/[’`]/g, "'").replace(/[^a-z' ]/g, " ") + " ");
     const has = (t, f) => { const w = L.words[f]; return !(w.reject && w.reject.some((x) => t.includes(x))) && w.say.some((k) => t.includes(k)); };
     /* verbs: the -ing words the answer must use (and no other) — "She's drinking ice cream" is the I3/I5 STS Insights error */
     const vx = (v) => new RegExp("\\b" + v.slice(0, -3));   /* word start, so "meat" doesn't count as "eat" */
-    const verbOk = (t) => !verbs || (verbs.every((v) => vx(v).test(t)) && ["eating", "drinking"].filter((v) => !verbs.includes(v)).every((v) => !vx(v).test(t)));
+    const verbOk = (t) => !verbs || (verbs.every((v) => vx(v).test(t)) && pool.filter((v) => !verbs.includes(v)).every((v) => !vx(v).test(t)));
     if (norm.some((t) => BE_RX[subj].test(t) && foods.every((f) => has(t, f)) && verbOk(t))) return "ok";
     if (verbs && norm.some((t) => foods.every((f) => has(t, f)) && !verbOk(t))) return "verb";
     if (norm.some((t) => foods.every((f) => has(t, f)))) return "be";
@@ -1804,11 +1805,11 @@
       ask: (it) => Audio_.speak(it.q, "kim"),
       judge: (alts, it) => {
         const verbs = step.checkVerb ? [...new Set(partsOf(it).map((p) => p.verb))] : null;
-        const v = it.short ? judgeShort(alts, it) : judgeSentence(alts, it.s, it.foods, verbs);
+        const v = it.short ? judgeShort(alts, it) : judgeSentence(alts, it.s, it.foods, verbs, step.verbSet);
         if (v === "ok") return true;
         /* alsoOk: other things in the picture that are right too (H1: "He's wearing a T-shirt" when the model says trousers) */
-        if (!it.short && it.alsoOk && it.alsoOk.some((f) => judgeSentence(alts, it.s, [f], verbs) === "ok")) return true;
-        return v === "verb" ? "Eating or drinking? Try again!" : v === "yn" ? "Yes or no? Look again!" : v === "short" ? (it.short.startsWith("Yes") ? `Say: Yes, ${it.s} is!` : `Say: No, ${it.s} isn't!`)
+        if (!it.short && it.alsoOk && it.alsoOk.some((f) => judgeSentence(alts, it.s, [f], verbs, step.verbSet) === "ok")) return true;
+        return v === "verb" ? (step.verbLine || "Eating or drinking? Try again!") : v === "yn" ? "Yes or no? Look again!" : v === "short" ? (it.short.startsWith("Yes") ? `Say: Yes, ${it.s} is!` : `Say: No, ${it.s} isn't!`)
           : v === "be" ? `Full sentence, please! ${PRON[it.s]} ${vOf(it.foods[0])}…`
           : v === "more" ? (step.moreLine || "Good! Say all the food on the plate!") : "Look at the picture again. Try again!";
       },

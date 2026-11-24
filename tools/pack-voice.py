@@ -2,16 +2,20 @@
 
 New takes (assets/common/vo-i/*.mp3) are embedded as data: URIs (re-encoded 64 kbps mono — plenty for speech),
 so the published app stays far below the 512-file limit. Lines already recorded for I1 keep pointing to their mp3.
-usage: python3 tools/pack-voice.py [--files OUTDIR] i2 i3 i4 i5
+usage: python3 tools/pack-voice.py [--unit h] [--files OUTDIR] i2 i3 i4 i5   (--unit h: tools/*-h.json, assets/common/vo-h)
   --files OUTDIR: for the real website (Dokploy) — point to the mp3 files instead of embedding, write the .voice.js into OUTDIR/lessons
 """
 import base64, json, os, subprocess, sys, tempfile
 
 root = os.path.join(os.path.dirname(__file__), "..")
 os.chdir(root)
-reuse = json.load(open("tools/reuse.json"))
-lines = json.load(open("tools/unit-lines.json"))
-newfile = {l["voice"] + "|" + l["text"]: f"assets/common/vo-i/{l['id']}.mp3" for l in lines}
+args = sys.argv[1:]
+U = "i"
+if args[:1] == ["--unit"]: U, args = args[1], args[2:]
+SUF = "" if U == "i" else "-" + U
+reuse = json.load(open(f"tools/reuse{SUF}.json"))
+lines = json.load(open(f"tools/unit-lines{SUF}.json"))
+newfile = {l["voice"] + "|" + l["text"]: f"assets/common/vo-{U}/{l['id']}.mp3" for l in lines}
 cache = {}
 def data_uri(p):
     if p not in cache:
@@ -20,12 +24,11 @@ def data_uri(p):
         cache[p] = "data:audio/mpeg;base64," + base64.b64encode(open(out, "rb").read()).decode()
         os.unlink(out)
     return cache[p]
-args = sys.argv[1:]
 FILES = None
 if args and args[0] == "--files": FILES, args = args[1], args[2:]
 for lid in args:
     # which lines this lesson speaks: run the collector for this lesson only, in "list" mode
-    keys = json.loads(subprocess.check_output(["node", "tools/collect-unit-lines.js", "--list", lid]))
+    keys = json.loads(subprocess.check_output(["node", "tools/collect-unit-lines.js", "--list", lid]))   # --list ignores --unit
     entries = {}
     for k in keys:
         if k in reuse: entries[k] = reuse[k]
