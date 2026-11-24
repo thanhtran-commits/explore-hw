@@ -110,7 +110,8 @@
         a.play().catch(done);
       });
     },
-    word(id) { const a = L.words[id].audio; return this.file((a.startsWith("@") ? "assets/" + a.slice(1) : L.aud + a) + ".mp3"); },
+    /* a word with no recording yet (new unit, before the Voice Pipeline) → its label through speak() (recorded line or TTS) */
+    word(id) { const a = L.words[id].audio; if (!a) return this.speak(L.words[id].label); return this.file((a.startsWith("@") ? "assets/" + a.slice(1) : L.aud + a) + ".mp3"); },
     sfx(name) { try { const a = new Audio(ver("assets/i1/audio/sfx-" + name + ".mp3"));   /* one shared set of sound effects */ a.volume = .6; a.play().catch(() => {}); } catch (e) {} },
     /* who: "narrator" | "kim" */
     speak(text, who = "narrator") {
@@ -1611,7 +1612,7 @@
     }
     return speaking(step, run, P, {
       items: shuffle(step.items), speaker: spk, intro: step.intro || step.instruction, maxMs: 7000,
-      doneLine: "Well done! You said all the food words!", praise: ["Great!", "Well done!", "Yes!", "Super!"],
+      doneLine: step.doneLine || "Well done! You said all the food words!", praise: ["Great!", "Well done!", "Yes!", "Super!"],
       aa: () => step.instruction || step.ask || "What's this?",
       paint: (w, tk, anim) => { pic.src = img(L.words[w].img); if (anim) pic.animate([{ transform: "scale(.7)", opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 300, easing: "ease-out" }); },
       ask: (w, mode) => Audio_.speak(mode === "mic" ? (step.ask || "What's this?") : "What's this? Say it out loud!", "kim"),
@@ -1739,11 +1740,14 @@
       paint: (it, tk, live) => { paintPic(it); if (live) pic.animate([{ opacity: 0, transform: "scale(.96)" }, { opacity: 1, transform: "none" }], { duration: 300 }); },
       ask: (it) => Audio_.speak(it.q, "kim"),
       judge: (alts, it) => {
-        const v = it.short ? judgeShort(alts, it) : judgeSentence(alts, it.s, it.foods, step.checkVerb ? [...new Set(partsOf(it).map((p) => p.verb))] : null);
+        const verbs = step.checkVerb ? [...new Set(partsOf(it).map((p) => p.verb))] : null;
+        const v = it.short ? judgeShort(alts, it) : judgeSentence(alts, it.s, it.foods, verbs);
         if (v === "ok") return true;
+        /* alsoOk: other things in the picture that are right too (H1: "He's wearing a T-shirt" when the model says trousers) */
+        if (!it.short && it.alsoOk && it.alsoOk.some((f) => judgeSentence(alts, it.s, [f], verbs) === "ok")) return true;
         return v === "verb" ? "Eating or drinking? Try again!" : v === "yn" ? "Yes or no? Look again!" : v === "short" ? (it.short.startsWith("Yes") ? `Say: Yes, ${it.s} is!` : `Say: No, ${it.s} isn't!`)
-          : v === "be" ? (it.s === "i" ? "Full sentence, please! I'm eating…" : `Full sentence, please! ${PRON[it.s]} eating…`)
-          : v === "more" ? "Good! Say all the food on the plate!" : "Look at the picture again. Try again!";
+          : v === "be" ? `Full sentence, please! ${PRON[it.s]} ${vOf(it.foods[0])}…`
+          : v === "more" ? (step.moreLine || "Good! Say all the food on the plate!") : "Look at the picture again. Try again!";
       },
       model, playModel: (it) => Audio_.speak(model(it), "narrator"),
       onReveal: (it, good) => { if (good) movePawn(); }
