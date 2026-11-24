@@ -1,982 +1,262 @@
 [
  {
   "voice": "kim",
-  "text": "Hooray! You finished the Dress-up Box!",
-  "id": "u001"
+  "text": "Hooray! You found all the lost things!",
+  "id": "u197"
  },
  {
   "voice": "narrator",
-  "text": "a shirt",
-  "id": "u002"
+  "text": "After Photo Day, the children lost lots of things! Look, the Lost and Found box!",
+  "id": "u198"
  },
  {
   "voice": "narrator",
-  "text": "a T-shirt",
-  "id": "u003"
+  "text": "A hat. H, A, T.",
+  "id": "u199"
  },
  {
   "voice": "narrator",
-  "text": "a jacket",
-  "id": "u004"
+  "text": "Base… ball… cap. Two words!",
+  "id": "u200"
  },
  {
   "voice": "narrator",
-  "text": "a skirt",
-  "id": "u005"
+  "text": "Hand… bag. One word!",
+  "id": "u201"
  },
  {
   "voice": "narrator",
-  "text": "a dress",
-  "id": "u006"
+  "text": "Watch. T, C, H at the end.",
+  "id": "u202"
  },
  {
   "voice": "narrator",
-  "text": "trousers",
-  "id": "u007"
+  "text": "Glasses. Two Ss in the middle.",
+  "id": "u203"
  },
  {
   "voice": "narrator",
-  "text": "jeans",
-  "id": "u008"
+  "text": "Shoes. O and E.",
+  "id": "u204"
  },
  {
   "voice": "narrator",
-  "text": "shorts",
-  "id": "u009"
+  "text": "Boots. Two Os.",
+  "id": "u205"
  },
  {
   "voice": "narrator",
-  "text": "It's photo day! Let's dress up!",
-  "id": "u010"
+  "text": "Socks. C and K, like jacket!",
+  "id": "u206"
  },
  {
   "voice": "narrator",
-  "text": "Look! Box 1…",
-  "id": "u011"
- },
- {
-  "voice": "narrator",
-  "text": "and box 2. Boxes of clothes!",
-  "id": "u012"
- },
- {
-  "voice": "narrator",
-  "text": "Let's open box 1. What clothes are here?",
-  "id": "u013"
- },
- {
-  "voice": "narrator",
-  "text": "A shirt has buttons. A T-shirt has no buttons!",
-  "id": "u014"
- },
- {
-  "voice": "narrator",
-  "text": "Now box 2!",
-  "id": "u015"
- },
- {
-  "voice": "narrator",
-  "text": "Trousers are long. Shorts are short!",
-  "id": "u016"
- },
- {
-  "voice": "narrator",
-  "text": "Now it's your turn. Tap a box!",
-  "id": "u017"
+  "text": "Glasses, shoes, boots, socks. Two eyes, two feet… S at the end, and no A!",
+  "id": "u207"
  },
  {
   "voice": "kim",
-  "text": "Tap a box. Then tap the clothes and listen.",
-  "id": "u018"
+  "text": "Look at the lost thing. Tap the missing letters!",
+  "id": "u208"
  },
  {
   "voice": "kim",
-  "text": "Now it's your turn to talk! Look at the clothes and say the word. I'm listening!",
-  "id": "u019"
+  "text": "Look at the picture. Tap the two halves of the word!",
+  "id": "u209"
+ },
+ {
+  "voice": "narrator",
+  "text": "A clean hat. A dirty hat.",
+  "id": "u210"
+ },
+ {
+  "voice": "narrator",
+  "text": "Clean boots. Dirty boots. No A!",
+  "id": "u211"
+ },
+ {
+  "voice": "narrator",
+  "text": "Clean… E and A, like jeans. Dirty… I and R, like shirt.",
+  "id": "u212"
+ },
+ {
+  "voice": "narrator",
+  "text": "A red hat. A dirty hat. The same place… before hat!",
+  "id": "u213"
+ },
+ {
+  "voice": "narrator",
+  "text": "A red dirty hat? No! One word only!",
+  "id": "u214"
+ },
+ {
+  "voice": "narrator",
+  "text": "She's holding a dirty handbag.",
+  "id": "u215"
+ },
+ {
+  "voice": "narrator",
+  "text": "He's wearing clean boots. No A!",
+  "id": "u216"
  },
  {
   "voice": "kim",
-  "text": "Well done! You said all the clothes words!",
-  "id": "u020"
+  "text": "I'm holding a red hat!",
+  "id": "u217"
  },
  {
   "voice": "narrator",
-  "text": "Look! This is Alex.",
-  "id": "u021"
+  "text": "One word before the clothes. Now tap and read!",
+  "id": "u218"
  },
  {
   "voice": "narrator",
-  "text": "He is wearing a jacket.",
-  "id": "u022"
+  "text": "She is holding a dirty handbag.",
+  "id": "u219"
  },
  {
   "voice": "narrator",
-  "text": "He… is… He's! He's wearing a jacket.",
-  "id": "u023"
+  "text": "He is wearing clean boots.",
+  "id": "u220"
  },
  {
   "voice": "narrator",
-  "text": "And this is Jill.",
-  "id": "u024"
- },
- {
-  "voice": "narrator",
-  "text": "She is wearing a skirt.",
-  "id": "u025"
- },
- {
-  "voice": "narrator",
-  "text": "She… is… She's! She's wearing a skirt.",
-  "id": "u026"
- },
- {
-  "voice": "narrator",
-  "text": "And this is Matt. Listen!",
-  "id": "u027"
+  "text": "He's wearing clean boots.",
+  "id": "u221"
  },
  {
   "voice": "kim",
-  "text": "I am wearing a jacket!",
-  "id": "u028"
+  "text": "I am holding a red hat.",
+  "id": "u222"
  },
  {
   "voice": "kim",
-  "text": "I… am… I'm! I'm wearing a jacket!",
-  "id": "u029"
- },
- {
-  "voice": "narrator",
-  "text": "He's wearing. She's wearing. I'm wearing. Now tap and listen!",
-  "id": "u030"
- },
- {
-  "voice": "narrator",
-  "text": "He's wearing a jacket.",
-  "id": "u031"
- },
- {
-  "voice": "narrator",
-  "text": "She's wearing a skirt.",
-  "id": "u032"
+  "text": "I'm holding a red hat.",
+  "id": "u223"
  },
  {
   "voice": "kim",
-  "text": "I am wearing a jacket.",
-  "id": "u033"
+  "text": "Look at the picture. Build the sentence. One word before the clothes!",
+  "id": "u224"
  },
  {
   "voice": "kim",
-  "text": "I'm wearing a jacket.",
-  "id": "u034"
+  "text": "On her head… wearing!",
+  "id": "u225"
  },
  {
   "voice": "narrator",
-  "text": "He's wearing a T-shirt.",
-  "id": "u035"
- },
- {
-  "voice": "narrator",
-  "text": "He's wearing a shirt.",
-  "id": "u036"
- },
- {
-  "voice": "narrator",
-  "text": "She's wearing jeans.",
-  "id": "u037"
- },
- {
-  "voice": "narrator",
-  "text": "She's wearing trousers.",
-  "id": "u038"
- },
- {
-  "voice": "narrator",
-  "text": "She's wearing a dress.",
-  "id": "u039"
- },
- {
-  "voice": "narrator",
-  "text": "He's wearing trousers.",
-  "id": "u040"
- },
- {
-  "voice": "narrator",
-  "text": "He's wearing shorts.",
-  "id": "u041"
+  "text": "She's wearing a pink baseball cap.",
+  "id": "u226"
  },
  {
   "voice": "kim",
-  "text": "Look at the picture. Say a full sentence: He's wearing… She's wearing… I'm wearing…",
-  "id": "u042"
+  "text": "Shoes — no A!",
+  "id": "u227"
  },
  {
   "voice": "kim",
-  "text": "Good! Now say the full sentence!",
-  "id": "u043"
+  "text": "Look! Dirty!",
+  "id": "u228"
+ },
+ {
+  "voice": "narrator",
+  "text": "He's holding dirty shoes.",
+  "id": "u229"
  },
  {
   "voice": "kim",
-  "text": "Full sentence, please! He's wearing…",
-  "id": "u044"
+  "text": "Socks — no A!",
+  "id": "u230"
  },
  {
   "voice": "kim",
-  "text": "Full sentence, please! She's wearing…",
-  "id": "u045"
+  "text": "Look! Clean!",
+  "id": "u231"
  },
  {
   "voice": "narrator",
-  "text": "I'm wearing a T-shirt.",
-  "id": "u046"
- },
- {
-  "voice": "kim",
-  "text": "Full sentence, please! I'm wearing…",
-  "id": "u047"
- },
- {
-  "voice": "narrator",
-  "text": "Look! This is Grace.",
-  "id": "u048"
- },
- {
-  "voice": "narrator",
-  "text": "What is she wearing?",
-  "id": "u049"
+  "text": "She's wearing clean socks.",
+  "id": "u232"
  },
  {
   "voice": "kim",
-  "text": "She's wearing a dress.",
-  "id": "u050"
+  "text": "In his hand… holding!",
+  "id": "u233"
  },
  {
   "voice": "narrator",
-  "text": "And this is Alex.",
-  "id": "u051"
- },
- {
-  "voice": "narrator",
-  "text": "What is he wearing?",
-  "id": "u052"
+  "text": "He's holding a green hat.",
+  "id": "u234"
  },
  {
   "voice": "kim",
-  "text": "He's wearing shorts.",
-  "id": "u053"
- },
- {
-  "voice": "narrator",
-  "text": "And you? What are you wearing?",
-  "id": "u054"
+  "text": "Boots — no A!",
+  "id": "u235"
  },
  {
   "voice": "kim",
-  "text": "I'm wearing a T-shirt!",
-  "id": "u055"
+  "text": "In her hands… holding!",
+  "id": "u236"
  },
  {
   "voice": "narrator",
-  "text": "What are you wearing?",
-  "id": "u056"
- },
- {
-  "voice": "kim",
-  "text": "I'm wearing a T-shirt.",
-  "id": "u057"
- },
- {
-  "voice": "narrator",
-  "text": "What is Anna wearing?",
-  "id": "u058"
+  "text": "She's holding dirty boots.",
+  "id": "u237"
  },
  {
   "voice": "kim",
-  "text": "She's wearing a skirt.",
-  "id": "u059"
+  "text": "One word only!",
+  "id": "u238"
  },
  {
   "voice": "narrator",
-  "text": "What is Nick wearing?",
-  "id": "u060"
+  "text": "He's holding a dirty baseball cap.",
+  "id": "u239"
  },
  {
-  "voice": "kim",
-  "text": "He's wearing a jacket.",
-  "id": "u061"
- },
- {
-  "voice": "narrator",
-  "text": "What is Alice wearing?",
-  "id": "u062"
- },
- {
-  "voice": "kim",
-  "text": "She's wearing jeans.",
-  "id": "u063"
- },
- {
-  "voice": "narrator",
-  "text": "What is Tom wearing?",
-  "id": "u064"
- },
- {
-  "voice": "kim",
-  "text": "He's wearing a shirt.",
-  "id": "u065"
- },
- {
-  "voice": "narrator",
-  "text": "What is May wearing?",
-  "id": "u066"
- },
- {
-  "voice": "kim",
-  "text": "What is she wearing?",
-  "id": "u067"
- },
- {
-  "voice": "kim",
-  "text": "What is he wearing?",
-  "id": "u068"
- },
- {
-  "voice": "narrator",
-  "text": "He's wearing jeans.",
-  "id": "u069"
- },
- {
-  "voice": "narrator",
-  "text": "She's wearing a jacket.",
-  "id": "u070"
- },
- {
-  "voice": "kim",
-  "text": "What are you wearing?",
-  "id": "u071"
- },
- {
-  "voice": "kim",
-  "text": "Hooray! You can read and write about clothes and colours!",
-  "id": "u072"
- },
- {
-  "voice": "narrator",
-  "text": "Let's read the clothes words in the Dress-up Box!",
-  "id": "u073"
- },
- {
-  "voice": "narrator",
-  "text": "Box 1.",
-  "id": "u074"
- },
- {
-  "voice": "narrator",
-  "text": "Shirt starts with S and H.",
-  "id": "u075"
- },
- {
-  "voice": "narrator",
-  "text": "T-shirt. A big T, a little line… then shirt!",
-  "id": "u076"
- },
- {
-  "voice": "narrator",
-  "text": "Jacket. C and K in the middle.",
-  "id": "u077"
- },
- {
-  "voice": "narrator",
-  "text": "Skirt starts with S and K. Shirt… skirt. Look at the start!",
-  "id": "u078"
- },
- {
-  "voice": "narrator",
-  "text": "Box 2.",
-  "id": "u079"
- },
- {
-  "voice": "narrator",
-  "text": "Dress has two Ss at the end.",
-  "id": "u080"
- },
- {
-  "voice": "narrator",
-  "text": "Trousers. O and U together.",
-  "id": "u081"
- },
- {
-  "voice": "narrator",
-  "text": "Jeans. E and A together.",
-  "id": "u082"
- },
- {
-  "voice": "narrator",
-  "text": "Shorts. Two legs… an S at the end. No A!",
-  "id": "u083"
- },
- {
-  "voice": "narrator",
-  "text": "Now tap a box. Read and listen!",
-  "id": "u084"
- },
- {
-  "voice": "kim",
-  "text": "Tap a box. Read the word, then tap and listen.",
-  "id": "u085"
- },
- {
-  "voice": "kim",
-  "text": "Look at the picture. Tap the missing letter!",
-  "id": "u086"
- },
- {
-  "voice": "kim",
-  "text": "Look at the picture. One thing → A. Two legs → S. Tap the right box!",
-  "id": "u087"
- },
- {
-  "voice": "narrator",
-  "text": "A shirt, a T-shirt, a jacket, a skirt, a dress.",
-  "id": "u088"
- },
- {
-  "voice": "narrator",
-  "text": "Trousers, jeans, shorts. No A!",
-  "id": "u089"
- },
- {
-  "voice": "narrator",
-  "text": "Two legs… S at the end, and no A!",
-  "id": "u090"
- },
- {
-  "voice": "narrator",
-  "text": "Let's add some colours! Red, blue, green, yellow, pink, black.",
-  "id": "u091"
- },
- {
-  "voice": "narrator",
-  "text": "Red… a T-shirt… a red T-shirt!",
-  "id": "u092"
- },
- {
-  "voice": "narrator",
-  "text": "Pink… a shirt… a pink shirt!",
-  "id": "u093"
- },
- {
-  "voice": "narrator",
-  "text": "Blue… trousers… blue trousers. No A!",
-  "id": "u094"
- },
- {
-  "voice": "narrator",
-  "text": "The colour comes first. Then the clothes!",
-  "id": "u095"
- },
- {
-  "voice": "narrator",
-  "text": "Look! This is Jill.",
-  "id": "u096"
- },
- {
-  "voice": "narrator",
-  "text": "She's wearing a pink skirt.",
-  "id": "u097"
- },
- {
-  "voice": "narrator",
-  "text": "He's wearing blue jeans. No A!",
-  "id": "u098"
- },
- {
-  "voice": "kim",
-  "text": "I'm wearing a yellow dress!",
-  "id": "u099"
- },
- {
-  "voice": "narrator",
-  "text": "He's wearing, she's wearing, I'm wearing… then the colour, then the clothes. Now tap and read!",
-  "id": "u100"
- },
- {
-  "voice": "narrator",
-  "text": "She is wearing a pink skirt.",
-  "id": "u101"
- },
- {
-  "voice": "narrator",
-  "text": "He is wearing blue jeans.",
-  "id": "u102"
- },
- {
-  "voice": "narrator",
-  "text": "He's wearing blue jeans.",
-  "id": "u103"
- },
- {
-  "voice": "kim",
-  "text": "I am wearing a yellow dress.",
-  "id": "u104"
- },
- {
-  "voice": "kim",
-  "text": "I'm wearing a yellow dress.",
-  "id": "u105"
- },
- {
-  "voice": "kim",
-  "text": "Look at the picture. Build the sentence. The colour comes first!",
-  "id": "u106"
- },
- {
-  "voice": "kim",
-  "text": "Look! A skirt!",
-  "id": "u107"
- },
- {
-  "voice": "kim",
-  "text": "It's a girl. She's wearing!",
-  "id": "u108"
- },
- {
-  "voice": "kim",
-  "text": "Jeans — no A!",
-  "id": "u109"
- },
- {
-  "voice": "kim",
-  "text": "Look! Jeans!",
-  "id": "u110"
- },
- {
-  "voice": "narrator",
-  "text": "She's wearing a yellow dress.",
-  "id": "u111"
- },
- {
-  "voice": "narrator",
-  "text": "She's wearing a red jacket.",
-  "id": "u112"
- },
- {
-  "voice": "kim",
-  "text": "Shorts — no A!",
-  "id": "u113"
- },
- {
-  "voice": "kim",
-  "text": "Look! Shorts!",
-  "id": "u114"
- },
- {
-  "voice": "narrator",
-  "text": "He's wearing black shorts.",
-  "id": "u115"
- },
- {
-  "voice": "kim",
-  "text": "No buttons… a T-shirt!",
-  "id": "u116"
- },
- {
-  "voice": "narrator",
-  "text": "He's wearing a green T-shirt.",
-  "id": "u117"
- },
- {
-  "voice": "kim",
-  "text": "It's you! I'm wearing!",
-  "id": "u118"
- },
- {
-  "voice": "kim",
-  "text": "I'm wearing a red T-shirt.",
-  "id": "u119"
- },
- {
-  "voice": "kim",
-  "text": "She's wearing a pink dress.",
-  "id": "u120"
- },
- {
-  "voice": "kim",
-  "text": "He's wearing blue shorts.",
-  "id": "u121"
- },
- {
-  "voice": "narrator",
-  "text": "She's wearing a blue dress.",
-  "id": "u122"
- },
- {
-  "voice": "narrator",
-  "text": "He's wearing a red jacket.",
-  "id": "u123"
- },
- {
-  "voice": "kim",
-  "text": "I'm wearing black shorts.",
-  "id": "u124"
- },
- {
-  "voice": "narrator",
-  "text": "He's wearing a blue T-shirt.",
-  "id": "u125"
- },
- {
-  "voice": "narrator",
-  "text": "He's wearing green shorts.",
-  "id": "u126"
- },
- {
-  "voice": "kim",
-  "text": "Hooray! You finished Manny's shop!",
-  "id": "u127"
- },
- {
-  "voice": "narrator",
-  "text": "a hat",
-  "id": "u128"
- },
- {
-  "voice": "narrator",
-  "text": "a baseball cap",
-  "id": "u129"
- },
- {
-  "voice": "narrator",
-  "text": "glasses",
-  "id": "u130"
- },
- {
-  "voice": "narrator",
-  "text": "a watch",
-  "id": "u131"
- },
- {
-  "voice": "narrator",
-  "text": "a handbag",
-  "id": "u132"
- },
- {
-  "voice": "narrator",
-  "text": "shoes",
-  "id": "u133"
- },
- {
-  "voice": "narrator",
-  "text": "boots",
-  "id": "u134"
- },
- {
-  "voice": "narrator",
-  "text": "socks",
-  "id": "u135"
- },
- {
-  "voice": "narrator",
-  "text": "We have the clothes. Now let's find some accessories at Manny's shop!",
-  "id": "u136"
- },
- {
-  "voice": "narrator",
-  "text": "Look! The top shelf…",
-  "id": "u137"
- },
- {
-  "voice": "narrator",
-  "text": "the middle shelf…",
-  "id": "u138"
- },
- {
-  "voice": "narrator",
-  "text": "and the bottom shelf.",
-  "id": "u139"
- },
- {
-  "voice": "narrator",
-  "text": "This is Manny! The top shelf.",
-  "id": "u140"
- },
- {
-  "voice": "narrator",
-  "text": "A baseball cap. Not a hat!",
-  "id": "u141"
- },
- {
-  "voice": "narrator",
-  "text": "The middle shelf.",
-  "id": "u142"
- },
- {
-  "voice": "narrator",
-  "text": "A watch… on your wrist!",
-  "id": "u143"
- },
- {
-  "voice": "narrator",
-  "text": "A handbag. Not a bag… a handbag!",
-  "id": "u144"
- },
- {
-  "voice": "narrator",
-  "text": "The bottom shelf.",
-  "id": "u145"
- },
- {
-  "voice": "narrator",
-  "text": "Glasses, shoes, boots, socks. Two eyes, two feet… S at the end. No A!",
-  "id": "u146"
- },
- {
-  "voice": "narrator",
-  "text": "Now it's your turn. Tap a shelf!",
-  "id": "u147"
- },
- {
-  "voice": "kim",
-  "text": "Tap a shelf. Then tap the things and listen.",
-  "id": "u148"
- },
- {
-  "voice": "kim",
-  "text": "Now it's your turn to talk! Look and say the word. Say the end of the word, too!",
-  "id": "u149"
- },
- {
-  "voice": "kim",
-  "text": "Well done! You said all the words!",
-  "id": "u150"
- },
- {
-  "voice": "narrator",
-  "text": "The hat is on her head. She's wearing a hat.",
-  "id": "u151"
- },
- {
-  "voice": "narrator",
-  "text": "Now the hat is in her hand. She's holding a hat.",
-  "id": "u152"
- },
- {
-  "voice": "narrator",
-  "text": "This is Matt. The boots are on his feet. He's wearing boots.",
-  "id": "u153"
- },
- {
-  "voice": "narrator",
-  "text": "In his hands… he's holding boots.",
-  "id": "u154"
- },
- {
-  "voice": "kim",
-  "text": "I'm wearing a baseball cap!",
-  "id": "u155"
- },
- {
-  "voice": "kim",
-  "text": "I'm holding glasses!",
-  "id": "u156"
- },
- {
   "voice": "narrator",
-  "text": "Wearing… on your body. Holding… in your hand. Now tap and listen!",
-  "id": "u157"
+  "text": "He's wearing black glasses.",
+  "id": "u240"
  },
  {
   "voice": "narrator",
-  "text": "She is wearing a hat.",
-  "id": "u158"
+  "text": "He's wearing a yellow watch.",
+  "id": "u241"
  },
  {
   "voice": "narrator",
-  "text": "She's wearing a hat.",
-  "id": "u159"
+  "text": "Is he wearing a baseball cap?",
+  "id": "u242"
  },
  {
   "voice": "narrator",
-  "text": "She is holding a hat.",
-  "id": "u160"
+  "text": "Is he wearing glasses?",
+  "id": "u243"
  },
  {
   "voice": "narrator",
-  "text": "She's holding a hat.",
-  "id": "u161"
- },
- {
-  "voice": "narrator",
-  "text": "He is wearing boots.",
-  "id": "u162"
- },
- {
-  "voice": "narrator",
-  "text": "He's wearing boots.",
-  "id": "u163"
- },
- {
-  "voice": "narrator",
-  "text": "He is holding boots.",
-  "id": "u164"
- },
- {
-  "voice": "narrator",
-  "text": "He's holding boots.",
-  "id": "u165"
- },
- {
-  "voice": "kim",
-  "text": "Listen. Wearing or holding? Tap the right picture!",
-  "id": "u166"
- },
- {
-  "voice": "narrator",
-  "text": "She's holding glasses.",
-  "id": "u167"
- },
- {
-  "voice": "narrator",
-  "text": "He's holding a handbag.",
-  "id": "u168"
- },
- {
-  "voice": "kim",
-  "text": "Look at the picture. On the body or in the hand? Say the full sentence!",
-  "id": "u169"
- },
- {
-  "voice": "kim",
-  "text": "Wearing or holding? Look again!",
-  "id": "u170"
- },
- {
-  "voice": "narrator",
-  "text": "She's wearing a baseball cap.",
-  "id": "u171"
- },
- {
-  "voice": "narrator",
-  "text": "She's wearing a watch.",
-  "id": "u172"
- },
- {
-  "voice": "narrator",
-  "text": "He's holding glasses.",
-  "id": "u173"
- },
- {
-  "voice": "kim",
-  "text": "Full sentence, please! He's holding…",
-  "id": "u174"
- },
- {
-  "voice": "narrator",
-  "text": "Is she wearing a hat?",
-  "id": "u175"
- },
- {
-  "voice": "narrator",
-  "text": "Is she holding a hat? No, she isn't.",
-  "id": "u176"
- },
- {
-  "voice": "narrator",
-  "text": "Is he holding glasses? Yes, he is.",
-  "id": "u177"
- },
- {
-  "voice": "narrator",
-  "text": "Is he wearing glasses? No, he isn't.",
-  "id": "u178"
- },
- {
-  "voice": "narrator",
-  "text": "Yes, he is. Not yes, he's! Now tap and listen!",
-  "id": "u179"
- },
- {
-  "voice": "narrator",
-  "text": "Is she holding a hat?",
-  "id": "u180"
- },
- {
-  "voice": "narrator",
-  "text": "Is he holding glasses?",
-  "id": "u181"
- },
- {
-  "voice": "kim",
-  "text": "Look at the picture. Listen to the question. Yes or no?",
-  "id": "u182"
- },
- {
-  "voice": "narrator",
-  "text": "Is he holding shoes?",
-  "id": "u183"
- },
- {
-  "voice": "narrator",
-  "text": "Is he wearing shoes?",
-  "id": "u184"
- },
- {
-  "voice": "narrator",
-  "text": "Is she wearing glasses?",
-  "id": "u185"
- },
- {
-  "voice": "narrator",
-  "text": "Is she wearing a watch?",
-  "id": "u186"
- },
- {
-  "voice": "narrator",
-  "text": "Is he wearing a hat?",
-  "id": "u187"
- },
- {
-  "voice": "narrator",
-  "text": "Is he wearing boots?",
-  "id": "u188"
- },
- {
-  "voice": "narrator",
-  "text": "Is she holding glasses?",
-  "id": "u189"
- },
- {
-  "voice": "narrator",
-  "text": "Is she holding a handbag?",
-  "id": "u190"
- },
- {
-  "voice": "kim",
-  "text": "Kim asks a question. Answer: Yes, he is. or No, she isn't. Race home!",
-  "id": "u191"
- },
- {
-  "voice": "kim",
   "text": "Is he holding boots?",
-  "id": "u192"
+  "id": "u244"
  },
  {
-  "voice": "kim",
-  "text": "Is he wearing boots?",
-  "id": "u193"
+  "voice": "narrator",
+  "text": "Is she wearing socks?",
+  "id": "u245"
  },
  {
-  "voice": "kim",
-  "text": "Is she wearing a watch?",
-  "id": "u194"
+  "voice": "narrator",
+  "text": "Is she holding a watch?",
+  "id": "u246"
  },
  {
-  "voice": "kim",
-  "text": "Is she wearing glasses?",
-  "id": "u195"
+  "voice": "narrator",
+  "text": "Is he holding a handbag?",
+  "id": "u247"
  },
  {
-  "voice": "kim",
-  "text": "Is she holding a hat?",
-  "id": "u196"
+  "voice": "narrator",
+  "text": "Is she holding shoes?",
+  "id": "u248"
  }
 ]

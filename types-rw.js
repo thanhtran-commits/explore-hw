@@ -245,11 +245,13 @@
    * item: { img | imgs, tiles: ["He is", "eating", "a burger."] (right order), decoys: ["eat", "He"], sick: "He eating a burger." (Sentence Doctor),
    *         question: "Is she drinking milk?" (shown under the picture), say: line spoken after, whyWrong: { tile: hint } }
    * step.style "burger": the answer is built as a burger — bun · patty · bun.
+   * step.glue: how the tiles join in the answer ("" = one word from parts: "gla" + "sses" → "glasses"; default: a sentence with spaces).
    */
   TYPES.build = function (step, run) {
     const burger = step.style === "burger";
     const P = X.practice(step, { cls: "px-build" + (burger ? " burger" : "") });
     const items = shuffle(step.items); const res = []; let r = 0, answered = false, state = null;
+    const joined = (it) => (step.glue != null ? it.tiles.join(step.glue) : sentence(it.tiles));
     P.aa(step.instruction || step.intro);
     const check = P.check(() => doCheck());
     const intro = P.intro(step.intro);
@@ -258,7 +260,7 @@
       if (r >= items.length) return finish(P, step, res, items.length, null, "Great sentences!");
       P.progress(r, items.length); answered = false;
       const it = items[r];
-      const sayIt = () => say(it.say || { text: sentence(it.tiles), who: it.who });
+      const sayIt = () => say(it.say || { text: joined(it), who: it.who });
       P.body.innerHTML = "";
       const spk = P.speaker("sm", () => (answered ? sayIt() : instr(step)()), "Listen");
       const picEl = it.imgs ? h("div", { class: "px-pics" }, it.imgs.map((s) => picture(s))) : picture(it.img, "cover");
@@ -304,7 +306,7 @@
       if (!bad.length) {
         res[r] = st.checks === 0; answered = true;
         st.placed.forEach((c) => (c.ok = true)); st.draw(); Audio_.sfx("name-reveal");
-        await P.sheet({ ok: true, text: sentence(it.tiles), play: st.sayIt, auto: async (still) => { await sleep(250); if (still()) await st.sayIt(); } });
+        await P.sheet({ ok: true, text: joined(it), play: st.sayIt, auto: async (still) => { await sleep(250); if (still()) await st.sayIt(); } });
         if (!X.alive(run)) return; r++; return round();
       }
       st.checks++; st.draw(); Audio_.sfx("practice-wrong");
@@ -319,7 +321,7 @@
         return;
       }
       res[r] = false; answered = true;
-      await P.sheet({ ok: false, title: "Almost!", html: "Correct answer: <u>" + esc(sentence(it.tiles)) + "</u>", button: "GOT IT", auto: async (still) => { await sleep(300); if (still()) await st.sayIt(); } });
+      await P.sheet({ ok: false, title: "Almost!", html: "Correct answer: <u>" + esc(joined(it)) + "</u>", button: "GOT IT", auto: async (still) => { await sleep(300); if (still()) await st.sayIt(); } });
       if (!X.alive(run)) return; r++; round();
     }
     round();

@@ -78,7 +78,10 @@ for (const f of fs.readdirSync(path.join(root, "lessons")).filter((f) => f.endsW
 }
 const todo = [], reuse = {};
 for (const [k, v] of out) { if (rec[k]) reuse[k] = rec[k]; else todo.push(v); }
-todo.forEach((v, n) => (v.id = "u" + String(n + 1).padStart(3, "0")));
+/* another unit: number on from the takes it already has (assets/common/vo-<unit>/uNNN.mp3), so a new batch never overwrites them */
+const voDir = path.join(root, "assets/common/vo-" + (UNIT || "i"));
+const start = UNIT && fs.existsSync(voDir) ? Math.max(0, ...fs.readdirSync(voDir).map((f) => +(/^u(\d+)\.mp3$/.exec(f) || [0, 0])[1])) : 0;
+todo.forEach((v, n) => (v.id = "u" + String(start + n + 1).padStart(3, "0")));
 fs.writeFileSync(path.join(__dirname, "unit-lines" + SUF + ".json"), JSON.stringify(todo, null, 1));
 fs.writeFileSync(path.join(__dirname, "reuse" + SUF + ".json"), JSON.stringify(reuse, null, 1));
 console.log("lines:", out.size, "already recorded:", Object.keys(reuse).length, "to record:", todo.length);
