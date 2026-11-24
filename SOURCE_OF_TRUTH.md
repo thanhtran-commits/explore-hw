@@ -126,7 +126,9 @@ Start → MAP → [VOCAB] Watch → Explore → Practice ×2 → Ôn lại từ
 | 8c | Lên web bản 1 (mốc 1–4) | ✅ 2026-11-18 — build 20261118065359 |
 | 8d | Image Pipeline (nền không người, món thưởng, logo unit) | ✅ 2026-11-18 — Gemini 3 Pro Image + tự chấm (gemini-flash-latest), chạy trong Chrome của Thanh, file về `Downloads/explore-pipeline/` → `assets/unit-i/` |
 | 8e | Phần thưởng: dấu chặng, chọn món, con phố, hộ chiếu | ✅ 2026-11-18 |
-| 7 | Unit A → H | Kế tiếp — đề xuất plan trước |
+| 8f | Giao diện v4 (dịu mắt) + v5 (tỉ lệ kiểu Duolingo ABC) | ✅ 2026-11-23 — đang chạy thử ở `/preview/` (build 20261123082031), Thanh duyệt "ok rồi". Trang chính vẫn là bản v3 + phần thưởng |
+| 9 | Unit H (thử nghiệm quy trình làm unit) | 🔄 2026-11-24 — map đã chốt (xem HANDOVER.md), đã tải đủ 5 file slide về máy Thanh `Downloads/explore-unit-h/`; bước kế: tách hình |
+| 7 | Unit A → G, J, K… | Sau Unit H — dùng số token/thời gian thật của H để ước lượng |
 
 ## 7. Map I1 (bản 2)
 | Khối | Bước | Dạng bài | Nội dung |
@@ -204,3 +206,8 @@ Start → MAP → [VOCAB] Watch → Explore → Practice ×2 → Ôn lại từ
 | 11-18 | Phần thưởng | Chỉ có sao ★ | **Con dấu chặng** (mực vàng ≥90% / bạc 70–89% / xanh <70%, chỉ nâng hạng; bấm = nghe lại câu); thêm màn "Vocabulary done!"; **chọn 1/4 xe** cuối lesson (hỏi lại nếu bỏ qua); **Con phố của tôi** (xe đứng trên vòng phấn, bấm nghe câu; đủ 5 → logo); **Hộ chiếu** (nút Passport, bìa 10 unit, trang unit). Bỏ sao ★ trên roadmap/đường học — dấu là thước đo duy nhất cho HV (Done vẫn hiện % đúng như F4). Lưu ở `explore-hw:rewards` (1 bản ghi, dễ chuyển Firebase). Data mới trong catalog: unit `nick, badge, logo, street, rewardPrompt, rewardGoal, logoSay`; lesson `bg, rewards[]`. GV thử nhanh: ☰ → Demo, hoặc `#reward-test`, `#passport` |
 | 11-18 | Con phố của tôi | Bấm xe / xe mới đậu → bong bóng câu + đọc câu của lesson ("He's eating a burger.") | **Bỏ thoại** (Thanh): bấm xe chỉ nhún nhẹ + tiếng "tách"; không chữ, không giọng |
 | 11-18 | Căn cột + món trên xe | Thẻ ngữ pháp: câu lệch trái so với hình; thanh chữ Watch rộng/lệch hơn hình; thanh từ vựng dồn trái, icon nhỏ; khung xanh cắt nhãn; Watch giới thiệu xe bằng hàng thẻ nhỏ | Mọi khối chung 1 cột với hình (câu ngữ pháp canh giữa, hỏi–đáp thẳng mép trái hình; thanh chữ Watch = đúng bề rộng khung hình); thanh từ vựng giữa màn, màn ngang 1 hàng 10 icon to theo cỡ màn; khung xanh ôm cả món + nhãn; **Watch giới thiệu món ĐẶT TRÊN QUẦY XE** như Explore (dùng chung `cartCounter`). Kiểm tra thêm 2 cỡ Mac lớn (1512×982, 1728×1117) + kiểm tra thẳng cột tự động (`run4.js`) |
+| 11-23 | Giao diện v4 · "dịu mắt" | Viền/khối xám lạnh, thẻ từ vựng vị trí lệch, chữ dẫn to hơn hình | Viền ấm `#E6E0D4`, khối `#F3EEE4` (Thanh chưa chốt giữ hay bỏ màu be này); chữ dẫn nhỏ lại so với hình; thẻ từ vựng thẳng hàng |
+| 11-23 | Giao diện v5 · tỉ lệ Duolingo ABC | Nội dung canh giữa màn → trên laptop/điện thoại bị "tuột xuống dưới"; có dải chân trang | Nội dung neo từ trên xuống; thẻ "chunky" (bo 24, viền 3px, bóng đáy 4px); bỏ dải chân trang, 1 nút lớn giữa đáy. Chỉ sửa `index.html` |
+| 11-23 | Bản chạy thử `/preview/` | Muốn thử giao diện mới phải thay trang chính | `preview/index.html` + `preview/engine.js` (bản v4+v5) chạy song song ở explore-homework.dol.vn/preview/, dùng chung assets/lessons qua symlink, chung localStorage với trang chính. Lưu ý: Cloudflare cache cả lỗi 404 của URL .js trần → trang luôn gọi `?v=<build>` |
+| 11-24 | Unit H · nguồn | — | Slide H1–H3 tải từ Canva dạng PPTX, H4–H5 là HTML trên Drive; cả 5 ở `Downloads/explore-unit-h/` trên máy Thanh |
+| 11-24 | Chuyển sang Claude Code | Làm trong chat claude.ai (máy cloud tạm, thư mục `explore-hw` không có git) | Repo `thanhtran-commits/explore-hw` là nguồn duy nhất; thêm `HANDOVER.md`, `CLAUDE.md`, `tools/audit/` (script kiểm tra 9–10 cỡ màn), `tools/studio/` (Studio giọng + hình) |
