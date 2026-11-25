@@ -8,11 +8,12 @@
  *   nick, badge     short name + emoji placeholder on the passport cover (until the unit has its own logo art)
  *   logo            { img, text }: round badge; `text` is written on its empty ribbon
  *   street          { img, title, spots: [[x%, y%] centre of each chalk circle, one per lesson], cart: { w: width % of the street, base: wheels below the centre, % of its height } }
- *   rewardPrompt    the line on the "pick a reward" screen · rewardGoal: under the street (*…* = bold) · logoSay: Kim's line when the logo is earned (a recorded line)
+ *   rewardPrompt    the line on the "pick a reward" screen · rewardButton: its button (default "ADD TO MY STREET") · rewardGoal: under the street (*…* = bold) · logoSay: Kim's line when the logo is earned (a recorded line)
  *   lesson.rewards  the 3–4 things the child picks from when the lesson is finished: [{ id, img, name }]
  */
 (function () {
   const cart = (id, name) => ({ id, img: "assets/unit-i/cart-" + id + ".webp", name });
+  const costume = (id, name) => ({ id, img: "assets/unit-h/costume-" + id + ".webp", name });
   window.CATALOG = {
     splash: { bg: "assets/unit-i/bg-unit.webp" },
     units: [
@@ -24,15 +25,27 @@
       { id: "F", title: "People around us", nick: "People", badge: "👪" },
       { id: "G", title: "Appearance & body", nick: "Looks", badge: "👀" },
       {
-        /* Unit H — in progress (H1–H5 built 2026-11-24/25). No unit backgrounds / rewards / logo yet (Image Pipeline, HANDOVER §2.3). */
+        /* Unit H (H1–H5 built 2026-11-24/25). Rewards: costumes on a dress form → "My Dress-up Shop" (Image Pipeline 11-25; bg-h1 / bg-h3 from the slides). */
         id: "H", title: "Clothes", nick: "Dress-up", badge: "👕", ready: true,
-        cover: "assets/h1/img/scene-main.webp",
+        cover: "assets/h1/img/scene-main.webp", bg: "assets/unit-h/bg-unit.webp",
+        logo: { img: "assets/unit-h/logo.webp", text: "DRESS-UP" },
+        street: { img: "assets/unit-h/street.webp", title: "My Dress-up Shop",
+          spots: [[12.5, 80.4], [30.73, 80.4], [49.64, 80.4], [68.23, 80.4], [86.46, 80.4]], cart: { w: 20, base: 1.6 } },
+        rewardPrompt: "Pick a costume for your shop!",
+        rewardButton: "ADD TO MY SHOP",
+        rewardGoal: "Fill all 5 spots to get the *Dress-up logo*!",
+        logoSay: "Hooray! You finished Dress-up!",
         lessons: [
-          { id: "H1", title: "What are they wearing?", skills: ["L", "S"], file: "lessons/h1.js", ready: true, cover: "assets/h1/img/scene-main.webp" },
-          { id: "H2", title: "Read and dress", skills: ["R", "W"], file: "lessons/h2.js", ready: true, cover: "assets/h2/img/g-jill-pink-skirt.webp" },
-          { id: "H3", title: "Wearing or holding?", skills: ["L", "S"], file: "lessons/h3.js", ready: true, cover: "assets/h3/img/scene-main.webp" },
-          { id: "H4", title: "Lost and Found", skills: ["R", "W"], file: "lessons/h4.js", ready: true, cover: "assets/h4/img/scene-box.webp" },
-          { id: "H5", title: "Photo Day", skills: ["L", "S", "R", "W"], file: "lessons/h5.js", review: true, ready: true, cover: "assets/h5/img/scene-main.webp" }
+          { id: "H1", title: "What are they wearing?", skills: ["L", "S"], file: "lessons/h1.js", ready: true, cover: "assets/h1/img/scene-main.webp", bg: "assets/unit-h/bg-h1.webp",
+            rewards: [costume("pirate", "Pirate"), costume("princess", "Princess"), costume("superhero", "Superhero"), costume("wizard", "Wizard")] },
+          { id: "H2", title: "Read and dress", skills: ["R", "W"], file: "lessons/h2.js", ready: true, cover: "assets/h2/img/g-jill-pink-skirt.webp", bg: "assets/unit-h/bg-h2.webp",
+            rewards: [costume("fairy", "Fairy"), costume("clown", "Clown"), costume("ballerina", "Ballerina"), costume("cowboy", "Cowboy")] },
+          { id: "H3", title: "Wearing or holding?", skills: ["L", "S"], file: "lessons/h3.js", ready: true, cover: "assets/h3/img/scene-main.webp", bg: "assets/unit-h/bg-h3.webp",
+            rewards: [costume("chef", "Chef"), costume("doctor", "Doctor"), costume("firefighter", "Firefighter"), costume("police", "Police officer")] },
+          { id: "H4", title: "Lost and Found", skills: ["R", "W"], file: "lessons/h4.js", ready: true, cover: "assets/h4/img/scene-box.webp", bg: "assets/unit-h/bg-h4.webp",
+            rewards: [costume("astronaut", "Astronaut"), costume("knight", "Knight"), costume("ninja", "Ninja"), costume("sailor", "Sailor")] },
+          { id: "H5", title: "Photo Day", skills: ["L", "S", "R", "W"], file: "lessons/h5.js", review: true, ready: true, cover: "assets/h5/img/scene-main.webp", bg: "assets/unit-h/bg-h5.webp",
+            rewards: [costume("football", "Football player"), costume("builder", "Builder"), costume("farmer", "Farmer"), costume("explorer", "Explorer")] }
         ]
       },
       {

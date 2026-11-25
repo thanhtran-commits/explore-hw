@@ -8,7 +8,7 @@ const ALL=[['pick','i1--g-p1',4500],['bubbles','i1--v-p1',4500],['names','i1--f-
 ['grammar','i1--g-explore',3500],['talk','i1--f-explore',3500],['recap','i1--v-recap',4000],['done','i1--g-done',4000],['units','units',2500],['passport','passport',2500],['watch','i1--v-watch',4200],['explore','i1--v-explore',3000],['road','i1',2500]];
 const only=process.argv[4]?process.argv[4].split(','):null;
 const shots=ALL.filter(s=>!only||only.includes(s[0]));
-(async()=>{const b=await chromium.launch({args:['--autoplay-policy=no-user-gesture-required']});
+(async()=>{const b=await chromium.launch({args:['--autoplay-policy=no-user-gesture-required','--mute-audio']});
 for(const v of vps){const [w,h]=VPS[v];let i=0;
  const work=async()=>{while(i<shots.length){const [name,hash,wait]=shots[i++];const ctx=await b.newContext({viewport:{width:w,height:h},hasTouch:h>w});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
   await p.goto(`http://127.0.0.1:8766/?c=${name}${v}#${hash}`);await p.waitForTimeout(800);const s=await p.$('button:has-text("START")');if(s)await s.click().catch(()=>{});

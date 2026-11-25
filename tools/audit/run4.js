@@ -115,7 +115,7 @@ const ALIGN = () => {
   return out;
 };
 (async () => {
-  const b = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
+  const b = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required', '--mute-audio'] });
   const report = []; let k = 0;
   const worker = async () => {
     while (k < jobs.length) {

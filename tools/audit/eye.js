@@ -1,4 +1,4 @@
-const {chromium}=require('playwright');(async()=>{const b=await chromium.launch();
+const {chromium}=require('playwright');(async()=>{const b=await chromium.launch({args:['--mute-audio']});
 const routes=['units','unit-i','i1','i1--v-watch','i1--v-explore','i1--v-p1','i1--g-explore','i1--g-p1','i2--v-p2','i3--f-watch','i5--g-p2','i1--f-p2'];
 for(const [w,h,t] of [[390,844,'phone'],[1440,900,'laptop']]){
  const p=await b.newPage({viewport:{width:w,height:h},deviceScaleFactor:1});

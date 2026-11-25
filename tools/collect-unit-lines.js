@@ -29,12 +29,17 @@ const PRON = { he: "He's", she: "She's", i: "I'm" }, PR = { he: "He", she: "She"
  "Say: Yes, he is!", "Say: Yes, she is!", "Say: No, he isn't!", "Say: No, she isn't!", "Great! Now tap “I'm ready!”", "Well done! You said all the food words!",
  "Grammar done!", "Let's Talk done!"].forEach((t) => add("kim", t));
 
+eval(fs.readFileSync(path.join(root, "catalog.js"), "utf8"));
+const CAT = window.CATALOG || {};
 for (const id of lessons) {
   window.LESSON = null;
   eval(fs.readFileSync(path.join(root, "lessons", id + ".js"), "utf8"));
   const L = window.LESSON;
   const label = (w) => L.words[w].label;
   add("kim", L.finishLine);
+  /* the unit's logo line (catalog logoSay) belongs to the unit's last lesson pack */
+  const U_ = (CAT.units || []).find((u) => (u.lessons || []).some((l) => l.id.toLowerCase() === id));
+  if (U_ && U_.logoSay && U_.lessons[U_.lessons.length - 1].id.toLowerCase() === id) add("kim", U_.logoSay);
   /* words with no recording of their own (Unit H on): the engine speaks the label (narrator) */
   Object.values(L.words).forEach((w) => { if (!w.audio && !w.phrase) add("narrator", w.label); });   /* phrase: answer-only words (H5 "a red T-shirt") */
   for (const b of L.blocks) for (const s of b.steps) {

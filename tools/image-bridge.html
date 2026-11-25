@@ -1,0 +1,10 @@
+<!doctype html><!-- Image Pipeline bridge: serve a folder holding refs.json ({key: base64 JPEG}), the jobs file and image-pipeline.js on 127.0.0.1 (CORS on), open this page, click the button; then in the new example.com tab: listen for the postMessage {ip:{jobs,refs,code}}, set window.__IPJOBS / __IPREFS, eval code. See SOURCE_OF_TRUTH 11-25. --><meta charset="utf-8"><title>EXPLORE · bridge</title>
+<body style="font:18px system-ui;padding:30px"><button id="go" style="font-size:22px;padding:14px 28px">Open Image Pipeline</button><pre id="log">loading…</pre>
+<script>
+let data;
+Promise.all([fetch("refs.json").then(r=>r.json()), fetch(new URLSearchParams(location.search).get("jobs") || "image-jobs-h.json").then(r=>r.json()), fetch("image-pipeline.js").then(r=>r.text())])
+  .then(([refs,jobs,code])=>{ data={refs,jobs,code}; log.textContent="ready · "+jobs.items.length+" jobs · "+Object.keys(refs).length+" refs"; })
+  .catch(e=>log.textContent="ERR "+e.message);
+go.onclick=()=>{ const w=window.open("https://example.com/"); const t=setInterval(()=>{ try{ w.postMessage({ip:data},"https://example.com"); }catch(e){} },1000);
+  addEventListener("message",e=>{ if(e.data==="ip-ack"){ clearInterval(t); log.textContent+="\nsent"; } }); };
+</script>
