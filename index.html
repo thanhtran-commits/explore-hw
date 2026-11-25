@@ -20,11 +20,16 @@
 @font-face{font-family:"Andika";font-style:normal;font-weight:700;font-display:swap;src:url(assets/common/fonts/andika-latin-ext-700-normal.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
 @font-face{font-family:"Andika";font-style:normal;font-weight:700;font-display:swap;src:url(assets/common/fonts/andika-latin-700-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 /* Base: one-screen app. #app fills the window; every screen draws itself inside <main> (body.v3 = the white DOL frame). */
-:root{color-scheme:light}
+:root{color-scheme:light;--vw:1vw;--vh:1vh}
+@supports (height:1dvh){:root{--vh:1dvh}}
+/* stage (2026-11-20, rule A): wide landscape screens and upright tablets draw a fixed logical stage, scaled uniformly by JS (body transform);
+   --vw / --vh are then one hundredth of the LOGICAL stage, so every size inside scales together. */
+html.staged,html.staged body{overflow:hidden}
+html.staged body{position:fixed;left:0;top:0;transform-origin:0 0}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{height:100%;margin:0}
-body{background:#fff;color:#242938;font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;overflow:hidden;overscroll-behavior:none;-webkit-tap-highlight-color:transparent}
+body{background:#FBF6EC;color:#242938;font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;overflow:hidden;overscroll-behavior:none;-webkit-tap-highlight-color:transparent}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 button:focus-visible{outline:3px solid #4A6FD6;outline-offset:3px}
 button:disabled{cursor:default}
@@ -43,7 +48,9 @@ main{position:absolute;inset:0;overflow:hidden}
 :root{
   --red:#E05848;--red-d:#C8443A;--red-l:#FDECE9;
   --blue:#4A6FD6;--blue-d:#3756B5;--blue-l:#EDF1FC;
-  --ink:#242938;--mute:#6C7885;--line:#E3E7ED;--surf:#F4F5F7;
+  --ink:#242938;--mute:#6C7885;--line:#E6E0D4;--surf:#F3EEE4;--edge:#DCD2BE;
+  /* rule B (2026-11-20): one warm paper under every screen; white cards sit on it (lines / light surfaces warmed to match) */
+  --paper:#FBF6EC;
   --green:#3FA45B;--green-d:#2F8547;--green-l:#E4F6E8;--gold:#F2B33D;--gold-d:#C98B12;
   --ui:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --read:"Andika","Plus Jakarta Sans",system-ui,sans-serif;
@@ -52,10 +59,9 @@ main{position:absolute;inset:0;overflow:hidden}
 /* -- 1. page + scale --
    --u = one pixel of the 390×844 phone mockup, from the screen's width and height: a tablet scales up,
    a short laptop scales down, a phone held sideways stops at .62 and uses the two-column layout (section 9). */
-body.v3{--u:clamp(.62px, min(100vw / 390, 100vh / 844), 1.34px);--g:calc(16 * var(--u));--col:920px;--aares:max(72px, calc(76 * var(--u)));background:#fff}
-@supports (height:100dvh){body.v3{--u:clamp(.62px, min(100vw / 390, 100dvh / 844), 1.34px)}}
-body.v3 #app{background:#fff}
-body.v3 main{inset:0;padding:0;display:block;background:#fff;overflow:hidden}
+body.v3{--u:clamp(.62px, min(calc(100 * var(--vw)) / 390, calc(100 * var(--vh)) / 844), 1.34px);--g:calc(16 * var(--u));--col:920px;--ptop:calc(22 * var(--u));--aares:max(72px, calc(76 * var(--u)));background:var(--paper)}
+body.v3 #app{background:var(--paper)}
+body.v3 main{inset:0;padding:0;display:block;background:var(--paper);overflow:hidden}
 .px{position:relative;height:100%;max-width:var(--col);margin:0 auto;display:flex;flex-direction:column;
   padding:env(safe-area-inset-top,0px) max(16px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(16px,env(safe-area-inset-left,0px));
   font-family:var(--ui);color:var(--ink)}
@@ -67,30 +73,30 @@ body.v3 main{inset:0;padding:0;display:block;background:#fff;overflow:hidden}
 .px-top{flex:none;height:max(54px,calc(64 * var(--u)));display:flex;align-items:center;gap:12px}
 .px-x{flex:none;width:44px;height:44px;margin-left:-8px;border-radius:12px;display:grid;place-items:center;font-size:24px;font-weight:700;color:#9aa3ad}
 .px-x:hover{background:var(--surf)}
-.px-prog{flex:1;height:12px;border-radius:7px;background:var(--line);overflow:hidden}
-.px-prog i{display:block;height:100%;width:0;border-radius:7px;background:var(--blue);transition:width .45s ease}
+.px-prog{flex:1;height:18px;border-radius:9px;background:var(--line);overflow:hidden}
+.px-prog i{display:block;height:100%;width:0;border-radius:9px;background:var(--blue);transition:width .45s ease}
 .px-aa{flex:none;width:44px;height:44px;border-radius:12px;background:var(--surf);border:1.5px solid var(--line);font-weight:800;font-size:16px}
 .px-aa.on{background:var(--blue-l);border-color:var(--blue);color:var(--blue-d)}
 
 /* -- 3. body, Aa line, foot -- */
 /* the body keeps a strip free at its bottom: the Aa line appears there, so nothing moves */
 .px-body{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;padding-bottom:var(--aares)}
-.px-main{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;gap:var(--g);padding-top:calc(20 * var(--u))}
+.px-main{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:var(--g);padding-top:var(--ptop)}
 .px-aaline{position:absolute;left:0;right:0;bottom:8px;z-index:7;background:var(--ink);color:#fff;border-radius:14px;padding:10px 16px;
   font:700 max(17px,calc(18 * var(--u)))/1.25 var(--read);text-align:center;text-wrap:balance;animation:pxUp .2s ease both}
 .px-foot{flex:none;display:flex;flex-direction:column;align-items:center}
 .px.has-btn .px-foot{padding:10px 0 max(16px,calc(22 * var(--u)))}
 .px-note{flex:none;font-size:13px;line-height:1.35;color:var(--mute);text-align:center;max-width:46ch}
-/* the first item shows, dimmed, while Kim reads the instruction */
-.px-main,.px-foot{transition:opacity .4s ease,filter .4s ease}
-.px.pre .px-main,.px.pre .px-foot{opacity:.5;filter:saturate(.6);pointer-events:none}
+/* while Kim reads the instruction the screen is fully visible (never dimmed, rule C): answers simply don't react yet,
+   and the speaker pulses gently (.playing) to show that someone is talking */
+.px.pre .px-main,.px.pre .px-foot{pointer-events:none}
 .px.sheet-open .px-body,.px.sheet-open .px-foot{pointer-events:none}
 
 /* -- 4. shared pieces: buttons, speaker, chips, cards, pictures -- */
-.px-btn{width:100%;height:max(52px,calc(56 * var(--u)));border-radius:16px;font-weight:800;font-size:max(17px,calc(18 * var(--u)));letter-spacing:.3px;
+.px-btn{width:100%;height:max(52px,calc(56 * var(--u)));border-radius:18px;font-weight:800;font-size:max(17px,calc(18 * var(--u)));letter-spacing:.3px;
   display:flex;align-items:center;justify-content:center}
-.px-btn.red{background:var(--red);color:#fff;box-shadow:0 3px 0 var(--red-d)}
-.px-btn.green{background:var(--green);color:#fff;box-shadow:0 3px 0 var(--green-d)}
+.px-btn.red{background:var(--red);color:#fff;box-shadow:0 4px 0 var(--red-d)}
+.px-btn.green{background:var(--green);color:#fff;box-shadow:0 4px 0 var(--green-d)}
 .px-btn:disabled{background:var(--surf);color:#aab2bb;box-shadow:none;cursor:default}
 .px-btn:not(:disabled):active{transform:translateY(2px);box-shadow:none}
 .px-spk{flex:none;display:grid;place-items:center;background:var(--blue);color:#fff;box-shadow:0 3px 0 var(--blue-d);border-radius:calc(22 * var(--u))}
@@ -105,7 +111,7 @@ body.v3 main{inset:0;padding:0;display:block;background:#fff;overflow:hidden}
 .px-spk.playing{animation:pxSpk 1s ease-in-out infinite}
 .px-spk.green.playing{animation:pxSpkG 1s ease-in-out infinite}
 .px-chip{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;padding:calc(8 * var(--u)) calc(14 * var(--u));
-  border:1.5px solid var(--line);border-radius:14px;background:#fff;box-shadow:0 2px 0 var(--line);
+  border:2px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 3px 0 var(--edge);
   font:700 max(19px,calc(20 * var(--u)))/1.15 var(--read);color:var(--ink);white-space:nowrap;transition:transform .12s,background .2s,color .2s}
 button.px-chip:active{transform:translateY(2px);box-shadow:none}
 .px-chip.ghost{background:var(--surf);border-color:var(--surf);color:transparent;box-shadow:none;cursor:default}
@@ -114,7 +120,7 @@ button.px-chip:active{transform:translateY(2px);box-shadow:none}
 .px-sent{font:700 max(22px,calc(26 * var(--u)))/1.25 var(--read);color:var(--ink);text-wrap:balance}
 .px-sent.q{color:var(--blue-d);text-align:center}
 .px-say{flex:none;display:flex;align-items:center;justify-content:center;gap:calc(12 * var(--u));max-width:100%}
-.px-card{position:relative;padding:0;border-radius:18px;border:1.5px solid var(--line);background:#fff;box-shadow:0 2px 0 var(--line);overflow:hidden;
+.px-card{position:relative;padding:0;border-radius:24px;border:3px solid var(--line);background:#fff;box-shadow:0 4px 0 var(--edge);overflow:hidden;
   transition:opacity .25s,transform .12s}
 .px-card > img{position:absolute;inset:8px;width:calc(100% - 16px);height:calc(100% - 16px);object-fit:contain}
 .px-card.obj > img{inset:13%;width:74%;height:74%}
@@ -123,11 +129,12 @@ button.px-card:active{transform:translateY(2px)}
 .px-wrong{animation:pxShake .45s ease;border-color:var(--red)!important;box-shadow:0 0 0 4px rgba(224,88,72,.25)!important}
 .px-hint{animation:pxHint 1s ease-in-out infinite;box-shadow:0 0 0 5px rgba(242,179,61,.75)!important}
 /* pictures: objects on a padded white card, scenes rounded as they are (never cropped, never stretched) */
-.px-obj{position:relative;border-radius:18px;border:1.5px solid var(--line);background:#fff;box-shadow:0 2px 0 var(--line)}
+.px-obj{position:relative;border-radius:24px;border:3px solid var(--line);background:#fff;box-shadow:0 4px 0 var(--edge)}
 .px-obj > img{position:absolute;inset:12%;width:76%;height:76%;object-fit:contain}
 .px-scene{position:relative;line-height:0}
-.px-scene > img{display:block;border-radius:18px;border:1.5px solid var(--line);box-shadow:0 2px 0 var(--line);background:#fff}
-.px-pic{position:relative;flex:1;min-height:0;width:100%;container-type:size;display:grid;place-items:center}
+.px-scene > img{display:block;border-radius:24px;border:3px solid var(--line);box-shadow:0 4px 0 var(--edge);background:#fff}
+.px-pic{position:relative;flex:0 1 auto;min-height:100px;width:100%;aspect-ratio:var(--par,1);max-height:var(--pmax,calc(380 * var(--u)));container-type:size;display:grid;place-items:center}
+.px-pic:has(> .px-pics){--par:2.15}
 .px-pic > .px-obj{width:min(100cqw,100cqh,calc(300 * var(--u)));aspect-ratio:1}
 .px-pic > .px-scene > img{max-width:100cqw;max-height:100cqh;width:auto;height:auto}
 .px-pics{display:flex;gap:calc(14 * var(--u));justify-content:center;align-items:center}
@@ -135,12 +142,12 @@ button.px-card:active{transform:translateY(2px)}
 .px-pic.has-spk .px-spk{position:absolute;top:8px;left:8px;z-index:2}
 .px-head{flex:none;display:flex;flex-direction:column;align-items:center;gap:calc(14 * var(--u));width:100%}
 .px-head.row{flex-direction:row;justify-content:center}
-.px-head.grow{flex:1;min-height:0}
+.px-head.grow{flex:0 1 auto;min-height:0}
 
 /* -- 5. option grids: cards share the free area, sized by its width AND height (container units) --
    3 options: two on top, one centred under them (P1, P2, P4); a row of three when the area is wide. */
-.px-opts{flex:1;min-height:0;width:100%;container-type:size;container-name:opts;display:grid;place-items:center}
-.px-grid{--cols:2;--rows:2;--ar:1;--cmax:260px;--gg:var(--g);display:grid;gap:var(--gg);justify-content:center;align-content:center;
+.px-opts{flex:1;min-height:0;width:100%;container-type:size;container-name:opts;display:grid;align-items:start;justify-items:center}
+.px-grid{--cols:2;--rows:2;--ar:1;--cmax:260px;--gg:var(--g);display:grid;gap:var(--gg);justify-content:center;align-content:start;
   --cw:min(calc((100cqw - (var(--cols) - 1) * var(--gg)) / var(--cols)), calc((100cqh - (var(--rows) - 1) * var(--gg)) / var(--rows) * var(--ar)), var(--cmax));
   grid-template-columns:repeat(var(--cols),var(--cw))}
 .px-grid > *{width:var(--cw);aspect-ratio:var(--ar)}
@@ -154,13 +161,13 @@ button.px-card:active{transform:translateY(2px)}
   .px-grid[data-n="5"],.px-grid[data-n="6"]{--cols:3;--rows:2}
   .px-grid[data-n="3"] > :last-child,.px-grid[data-n="5"] > :last-child{grid-column:auto}
 }
-.px-grid.cards{--ar:.82;--cmax:calc(250 * var(--u) + 40px)}
-.px-grid.cards.objs{--ar:1;--cmax:calc(200 * var(--u) + 30px)}
+.px-grid.cards{--ar:.91;--cmax:calc(250 * var(--u) + 40px)}
+.px-grid.cards.objs{--ar:.91;--cmax:calc(200 * var(--u) + 30px)}
 .px-grid.kids{--ar:1;--cmax:calc(180 * var(--u) + 30px);--gg:calc(14 * var(--u))}
-.px-grid.round{--ar:1;--cmax:calc(150 * var(--u) + 40px);--gg:calc(30 * var(--u))}
+.px-grid.round{--ar:1;--cmax:calc(150 * var(--u) + 40px);--gg:calc(22 * var(--u))}
 
 /* -- 6. listen & tap: P1 bubbles · P2 pictures · P3 names -- */
-.px-listen .px-main{padding-top:calc(44 * var(--u));gap:calc(46 * var(--u))}
+.px-listen .px-main{gap:calc(24 * var(--u))}
 .px-bub{position:relative;border-radius:50%;display:grid;place-items:center;transition:opacity .25s;
   background:radial-gradient(circle at 30% 28%,#fff 0 14%,rgba(255,255,255,0) 15%),radial-gradient(circle,#eef3ff 55%,#c7d5f7);
   box-shadow:inset 0 0 0 3px #b4c6f2;animation:pxBob 3.4s ease-in-out infinite}
@@ -168,7 +175,7 @@ button.px-card:active{transform:translateY(2px)}
 .px-bub img{width:60%;height:60%;object-fit:contain}
 .px-bub.ok{background:radial-gradient(circle at 30% 28%,#fff 0 14%,rgba(255,255,255,0) 15%),radial-gradient(circle,#f1fbf3 55%,#bfe6c9);box-shadow:inset 0 0 0 4px var(--green),0 0 0 6px rgba(63,164,91,.18)}
 .px-bub.px-wrong{box-shadow:inset 0 0 0 4px var(--red),0 0 0 6px rgba(224,88,72,.2)!important}
-.px-names .px-main{padding-top:calc(24 * var(--u));gap:calc(28 * var(--u))}
+.px-names .px-main{gap:calc(20 * var(--u))}
 .px-name{font-size:max(26px,calc(32 * var(--u)));padding:calc(10 * var(--u)) calc(24 * var(--u));min-width:calc(110 * var(--u));min-height:calc(66 * var(--u))}
 .px-name:empty{visibility:hidden}
 .px-card.kid > img{inset:6px;width:calc(100% - 12px);height:calc(100% - 12px)}
@@ -178,12 +185,16 @@ button.px-card:active{transform:translateY(2px)}
 .px-ktag:empty{display:none}
 
 /* -- 7. choose: word → pictures (P4) · picture + sentence → ✓ ✗ (P5) · picture → words / sentences · picture + sound → pictures -- */
-.px-choose .px-main{padding-top:calc(24 * var(--u))}
 .px-word-chip{font-size:max(34px,calc(42 * var(--u)));padding:calc(10 * var(--u)) calc(30 * var(--u));border-radius:16px}
 .px-word-chip.long{font-size:max(28px,calc(34 * var(--u)))}
-/* a sound + ✓ ✗ only (no picture): the pair sits in the middle of the screen */
-.px-main[data-lay="marks"]:not(:has(.px-pic)){justify-content:center;padding-bottom:calc(60 * var(--u));gap:calc(40 * var(--u))}
-.px-main[data-lay="pics"]{padding-top:calc(36 * var(--u));gap:calc(28 * var(--u))}
+/* a sound + ✓ ✗ only (no picture): the pair right under the bar, the marks under it (top-anchored, v5) */
+.px-main[data-lay="marks"]:not(:has(.px-pic)){gap:calc(32 * var(--u))}
+.px-main[data-lay="marks"]:not(:has(.px-pic)) .px-bubble{padding:calc(14 * var(--u)) calc(30 * var(--u)) calc(14 * var(--u)) calc(14 * var(--u))}
+.px-main[data-lay="marks"]:not(:has(.px-pic)) .px-bubble .px-spk{width:calc(86 * var(--u));height:calc(78 * var(--u));border-radius:20px}
+.px-main[data-lay="marks"]:not(:has(.px-pic)) .px-bubble .px-bicon{font-size:calc(62 * var(--u));min-width:calc(70 * var(--u))}
+.px-main[data-lay="marks"]:not(:has(.px-pic)) .px-grid.marks{--cw:min(calc(170 * var(--u)),calc(44 * var(--vw)));--ar:.85}
+.px-main[data-lay="marks"]:not(:has(.px-pic)) .px-card.mark .glyph{font-size:calc(72 * var(--u))}
+.px-main[data-lay="pics"]{gap:calc(24 * var(--u))}
 .px-who{display:flex;flex-direction:column;align-items:center;gap:6px}
 .px-who > .px-obj,.px-who > .px-scene{width:calc(132 * var(--u));aspect-ratio:.82}
 .px-who > .px-obj > img{inset:6%;width:88%;height:88%}
@@ -195,51 +206,56 @@ button.px-card:active{transform:translateY(2px)}
 /* "Does it match?": a question bubble and an answer bubble (sound only), each replays its own line */
 .px-head.px-qa{gap:calc(16 * var(--u))}
 .px-bubble{position:relative;display:flex;align-items:center;gap:calc(16 * var(--u));padding:calc(12 * var(--u)) calc(26 * var(--u)) calc(12 * var(--u)) calc(12 * var(--u));
-  border-radius:calc(28 * var(--u));border:1.5px solid var(--line);background:#fff;box-shadow:0 2px 0 var(--line);transition:transform .12s}
+  border-radius:calc(28 * var(--u));border:3px solid var(--line);background:#fff;box-shadow:0 4px 0 var(--edge);transition:transform .12s}
 .px-bubble:active{transform:translateY(2px)}
 .px-bubble .px-spk{width:max(48px,calc(58 * var(--u)));height:max(46px,calc(54 * var(--u)));border-radius:16px}
 .px-bubble .px-bicon{min-width:calc(46 * var(--u));text-align:center;font-size:calc(40 * var(--u));font-weight:800;line-height:1;color:var(--blue-d)}
 .px-bubble::after{content:"";position:absolute;bottom:calc(-7 * var(--u));width:calc(16 * var(--u));height:calc(16 * var(--u));background:inherit;
-  border-right:1.5px solid var(--line);border-bottom:1.5px solid var(--line);transform:rotate(45deg)}
+  border-right:3px solid var(--line);border-bottom:3px solid var(--line);transform:rotate(45deg)}
 .px-bubble.q{margin-right:calc(60 * var(--u))}
 .px-bubble.q::after{left:calc(28 * var(--u))}
 .px-bubble.a{margin-left:calc(60 * var(--u));background:var(--blue-l);border-color:#cfd9f6}
 .px-bubble.a::after{right:calc(28 * var(--u));border-color:#cfd9f6}
 .px-bubble.playing .px-spk{animation:pxSpk 1s ease-in-out infinite}
 .px-opts.marks,.px-opts.list,.px-opts.trays{flex:none;container-type:normal;display:flex;justify-content:center}
-.px-grid.marks{--cw:min(calc(150 * var(--u)),42vw);--ar:1.18;--gg:calc(20 * var(--u))}
+.px-grid.marks{--cw:min(calc(160 * var(--u)),calc(42 * var(--vw)));--ar:1.18;--gg:calc(20 * var(--u))}
 .px-card.mark{display:grid;place-items:center}
 .px-card.mark .glyph{font-size:calc(58 * var(--u));line-height:1;font-weight:800}
 .px-card.mark.tick .glyph{color:var(--green)}.px-card.mark.cross .glyph{color:var(--red)}
 .px-card.mark .px-read{font-size:max(30px,calc(36 * var(--u)))}
 .px-list{display:flex;flex-direction:column;gap:calc(12 * var(--u));width:100%;max-width:560px}
-.px-opt{min-height:max(52px,calc(60 * var(--u)));padding:8px 18px;border-radius:16px;border:1.5px solid var(--line);background:#fff;box-shadow:0 2px 0 var(--line);
+.px-opt{min-height:max(52px,calc(62 * var(--u)));padding:8px 18px;border-radius:20px;border:3px solid var(--line);background:#fff;box-shadow:0 4px 0 var(--edge);
   font-size:max(20px,calc(24 * var(--u)));line-height:1.25;text-align:center;transition:opacity .25s,transform .12s}
 .px-opt:active{transform:translateY(2px)}
 .px-opt.ok{border:3px solid var(--green);background:var(--green-l)}
 
 /* -- 8. build-up answers: P6 spell · P7 build · P9 gaptext; P8 sort -- */
 /* spell: every slot (given letter, empty, filled) is the same box on ONE underline baseline */
-.px-spell .px-main{gap:calc(28 * var(--u));padding-top:calc(20 * var(--u))}
-.px-spellhead{position:relative;flex:0 1 calc(250 * var(--u));min-height:90px;container-type:size;display:grid;place-items:center}
-.px-spellhead > .px-spk{position:absolute;top:0;left:0;z-index:2}
-.px-obj.spellpic{width:min(100cqh,100cqw - 2 * max(56px,calc(70 * var(--u))),calc(230 * var(--u)));aspect-ratio:1}
+.px-spell .px-main{gap:calc(26 * var(--u))}
+.px-spellhead{position:relative;flex:0 1 calc(340 * var(--u));min-height:90px;container-type:size;display:grid;place-items:center}
+/* the speaker stands right next to the picture (top-left of it); an equal empty cell on the right keeps the picture centred */
+/* v5: the speaker sits on the picture's top-left corner (as on build), so the picture uses the column's full width */
+.px-spellhead{--pw:min(100cqh,100cqw,calc(340 * var(--u)));align-content:start}
+.px-spellhead > .px-spk{position:absolute;z-index:2;top:8px;left:calc(50% - var(--pw) / 2 + 8px)}
+.px-obj.spellpic{width:var(--pw);aspect-ratio:1}
 .px-spellhead{width:100%;max-width:520px}
 .px-word{flex:none;width:100%;container-type:inline-size;display:flex;justify-content:center;align-items:flex-end;gap:calc(8 * var(--u));padding-top:6px}
 .px-slot{flex:none;display:inline-flex;align-items:flex-end;justify-content:center;padding:0 0 3px;
-  width:min(calc(46 * var(--u)),calc(100cqw / var(--len,5) - 8px));height:max(48px,calc(58 * var(--u)));
-  border-bottom:4px solid var(--ink);font:700 min(calc(38 * var(--u)),calc(100cqw / var(--len,5) * .95))/1 var(--read);color:var(--ink)}
+  width:min(calc(54 * var(--u)),calc(100cqw / var(--len,5) - 8px));height:max(48px,calc(64 * var(--u)));
+  border-bottom:4px solid var(--ink);font:700 min(calc(46 * var(--u)),calc(100cqw / var(--len,5) * .95))/1 var(--read);color:var(--ink)}
 .px-slot.tap{color:var(--blue-d);cursor:pointer}
 .px-chip.px-tile.ghost{cursor:pointer}
 .px-slot.empty{border-bottom-color:var(--blue);background:var(--blue-l);border-radius:8px 8px 0 0}
 .px-slot.bad{color:var(--red);border-bottom-color:var(--red)}
 .px-slot.ok,.px-word.done .px-slot{color:var(--green-d);border-bottom-color:var(--green)}
-.px-form{align-self:flex-end;padding:0 calc(6 * var(--u)) 6px 0;font:700 min(calc(32 * var(--u)),calc(100cqw / var(--len,5) * .8))/1 var(--read);color:var(--mute)}
+.px-form{align-self:flex-end;padding:0 calc(6 * var(--u)) 6px 0;font:700 min(calc(38 * var(--u)),calc(100cqw / var(--len,5) * .8))/1 var(--read);color:var(--mute)}
 .px-sp{flex:none;width:calc(14 * var(--u))}
 .px-tiles,.px-bank{flex:none;display:flex;flex-wrap:wrap;gap:calc(10 * var(--u));justify-content:center;width:100%;max-width:640px}
-.px-tile{min-width:max(48px,calc(54 * var(--u)));height:max(48px,calc(58 * var(--u)));font-size:max(26px,calc(30 * var(--u)));padding:0 calc(12 * var(--u))}
+.px-tile{min-width:max(52px,calc(64 * var(--u)));height:max(52px,calc(68 * var(--u)));font-size:max(28px,calc(36 * var(--u)));border-radius:18px;padding:0 calc(12 * var(--u))}
 /* build: chips go onto two ruled lines; a used chip leaves a grey ghost in the bank */
 .px-build .px-pic,.px-gap .px-pic{min-height:calc(110 * var(--u))}
+.px-build .px-pic{--pmax:calc(360 * var(--u))}
+.px-gap .px-pic{--pmax:calc(220 * var(--u))}
 .px-answer{flex:none;width:100%}
 .px-lines{--row:calc(max(44px,calc(46 * var(--u))) + 12px);min-height:calc(2 * var(--row));display:flex;flex-wrap:wrap;align-content:flex-start;gap:12px calc(8 * var(--u));
   background:linear-gradient(to bottom,transparent calc(100% - 2px),var(--line) 0) 0 0 / 100% var(--row)}
@@ -259,24 +275,24 @@ button.px-card:active{transform:translateY(2px)}
 .px-lines.burger .placed.bad{background:var(--red-l);border-color:var(--red);color:var(--red-d)}
 .px-lines.burger .placed.ok{box-shadow:0 0 0 3px var(--green)}
 /* sort: one item at a time, three trays (names hidden until the end) */
-.px-sort .px-main{gap:calc(22 * var(--u));padding-top:calc(30 * var(--u))}
+.px-sort .px-main{gap:calc(22 * var(--u))}
 .px-sort .px-head.grow{flex:0 1 auto}
-.px-sort .px-pic{flex:0 1 calc(230 * var(--u));min-height:90px}
-.px-sort .px-pic > .px-obj{width:min(100cqw,100cqh,calc(220 * var(--u)))}
+.px-sort .px-pic{--pmax:calc(320 * var(--u));min-height:90px}
+.px-sort .px-pic > .px-obj{width:min(100cqw,100cqh,calc(320 * var(--u)))}
 .px-trays{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(12 * var(--u));width:100%;max-width:560px}
-.px-tray{position:relative;height:max(96px,calc(120 * var(--u)));border:2px dashed #cfd5dc;border-radius:18px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+.px-tray{position:relative;height:max(96px,calc(140 * var(--u)));border:3px dashed #D8CDB8;border-radius:24px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
   font-weight:800;font-size:max(15px,calc(16 * var(--u)));color:#9aa3ad;transition:background .2s,border-color .2s}
-.px-tray img{width:calc(60 * var(--u));height:calc(60 * var(--u));object-fit:contain}
+.px-tray img{width:calc(72 * var(--u));height:calc(72 * var(--u));object-fit:contain}
 .px-tray.ok{border-color:var(--green);background:var(--green-l)}
 .px-tray.named{border-style:solid;border-color:var(--green);color:var(--green-d);background:#fff}
 .px-tcount{position:absolute;top:6px;right:9px;font-size:13px;font-weight:800;color:var(--blue-d)}
 .px-left{flex:none;min-height:1.4em;font-size:14px;font-weight:700;color:var(--mute)}
 /* gaptext: picture · passage card (≤ 3 sentences) · words · page dots */
-.px-passage{flex:none;width:100%;border:1.5px solid var(--line);border-radius:18px;background:#fff;box-shadow:0 2px 0 var(--line);padding:calc(12 * var(--u)) calc(16 * var(--u)) calc(14 * var(--u))}
+.px-passage{flex:none;width:100%;border:3px solid var(--line);border-radius:24px;background:#fff;box-shadow:0 4px 0 var(--edge);padding:calc(12 * var(--u)) calc(16 * var(--u)) calc(14 * var(--u))}
 .px-ptitle{display:flex;align-items:center;gap:10px;margin-bottom:4px}
 .px-ptitle b{font-size:max(19px,calc(22 * var(--u)))}
 .px-ptitle span{margin-left:auto;font-size:13px;font-weight:800;color:var(--mute)}
-.px-ptext{font:400 max(19px,calc(21 * var(--u)))/2.05 var(--read);color:var(--ink)}
+.px-ptext{font:400 max(20px,calc(23 * var(--u)))/2.05 var(--read);color:var(--ink)}
 .px-gapslot{display:inline-block;vertical-align:baseline;min-width:calc(86 * var(--u));min-height:44px;line-height:40px;margin:0 3px;padding:0 8px;
   border-bottom:3px solid var(--line);font:700 1em var(--read);color:var(--blue-d);text-align:center}
 .px-gapslot.now{border-bottom-color:var(--blue);background:var(--blue-l);border-radius:8px 8px 0 0}
@@ -287,8 +303,8 @@ button.px-card:active{transform:translateY(2px)}
 .px-dots i.on{width:28px;background:var(--blue)}.px-dots i.done{background:#b8c6ee}
 
 /* -- 9. speaking: P10 say · P11 lid / Snack Machine · P12 answer · P13 race -- */
-.px-speak .px-main{padding-top:calc(24 * var(--u));gap:calc(18 * var(--u))}
-.px.has-mic .px-foot{gap:4px;padding:0 0 max(6px,calc(10 * var(--u)))}
+.px-speak .px-main{gap:calc(18 * var(--u))}
+.px.has-mic .px-foot{gap:4px;padding:0 0 max(10px,calc(14 * var(--u)))}
 .px-mline{min-height:1.35em;font-size:max(15px,calc(16 * var(--u)));font-weight:800;line-height:1.3;color:var(--blue-d);text-align:center;margin-bottom:calc(6 * var(--u))}
 .px-mline.red{color:var(--red-d)}
 .px-mic{width:max(64px,calc(96 * var(--u)));height:max(64px,calc(96 * var(--u)));border-radius:50%;background:var(--red);color:#fff;box-shadow:0 4px 0 var(--red-d);display:grid;place-items:center}
@@ -297,8 +313,10 @@ button.px-card:active{transform:translateY(2px)}
 .px-mic.listening{animation:pxListen 1.3s ease-in-out infinite}
 .px-mic.pulse{animation:pxRings 1.2s ease-in-out infinite}
 .px-cant{min-height:44px;padding:0 14px;font-size:14px;font-weight:700;color:var(--mute);text-decoration:underline;text-underline-offset:3px}
-.px-stage{position:relative;flex:1;min-height:0;width:100%;container-type:size;display:grid;place-items:center}
-.px-stage > .px-obj.big{width:min(100cqw - 2 * calc(34 * var(--u)),100cqh,calc(320 * var(--u)));aspect-ratio:1}
+.px-stage{position:relative;flex:0 1 auto;min-height:120px;width:100%;aspect-ratio:var(--par,1);max-height:var(--pmax,calc(400 * var(--u)));container-type:size;display:grid;place-items:center}
+.px-stage.px-lid{--par:1.05}
+.px-stage:has(> .px-me){--par:.95}
+.px-stage > .px-obj.big{width:min(100cqw,100cqh,calc(360 * var(--u)));aspect-ratio:1}
 .px-stage > .px-obj.big > img{inset:13%;width:74%;height:74%}
 .px-stage > .px-scene > img{max-width:100cqw;max-height:100cqh;width:auto;height:auto}
 /* lift the lid: the friend stands beside the plate */
@@ -326,14 +344,14 @@ button.px-card:active{transform:translateY(2px)}
 .px-wordchip{position:absolute;left:50%;top:calc(100% + 12px);transform:translateX(-50%);border-color:var(--gold);font-size:max(19px,calc(22 * var(--u)))}
 /* answer: a picture, or (for "you") the hand pointing at the child above a plate */
 .px-me{display:flex;flex-direction:column;align-items:center;gap:calc(6 * var(--u));padding:calc(14 * var(--u)) calc(22 * var(--u));max-height:100cqh;
-  border:1.5px solid var(--line);border-radius:18px;background:#fff;box-shadow:0 2px 0 var(--line)}
+  border:3px solid var(--line);border-radius:24px;background:#fff;box-shadow:0 4px 0 var(--edge)}
 .px-me .hand{height:min(46cqh,calc(170 * var(--u)));width:auto}
 .px-aplate{width:min(70cqw,40cqh * 1.6,calc(220 * var(--u)));aspect-ratio:1.6;border-radius:50%;display:flex;justify-content:center;align-items:center;gap:4%;
   background:radial-gradient(ellipse,#fff 0 58%,#eef1f5 60% 63%,#fff 65%);box-shadow:0 5px 0 #dfe5ec}
 .px-aplate img{width:46%;height:auto}
 /* race home: six squares + home, Kim's head is the token */
-.px-race .px-main{padding-top:calc(12 * var(--u));gap:calc(14 * var(--u))}
-.px-board{display:flex;gap:calc(6 * var(--u));justify-content:center;align-items:flex-end;padding-top:calc(30 * var(--u))}
+.px-race .px-main{gap:calc(14 * var(--u))}
+.px-board{display:flex;gap:calc(6 * var(--u));justify-content:center;align-items:flex-end;padding-top:calc(34 * var(--u))}
 .px-board > span{position:relative;width:max(34px,calc(40 * var(--u)));height:max(34px,calc(40 * var(--u)));border-radius:12px;border:1.5px solid var(--line);background:#fff;
   display:grid;place-items:center;font-weight:800;font-size:max(14px,calc(16 * var(--u)));color:#b5bcc4;transition:background .3s}
 .px-board > span.on{background:var(--gold);border-color:var(--gold-d);color:#fff}
@@ -358,28 +376,63 @@ button.px-card:active{transform:translateY(2px)}
 /* -- 11. wide screens (laptop, iPad landscape): same design in a centred column; buttons don't stretch across -- */
 @media (orientation:landscape) and (min-height:521px){
   /* one mockup pixel from the laptop mockup (L2): 1280×720 → 1.125 (speaker ≈140×130, cards ≈240×280 in a row) */
-  body.v3{--u:clamp(.8px, min(100vw / 1000, 100vh / 640), 1.6px);--aares:max(60px,calc(58 * var(--u)))}   /* the Aa line fits on one line in the wide column */
-  @supports (height:100dvh){body.v3{--u:clamp(.8px, min(100vw / 1000, 100dvh / 640), 1.6px)}}
-  .px-sort .px-main,.px-spell .px-main,.px-main[data-lay="marks"]{justify-content:center}
-  .px-speak .px-main{padding-top:calc(14 * var(--u));gap:calc(14 * var(--u))}
-  .px-stage > .px-obj.big{width:min(100cqw,100cqh,calc(340 * var(--u)))}
-  .px-spellhead{flex-grow:1}
-  .px-obj.spellpic{width:min(100cqh,100cqw - 140px,calc(300 * var(--u)))}
-  .px-foot .px-btn,.px-sheet .px-btn{max-width:520px;align-self:center}
+  /* v5 (Duolingo ABC): prompt 4.5% of the stage under the bar; a row of 3 answer cards ≈ 28% of the stage each (column 1000);
+     one big centred button (38% of the stage), 4.5% of the height above the bottom edge */
+  body.v3{--u:clamp(.8px, min(calc(100 * var(--vw)) / 1000, calc(100 * var(--vh)) / 640), 1.6px);--aares:max(54px,calc(50 * var(--u)));--col:1000px;--ptop:calc(4 * var(--vh))}   /* the Aa line fits on one line in the wide column */
+  .px-speak .px-main{gap:calc(14 * var(--u))}
+  .px-top{height:calc(56 * var(--u))}
+  /* v5b chunky wide practice: spell stacked (picture ≈ 38% of the stage height, 66-wide slots, 56px letters, 79px tiles) */
+  .px-spell .px-main{gap:calc(16 * var(--u))}
+  .px-spellhead{flex-basis:calc(320 * var(--u))}
+  .px-slot{width:min(calc(60 * var(--u)),calc(100cqw / var(--len,5) - 8px));height:calc(66 * var(--u));font-size:min(calc(50 * var(--u)),calc(100cqw / var(--len,5) * .95))}
+  .px-form{font-size:min(calc(42 * var(--u)),calc(100cqw / var(--len,5) * .8))}
+  .px-tile{min-width:calc(66 * var(--u));height:calc(70 * var(--u));font-size:calc(40 * var(--u));border-radius:20px}
+  /* build: picture left (≈ 52% of the height), the answer lines + chips right, both from the top */
+  .px-build .px-main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto 1fr;align-items:start;column-gap:calc(36 * var(--u));row-gap:calc(22 * var(--u))}
+  .px-build .px-main > .px-head{grid-column:1;grid-row:1 / span 3;justify-self:end;width:100%}
+  .px-build .px-main > .px-answer,.px-build .px-main > .px-bank{grid-column:2}
+  .px-build .px-main > .px-bank{justify-content:flex-start}
+  .px-build .px-pic{--pmax:calc(52 * var(--vh));min-height:0}
+  .px-lines{--row:calc(56 * var(--u) + 14px)}
+  .px-lines .px-chip,.px-bank .px-chip{height:calc(56 * var(--u));font-size:calc(28 * var(--u));padding:0 calc(16 * var(--u));border-radius:18px}
+  .px-lines.burger > *{width:100%;height:calc(58 * var(--u))}
+  /* Tom's day: picture ≈ 25–30% of the height, 30px reading text, 29px chips */
+  .px-gap .px-main{gap:calc(14 * var(--u))}
+  .px-gap .px-pic{--pmax:calc(30 * var(--vh));min-height:0}
+  .px-ptext{font-size:calc(27 * var(--u));line-height:1.8}
+  .px-ptitle b{font-size:calc(26 * var(--u))}
+  .px-gap .px-bank .px-chip{height:calc(54 * var(--u));font-size:calc(26 * var(--u))}
+  /* say · lid · answer: the speaker beside the picture, the picture ≈ 50% of the height; mic 120 */
+  .px-speak:not(.px-race) .px-main{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;align-items:start;column-gap:calc(24 * var(--u));row-gap:0}
+  .px-speak:not(.px-race) .px-main > .px-head{grid-column:1;grid-row:1;justify-self:end;width:auto}
+  .px-speak:not(.px-race) .px-main > .px-stage{grid-column:2;grid-row:1;width:auto;height:100%;max-height:calc(54 * var(--vh));max-width:calc(62 * var(--vw))}
+  .px-speak:not(.px-race) .px-main > .px-note{grid-column:1 / -1;grid-row:2}
+  .px-stage > .px-obj.big{width:min(100cqw,100cqh)}
+  .px-mic{width:calc(106 * var(--u));height:calc(106 * var(--u))}
+  .px-stage.px-lid{--par:1.45}
+  .px-platebox{width:min(48cqw,62cqh,calc(240 * var(--u)))}
+  /* race: the board and the speaker share one row, so the photo keeps its size */
+  .px-race .px-head{flex-direction:row;justify-content:center;align-items:flex-end;gap:calc(28 * var(--u))}
+  .px-spellhead{--pw:min(100cqh,100cqw,calc(300 * var(--u)))}
+  .px-list,.px-trays{max-width:600px}
+  .px-answer,.px-word,.px-tiles,.px-bank{max-width:640px}
+  .px-passage{max-width:900px}   /* Tom's day keeps two lines a page, so its picture keeps its size */
+  .px.has-btn .px-foot{padding:10px 0 calc(4.5 * var(--vh))}
+  .px.has-mic .px-foot{padding-bottom:calc(3 * var(--vh))}
+  .px-foot .px-btn{width:calc(38 * var(--vw));max-width:none;align-self:center}
+  .px-sheet .px-btn{max-width:520px;align-self:center}
   .px-sheet-in{max-width:560px}
 }
 /* upright tablets: short exercises sit in the middle of the tall screen */
 @media (orientation:portrait) and (min-width:700px){
-  body.v3{--u:clamp(.62px, min(100vw / 560, 100vh / 760), 1.6px)}
-  @supports (height:100dvh){body.v3{--u:clamp(.62px, min(100vw / 560, 100dvh / 760), 1.6px)}}
-  .px-spell .px-main,.px-sort .px-main,.px-main[data-lay="marks"]{justify-content:center;padding-bottom:calc(40 * var(--u))}
+  body.v3{--u:clamp(.62px, min(calc(100 * var(--vw)) / 560, calc(100 * var(--vh)) / 760), 1.6px)}
 }
 /* -- 12. phone held sideways: two columns (prompt left, answers right), nothing scrolls -- */
 @media (orientation:landscape) and (max-height:520px){
   body.v3{--aares:52px;--g:14px}
   .px-top{height:50px}
   .px-main{flex-direction:row;align-items:stretch;justify-content:center;gap:24px;padding-top:4px}
-  .px-head{width:auto;flex:0 1 auto;max-width:44%;justify-content:center}
+  .px-head{width:auto;flex:0 1 auto;max-width:44%;justify-content:flex-start}
   .px-head.grow{flex:1 1 0;max-width:none}
   .px-head.row{flex-direction:column}
   .px-opts{flex:1 1 0;height:100%}
@@ -396,10 +449,11 @@ button.px-card:active{transform:translateY(2px)}
   .px.has-btn .px-foot{padding:6px 0 10px}
   .px-btn{height:48px}
   /* spell / build / gaptext / sort: picture left, the work right */
-  .px-spell .px-main,.px-build .px-main,.px-gap .px-main,.px-sort .px-main{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);grid-auto-rows:auto;align-content:center;column-gap:24px;row-gap:10px}
+  .px-spell .px-main,.px-build .px-main,.px-gap .px-main,.px-sort .px-main{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);grid-auto-rows:auto;align-content:start;column-gap:24px;row-gap:10px}
   .px-spell .px-main > .px-head,.px-build .px-main > .px-head,.px-gap .px-main > .px-head,.px-sort .px-main > .px-head{grid-column:1;grid-row:1 / span 4;max-width:none;height:100%}
   .px-spell .px-main > :not(.px-head),.px-build .px-main > :not(.px-head),.px-gap .px-main > :not(.px-head),.px-sort .px-main > :not(.px-head){grid-column:2}
   .px-gap .px-ptext{font-size:18px;line-height:1.9}
+  .px-spell .px-main > .px-spellhead{width:100%;justify-content:center}
   .px-gap .px-head .px-pic{display:none}
   .px-gap .px-main{grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr)}
   .px-tray{height:88px}
@@ -439,10 +493,10 @@ button.px-card:active{transform:translateY(2px)}
 .kh{display:block;border-radius:50%;background:#F3EDFF center/cover no-repeat}
 
 /* -- 1. scene screens: camera -- */
-.st{position:absolute;inset:0;overflow:hidden;font-family:var(--ui);color:var(--ink);background:#fff}
-.st-cam{position:absolute;inset:0;overflow:hidden;background:#F6F1E8}
-.st-blur{position:absolute;inset:-60px;background:center/cover no-repeat;filter:blur(24px) saturate(.8) brightness(1.06);transform:scale(1.06)}
-.st-wash{position:absolute;inset:0;background:rgba(255,253,248,.6)}
+.st{position:absolute;inset:0;overflow:hidden;font-family:var(--ui);color:var(--ink);background:var(--paper)}
+.st-cam{position:absolute;inset:0;overflow:hidden;background:var(--paper)}
+.st-blur{position:absolute;inset:-60px;background:center/cover no-repeat;filter:blur(16px) saturate(.7);opacity:.32;transform:scale(1.06)}
+.st-wash{display:none}
 .st-canvas{position:absolute;overflow:hidden;container-type:size}
 .st-cam[data-mode="fit"] .st-canvas{box-shadow:0 10px 36px rgba(36,41,56,.16)}
 .st-canvas.anim{transition:left .7s cubic-bezier(.4,0,.2,1),top .7s cubic-bezier(.4,0,.2,1),width .7s cubic-bezier(.4,0,.2,1),height .7s cubic-bezier(.4,0,.2,1)}
@@ -455,6 +509,10 @@ button.px-card:active{transform:translateY(2px)}
   font-size:clamp(14px,3.2cqw,30px);line-height:1.2;animation:stPop .35s ease both}
 /* "look here": a ring exactly on the hotspot (box) or on a point (circle) */
 .st-ring{position:absolute;pointer-events:none;border:4px solid #fff;border-radius:18px;animation:stRing 1.3s ease-in-out infinite}
+/* a cart: no rectangle over the scene (it cut through the children's faces, rule F) — a coral pin bobs over the cart's top edge */
+.st-ring.box{border:0;border-radius:0;animation:none}
+.st-ring.box::after{content:"";position:absolute;left:50%;top:calc(clamp(26px,4.4cqw,54px) * -1.25);width:clamp(26px,4.4cqw,54px);aspect-ratio:1;margin-left:calc(clamp(26px,4.4cqw,54px) / -2);
+  border-radius:50% 50% 50% 0;background:var(--red);border:4px solid #fff;box-shadow:0 4px 10px rgba(36,41,56,.28);transform:rotate(-45deg);animation:stPin 1s ease-in-out infinite}
 .st-ring:not(.box){width:13cqw;height:13cqw;border-radius:50%;transform:translate(-50%,-50%)}
 
 /* -- 2. watch: pill · map · menu on top; chips / board + caption at the bottom (foods stand on the scene: section 3) -- */
@@ -500,48 +558,72 @@ button.px-card:active{transform:translateY(2px)}
 .st-etop .st-back{grid-column:1 / -1;grid-row:2;justify-self:start}
 .st-wbar{min-height:44px;border-radius:16px;background:rgba(255,255,255,.96);box-shadow:0 2px 10px rgba(36,41,56,.16);padding:6px 10px 4px;text-align:right}
 .st-wbar:active{transform:translateY(1px)}
-.st-slots{display:grid;grid-template-columns:repeat(var(--cols),1fr);gap:3px;justify-items:center}
+/* icons: one fixed cell each, equal gaps; every picture normalised to the same visual size (rule D) */
+.st-slots{display:grid;grid-template-columns:repeat(var(--cols),max-content);gap:4px 6px;justify-content:center}
 .st-slot{width:max(30px,calc(32 * var(--u)));height:max(30px,calc(32 * var(--u)));display:grid;place-items:center}
-.st-slot:empty::before{content:"";width:12px;height:12px;border-radius:50%;background:var(--line)}
-.st-slot img{width:100%;height:100%;object-fit:contain}
+.st-slot:empty::before{content:"";width:28%;height:28%;border-radius:50%;background:var(--line)}
+.st-slot img{width:88%;height:88%;object-fit:contain}
 .st-slot.pop{animation:stPop .4s cubic-bezier(.3,1.6,.5,1) both}
 .st-count{display:block;font-size:12px;font-weight:800;color:var(--mute);line-height:1.2}
 .st-fly{position:fixed;z-index:70;object-fit:contain;pointer-events:none;transform-origin:0 0}
 .st-back{display:flex;align-items:center;gap:6px;height:44px;padding:0 16px 0 10px;border-radius:22px;background:#fff;box-shadow:0 2px 10px rgba(36,41,56,.16);font:700 16px var(--read)}
 .st-back span{width:20px;height:20px;display:grid}
 .st-back svg{width:20px;height:20px}
-.st-hot{position:absolute;border-radius:18px;border:3px dashed rgba(255,255,255,.95);animation:stHot 1.8s ease-in-out infinite}
-.st-hotname{position:absolute;transform:translate(-50%,calc(-100% - 6px));white-space:nowrap;background:#fff;border-radius:999px;padding:.2em .7em;pointer-events:none;
-  font-size:clamp(12px,2.1cqw,20px);box-shadow:0 2px 6px rgba(36,41,56,.2)}
+/* a cart = an invisible tap area (no rectangle across the children's faces); its name pill, on the cart's body, pulses as the cue */
+.st-hot{position:absolute;border-radius:18px}
+.st-hotname{position:absolute;z-index:1;transform:translate(-50%,-50%);white-space:nowrap;background:#fff;border-radius:999px;padding:.25em .8em;cursor:pointer;animation:stHot 1.8s ease-in-out infinite;
+  font-size:clamp(14px,2.3cqw,22px)}
 .st-hotname.visited::after{content:" ✓";color:var(--green)}
-.st-hot.sel{border:4px solid #fff;animation:none;box-shadow:0 0 0 5px rgba(74,111,214,.6)}
-.st-counter{position:absolute;left:6%;right:6%;bottom:4%;display:flex;justify-content:center;align-items:flex-end;gap:2.5%;container-type:inline-size}
-.st-cfood{position:relative;width:20%;display:flex;flex-direction:column;align-items:center;gap:3px;animation:stPop .45s cubic-bezier(.3,1.6,.5,1) both}
+.st-hotname.sel{background:var(--blue);color:#fff;animation:none}
+/* rule D: the foods on a counter = equal boxes on equal columns (evenly spread along the counter); every drawing normalised and
+   standing on its box's bottom edge (data-fit=bottom); the label pill a fixed gap under it, every pill the same height;
+   the ring frames box + label with the same padding all round. Sizes in cqw of the counter (it scales with the scene). */
+.st-counter{--fw:17cqw;--rp:calc(var(--fw) * .07);position:absolute;left:6%;right:6%;bottom:5%;display:grid;grid-template-columns:repeat(var(--n,4),var(--fw));justify-content:space-evenly;align-items:end;container-type:inline-size}
+.st-cfood{position:relative;width:var(--fw);display:flex;flex-direction:column;align-items:center;gap:calc(var(--fw) * .06);padding:0;animation:stPop .45s cubic-bezier(.3,1.6,.5,1) both}
 .st-cfood img{width:100%;aspect-ratio:1;object-fit:contain;filter:drop-shadow(0 6px 6px rgba(36,41,56,.25))}
-.st-cfood .lbl{background:#fff;border-radius:999px;padding:.15em .6em;white-space:nowrap;font-size:clamp(12px,2.84cqw,24px);box-shadow:0 2px 6px rgba(36,41,56,.2)}
+.st-cfood .lbl{display:inline-flex;align-items:center;height:1.75em;background:#fff;border-radius:999px;padding:0 .65em;white-space:nowrap;font-size:clamp(13px,calc(var(--fw) * .14 * var(--lf,1)),24px);line-height:1;box-shadow:0 2px 6px rgba(36,41,56,.2)}
 .st-cfood.heard .lbl{color:var(--blue-d)}
-/* the ring frames the food AND its label (never cuts through the word) */
-.st-cfood.sel::before{content:"";position:absolute;inset:-6% -8% -7%;border:4px solid #fff;border-radius:20px;box-shadow:0 0 0 5px rgba(74,111,214,.6);pointer-events:none}
+/* the ring frames the food AND its label (never cuts through the word) — equal padding on every side */
+.st-cfood.sel::before{content:"";position:absolute;inset:calc(var(--fw) * (1 - var(--dh,1)) - var(--rp)) calc(-1 * var(--rp)) calc(-1 * var(--rp));border:4px solid #fff;border-radius:22px;box-shadow:0 0 0 5px rgba(74,111,214,.55);pointer-events:none}
 /* Watch: the foods appear on the counter one by one as Kim names them; upright screens narrow the row to the cart */
 .st-counter.watch .st-cfood.wait{visibility:hidden;animation:none}
-.st-counter.watch .st-cfood.sel::before{inset:-5% -7% -6%}
-.st-counter.tight{gap:2%}
+/* Watch: no frame at all — the food being named lifts and its label fills blue */
+.st-counter.watch .st-cfood.sel::before{display:none}
+.st-counter.watch .st-cfood.sel .lbl{background:var(--blue);color:#fff}
+.st-counter.watch .st-cfood.sel img{animation:stBounce .5s ease}
+.st-counter.tight{--fw:22cqw}
 /* a scene without a cart (I5's sky): the one word's picture + label stand on the part Kim looks at, no ring */
 .st-counter.solo{bottom:7%}
-.st-counter.solo .st-cfood{width:62%}
+.st-counter.solo{--fw:62cqw;--n:1}
 .st-counter.solo .st-cfood.sel::before{display:none}
 .st-counter.solo .st-cfood .lbl{font-size:clamp(15px,9cqw,26px)}
-.st-counter.tight .st-cfood{width:23%}
-.st-counter.tight .st-cfood .lbl{font-size:clamp(13px,4.2cqw,22px);padding:.1em .45em}
+.st-counter.tight .st-cfood .lbl{font-size:clamp(13px,calc(var(--fw) * .17),22px);padding:0 .45em}
 .st-cfood.bounce img{animation:stBounce .5s ease}
 .st-tray{position:absolute;z-index:5;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 16px);max-width:560px;margin:0 auto}
 .st-explore.all .st-tray{bottom:calc(env(safe-area-inset-bottom,0px) + 16px + max(52px,calc(56 * var(--u))) + 14px)}
-.st-tray .st-counter{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.st-tray .st-counter[data-n="3"]{grid-template-columns:repeat(3,minmax(0,1fr))}
-.st-tray .st-cfood{width:auto;gap:4px;padding:10px 6px 10px;border-radius:18px;background:#fff;box-shadow:0 3px 12px rgba(36,41,56,.16)}
-.st-tray .st-cfood img{width:auto;height:max(60px,calc(74 * var(--u)));filter:drop-shadow(0 4px 4px rgba(36,41,56,.18))}
-.st-tray .st-cfood .lbl{box-shadow:none;padding:0;font-size:max(17px,calc(18 * var(--u)))}
-.st-tray .st-cfood.sel::before{left:-3px;right:-3px;top:-3px;bottom:-3px;aspect-ratio:auto;border-radius:20px;border:0;box-shadow:0 0 0 4px rgba(74,111,214,.7)}
+/* upright: the open cart's foods as square word cards (same card as the word grid), 2 per row (3 for a 3-food cart), centred */
+.st-tray{container-type:inline-size}
+.st-tray .st-counter{--cols:2;--C:min(calc((100cqw - (var(--cols) - 1) * 12px) / var(--cols)),calc(122 * var(--u) + 6px));position:static;
+  display:grid;grid-template-columns:repeat(var(--cols),var(--C));justify-content:center;gap:12px;left:auto;right:auto;bottom:auto}
+.st-tray .st-counter[data-n="3"]{--cols:3}
+.st-tray .st-cfood{width:var(--C);aspect-ratio:1;justify-content:flex-end;gap:calc(var(--C) * .03);padding:calc(var(--C) * .07);border-radius:20px;background:#fff;border:1.5px solid var(--line);box-shadow:0 3px 12px rgba(36,41,56,.14)}
+.st-tray .st-cfood img{flex:1;min-height:0;width:auto;max-width:100%;aspect-ratio:1;filter:drop-shadow(0 3px 3px rgba(36,41,56,.16))}
+.st-tray .st-cfood .lbl{flex:none;height:auto;box-shadow:none;padding:0;font-size:max(11px,calc(var(--C) * .155 * var(--lf,1)));line-height:1.1}
+.st-tray .st-counter[data-fit] .st-cfood img{object-position:center}
+.st-tray .st-cfood.sel{border-color:var(--blue);box-shadow:0 0 0 4px rgba(74,111,214,.35)}
+.st-tray .st-cfood.sel::before{display:none}
+/* rule G: upright street = the scene fills the height, swiped sideways, snapping cart by cart */
+.st-cam[data-mode="pan"]{overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
+.st-cam[data-mode="pan"]::-webkit-scrollbar{display:none}
+.st-cam[data-mode="pan"] .st-blur{display:none}
+.st-snap{position:absolute;top:50%;width:2px;height:2px;margin-left:-1px;scroll-snap-align:center;pointer-events:none}
+.st-pan{display:none;position:absolute;z-index:6;top:50%;width:44px;height:44px;margin-top:-22px;border-radius:50%;background:rgba(255,255,255,.92);color:var(--ink);
+  box-shadow:0 2px 10px rgba(36,41,56,.18);place-items:center}
+.st-pan svg{width:22px;height:22px}
+.st-pan.l{left:max(8px,env(safe-area-inset-left,0px))}
+.st-pan.r{right:max(8px,env(safe-area-inset-right,0px))}
+.st-pan.r svg{transform:scaleX(-1)}
+.st-explore:has(.st-cam[data-mode="pan"]) .st-pan{display:grid}
 .st-ready{position:absolute;z-index:6;left:var(--bl,12px);right:var(--br,12px);margin:0 auto;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);width:min(380px,calc(100% - var(--bl,12px) - var(--br,12px) - 8px))}
 .st-explore.glide .st-ready{transition:left .7s cubic-bezier(.4,0,.2,1),right .7s cubic-bezier(.4,0,.2,1)}
 .st-ready.in{animation:stUp .35s ease both}
@@ -558,26 +640,40 @@ button.px-card:active{transform:translateY(2px)}
 .st-sh-foot{flex:none;padding:0 14px 14px}
 .st-sh-foot:has(> [hidden]:only-child){display:none}
 /* word tiles (panel + recap): picture · 🔊 word */
-.st-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.st-tile{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px 8px;border-radius:16px;border:1.5px solid var(--line);background:#fff;box-shadow:0 2px 0 var(--line);min-width:0}
-.st-tile img{width:100%;height:max(58px,calc(64 * var(--u)));object-fit:contain}
-.st-tile .t{display:flex;align-items:center;justify-content:center;gap:3px;max-width:100%;font-size:max(14px,calc(15.5 * var(--u)));line-height:1.15;text-align:center}
-.st-tile i{flex:none;width:15px;height:15px;color:var(--blue);display:grid}
-.st-tile i svg{width:100%;height:100%}
+/* rule D (2026-11-20): every word card the same square, on one grid with equal gutters, the group centred as a block.
+   Card C: padding 7% · picture box 66% of C (≈ 77% of the inner box), drawing normalised inside it · word 15.5% of C, under
+   the picture, centred · speaker badge in the corner. Columns / rows come from tileGrid() (--cp/--rp upright, --cl/--rl sideways). */
+.st-grid{--cols:var(--cp,3);--rows:var(--rp,4);--gg:12px;--cmax:150px;
+  --C:min(calc((100cqw - (var(--cols) - 1) * var(--gg)) / var(--cols)),var(--cmax));
+  display:flex;flex-wrap:wrap;justify-content:center;align-content:center;gap:var(--gg);margin:0 auto;
+  width:calc(var(--cols) * var(--C) + (var(--cols) - 1) * var(--gg) + 1px)}   /* flex: a short last row stays centred */
+.st-gridwrap .st-grid{--C:min(calc((100cqw - (var(--cols) - 1) * var(--gg)) / var(--cols)),calc((100cqh - (var(--rows) - 1) * var(--gg)) / var(--rows)),var(--cmax));align-content:flex-start}
+.st-sh-body{container-type:inline-size}
+.st-tile{position:relative;width:var(--C);aspect-ratio:1;display:flex;flex-direction:column;align-items:center;gap:calc(var(--C) * .03);padding:calc(var(--C) * .07) calc(var(--C) * .045);
+  /* chunky (v5) but in proportion: border 1.5–3px, radius ≤ 22px, shadow ≤ 4px as the card shrinks */
+  border-radius:min(22px,calc(var(--C) * .19));border:max(1.5px,min(3px,calc(var(--C) * .022))) solid var(--line);background:#fff;box-shadow:0 max(2px,min(4px,calc(var(--C) * .03))) 0 var(--edge);min-width:0}
+.st-tile .pic{position:relative;flex:1;min-height:0;width:100%}
+.st-tile .pic img{position:absolute;inset:0;margin:auto;height:100%;width:auto;max-width:100%;aspect-ratio:1;object-fit:contain}
+.st-tile .t{flex:none;max-width:100%;font-size:max(10px,calc(var(--C) * .155 * var(--lf,1)));line-height:1.15;text-align:center;white-space:nowrap}
+/* H5: a long label ("a baseball cap") on a small tile hits the 10px floor → wrap at the space instead of spilling out */
+.st-tile .t{white-space:normal;text-wrap:balance}
+.st-tile .spk{position:absolute;top:calc(var(--C) * .06);right:calc(var(--C) * .06);width:max(16px,calc(var(--C) * .13));height:max(16px,calc(var(--C) * .13));color:#9DB0E6;display:grid}
+.st-tile .spk svg{width:100%;height:100%}
+.st-tile.heard .spk{color:var(--blue)}
 .st-tile.heard{border-color:var(--blue);background:var(--blue-l)}
 .st-tile:active{transform:translateY(2px);box-shadow:none}
 .st-tile.bounce img{animation:stBounce .5s ease}
-@media (min-width:600px){.st-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}}
+@media (orientation:landscape){.st-grid{--cols:var(--cl,5);--rows:var(--rl,2);--gg:16px;--cmax:190px}}
 
 /* -- 4. one card per screen (S4 · S5), summary (S6), recap (F3) -- */
 .st-cards,.st-recap{display:flex;flex-direction:column;max-width:var(--col);margin:0 auto;
   padding:env(safe-area-inset-top,0px) max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px))}
-.st-cbody{flex:1;min-height:0;display:flex;flex-direction:column;padding-top:calc(14 * var(--u))}
+.st-cbody{flex:1;min-height:0;display:flex;flex-direction:column;padding-top:var(--ptop)}
 /* one column: the card is exactly as wide as its picture, so the sentence row shares the picture's edges.
    A one-line sentence (S4) is centred under the picture; question + answer (S5) start at the picture's left edge. */
-.st-card{flex:1;min-height:0;width:100%;max-width:calc(560 * var(--u));margin:0 auto;display:flex;flex-direction:column;justify-content:safe center;gap:calc(22 * var(--u))}
+.st-card{flex:1;min-height:0;width:100%;max-width:calc(560 * var(--u));margin:0 auto;display:flex;flex-direction:column;justify-content:flex-start;gap:calc(20 * var(--u))}
 .st-card > .st-pic{flex:1 1 auto;min-height:120px;width:100%;max-height:calc(380 * var(--u) + 60px)}
-.st-pic{position:relative;overflow:hidden;border-radius:20px;border:1.5px solid var(--line);background:#fff;box-shadow:0 2px 0 var(--line)}
+.st-pic{position:relative;overflow:hidden;border-radius:24px;border:3px solid var(--line);background:#fff;box-shadow:0 4px 0 var(--edge)}
 .st-pic > img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .st-pic.obj > img:first-child{inset:6%;width:88%;height:88%;object-fit:contain}
 .st-pic .st-cfoodimg{position:absolute;left:50%;top:62%;width:24%;transform:translate(-50%,-50%);object-fit:contain}
@@ -592,24 +688,25 @@ button.px-card:active{transform:translateY(2px)}
 .st-cfoot{flex:none;display:flex;flex-direction:column;align-items:center;gap:14px;padding:12px 0 calc(env(safe-area-inset-bottom,0px) + max(16px,calc(22 * var(--u))))}
 .st-cfoot .px-btn{max-width:520px}
 .st-cfoot.two{gap:12px}
+.st-cfoot.two .px-btn.white{height:max(46px,calc(48 * var(--u)));max-width:min(100%,300px);font-size:max(15px,calc(16 * var(--u)))}
 .st-dots{display:flex;gap:8px;justify-content:center}
 .st-dots i{width:10px;height:10px;border-radius:5px;background:var(--line);transition:width .25s,background .25s}
 .st-dots i.on{width:28px;background:var(--blue)}
 .st-dots i.past{background:#B9C7EE}
-.st-sum{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:12px;justify-content:safe center;padding:4px 2px}
-.st-row{flex:none;display:flex;align-items:center;gap:16px;padding:0;border-radius:18px;border:1.5px solid var(--line);background:#fff;box-shadow:0 2px 0 var(--line);overflow:hidden;text-align:left;
+.st-sum{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:12px;justify-content:flex-start;padding:4px 2px 8px}
+.st-row{flex:none;display:flex;align-items:center;gap:16px;padding:0;border-radius:24px;border:3px solid var(--line);background:#fff;box-shadow:0 4px 0 var(--edge);overflow:hidden;text-align:left;
   height:max(96px,calc(150 * var(--u)))}
-.st-row .st-pic{flex:none;height:100%;aspect-ratio:1;border:0;border-radius:0;box-shadow:none;border-right:1.5px solid var(--line)}
+.st-row .st-pic{flex:none;height:100%;aspect-ratio:1;border:0;border-radius:0;box-shadow:none;border-right:3px solid var(--line)}
 .st-rtext{display:flex;flex-direction:column;gap:4px;font-size:max(20px,calc(23 * var(--u)));line-height:1.35;padding-right:10px}
 .st-rtext small{font-size:.72em}
 .st-row.playing{border-color:var(--blue);box-shadow:0 0 0 3px rgba(74,111,214,.25)}
-.st-h{flex:none;margin:calc(6 * var(--u)) 0 calc(14 * var(--u));font-size:max(22px,calc(24 * var(--u)));font-weight:800}
-.st-gridwrap{flex:1;min-height:0;overflow:auto;padding:2px 2px 8px}
+.st-h{flex:none;margin:var(--ptop) 0 calc(18 * var(--u));font-size:max(22px,calc(24 * var(--u)));font-weight:800;line-height:1.2}
+.st-gridwrap{flex:1;min-height:0;overflow:auto;padding:2px 2px 8px;container-type:size}
 
 /* -- 5. done (F4 without the stamp): Kim's head cheering · title · results -- */
 .st-done{display:flex;flex-direction:column;background:none}
 .st-done .nv-bg{z-index:0}
-.st-dmain{position:relative;z-index:1;flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;align-items:center;justify-content:safe center;gap:calc(16 * var(--u));
+.st-dmain{position:relative;z-index:1;flex:0 1 auto;min-height:0;overflow:auto;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:calc(16 * var(--u));
   padding:calc(env(safe-area-inset-top,0px) + 24px) 16px 8px;text-align:center}
 .st-cheer{position:relative;flex:none;margin:calc(26 * var(--u)) 0 calc(4 * var(--u));width:max(120px,calc(150 * var(--u)));height:max(120px,calc(150 * var(--u)));animation:stPop .5s cubic-bezier(.3,1.6,.5,1) both}
 .st-cheer .kh{position:relative;z-index:1;border-width:5px;box-shadow:0 0 0 4px var(--gold),0 10px 24px rgba(36,41,56,.18)}
@@ -621,14 +718,14 @@ button.px-card:active{transform:translateY(2px)}
 .st-dtitle{margin:0;font-size:max(28px,calc(32 * var(--u)));font-weight:800;line-height:1.15}
 .st-stamp-slot:empty{display:none}
 .st-stats{display:flex;gap:12px;width:100%;max-width:max(420px,calc(420 * var(--u)))}
-.st-stat{flex:1;background:#fff;border:1.5px solid var(--line);border-radius:18px;box-shadow:0 2px 0 var(--line);padding:10px}
+.st-stat{flex:1;background:#fff;border:3px solid var(--line);border-radius:20px;box-shadow:0 4px 0 var(--edge);padding:10px}
 .st-stat small{display:block;font-size:max(12px,calc(12 * var(--u)));font-weight:800;color:var(--mute);letter-spacing:.5px}
 .st-stat b{display:block;font-size:max(22px,calc(24 * var(--u)));font-weight:800}
 .st-stat .g{color:var(--green)}.st-stat .b{color:var(--blue-d)}
 .st-scores{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:520px}
 .st-score{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:8px 12px;font-weight:700;font-size:max(15px,calc(15 * var(--u)))}
 .st-score b{font-size:max(17px,calc(17 * var(--u)));color:var(--ink);font-variant-numeric:tabular-nums}
-.st-done .st-cfoot{position:relative;z-index:1;width:100%;max-width:var(--col);margin:0 auto;padding-left:16px;padding-right:16px}
+.st-done .st-cfoot{position:relative;z-index:1;width:100%;max-width:var(--col);margin:auto auto 0;padding-left:16px;padding-right:16px}
 
 /* -- 6. phone held sideways: the card goes picture-left / words-right; summary rows smaller -- */
 @media (orientation:landscape) and (max-height:520px){
@@ -667,21 +764,28 @@ button.px-card:active{transform:translateY(2px)}
 /* wide screens: one card keeps a calm width */
 @media (orientation:landscape) and (min-height:521px){
   /* explore word bar scales with the screen: icons 44–64px slots (≈44–56px of drawing), counter ≥ 15px, padding to match (still one row) */
-  .st-wbar{--sl:clamp(44px, min(3.8vw, 5.8vh), 64px);gap:calc(var(--sl) * .25);padding:calc(var(--sl) * .14) calc(var(--sl) * .3);border-radius:calc(var(--sl) * .36)}
+  .st-wbar{--sl:clamp(44px, min(calc(3.8 * var(--vw)), calc(5.8 * var(--vh))), 64px);gap:calc(var(--sl) * .25);padding:calc(var(--sl) * .14) calc(var(--sl) * .3);border-radius:calc(var(--sl) * .36)}
   .st-wbar .st-slots{gap:calc(var(--sl) * .1)}
   .st-wbar .st-slot{width:var(--sl);height:var(--sl)}
   .st-wbar .st-slot:empty::before{width:calc(var(--sl) * .26);height:calc(var(--sl) * .26)}
   .st-wbar .st-count{font-size:clamp(15px, calc(var(--sl) * .33), 19px)}
-  .st-cards,.st-recap{--col:760px}
+  .st-cards{--col:760px}
+  .st-recap{--col:960px}
+  /* recap: PLAY AGAIN · CONTINUE side by side under the grid (the grid keeps the height) */
+  /* one big centred main button (38% of the stage); the secondary (PLAY AGAIN / DO THIS PART AGAIN) smaller, beside it on the left */
+  .st-cfoot{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 4.5 * var(--vh))}
+  .st-cfoot .px-btn{width:calc(38 * var(--vw));max-width:none}
+  .st-cfoot.two{flex-direction:row;justify-content:center;gap:16px}
+  .st-cfoot.two .px-btn.white{width:calc(22 * var(--vw));max-width:none;height:max(52px,calc(56 * var(--u)))}
 }
 
 /* -- 7. navigation: themed background, top bar, buttons -- */
-.nv-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none}
-.nv-bgimg{position:absolute;inset:-40px;background:center/cover no-repeat;filter:blur(6px) saturate(.9);transform:scale(1.03)}
-.nv-wash{position:absolute;inset:0;background:rgba(255,253,248,.6)}
+.nv-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none;background:var(--paper)}
+.nv-bgimg{position:absolute;inset:-40px;background:center/cover no-repeat;filter:blur(1.5px) saturate(.7);opacity:.34;transform:scale(1.03)}
+.nv-wash{display:none}
 .nv-top{position:absolute;z-index:6;top:0;left:0;right:0;height:calc(env(safe-area-inset-top,0px) + 58px);display:flex;align-items:center;gap:6px;
   padding:env(safe-area-inset-top,0px) max(8px,env(safe-area-inset-right,0px)) 0 max(8px,env(safe-area-inset-left,0px));
-  background:rgba(255,255,255,.92);border-bottom:1px solid var(--line);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+  background:rgba(251,246,236,.94);border-bottom:1px solid var(--line);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .nv-title{min-width:0;font-size:max(16px,calc(16 * var(--u)));font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nv-sp{flex:1}
 .nv-ib{flex:none;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:var(--mute)}
@@ -701,8 +805,8 @@ button.px-card:active{transform:translateY(2px)}
 .nv-road{position:relative;width:100%}
 .nv-path{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
 .nv-path path{fill:none;stroke-linecap:round;stroke-linejoin:round}
-.nv-path .edge{stroke:#E8D7B4;opacity:.9}
-.nv-path .lane{stroke:#F8EFDD}
+.nv-path .edge{stroke:#E3CFA6}
+.nv-path .lane{stroke:#F6EAD2}
 .nv-path .dash{stroke:#fff;opacity:.95}
 .nv-item{position:absolute;z-index:2}
 .nv-lesson,.nv-node,.nv-mile{position:absolute;inset:0;padding:0}
@@ -710,9 +814,10 @@ button.px-card:active{transform:translateY(2px)}
 .nv-lesson .pic{position:absolute;inset:0;border-radius:50%;background:center/cover no-repeat}
 .nv-lesson.done{box-shadow:0 0 0 4px var(--gold),0 6px 0 4px var(--gold-d)}
 .nv-lesson.now{box-shadow:0 0 0 4px var(--red),0 6px 0 4px var(--red-d),0 0 0 14px rgba(224,88,72,.22);animation:nvNow 2.2s ease-in-out infinite}
-.nv-lesson.open{box-shadow:0 0 0 4px #D6DBE1,0 6px 0 4px #B9C0C8}
-.nv-lesson.lock{box-shadow:0 0 0 4px #D6DBE1,0 6px 0 4px #B9C0C8}
-.nv-lesson.lock .pic{filter:grayscale(1);opacity:.8}
+/* rule E: open = soft blue (listen-blue family), locked = soft warm sand — never grey sludge */
+.nv-lesson.open{box-shadow:0 0 0 4px #BFD0F5,0 6px 0 4px #9DB3E8}
+.nv-lesson.lock{box-shadow:0 0 0 4px #EADCC0,0 6px 0 4px #D8C6A2}
+.nv-lesson.lock .pic{filter:saturate(.45);opacity:.85}
 .nv-lesson:active,.nv-node:active,.nv-mile:active{transform:translateY(3px)}
 .nv-llabel{position:absolute;top:50%;width:max-content;transform:translateY(-50%);background:rgba(255,255,255,.95);border-radius:12px;padding:6px 11px;text-align:left;
   box-shadow:0 2px 8px rgba(36,41,56,.12);pointer-events:none}
@@ -732,21 +837,23 @@ button.px-card:active{transform:translateY(2px)}
 .nv-mileitem .stars{position:absolute;left:50%;top:calc(100% + 22px);transform:translateX(-50%);white-space:nowrap;color:var(--gold);font-size:18px;letter-spacing:1px;text-shadow:0 1px 0 #fff}
 .nv-mileitem .stars .off{color:#D6DBE1}
 .nv-mile.done .pic{box-shadow:0 0 0 4px var(--gold),0 8px 18px rgba(36,41,56,.18)}
-.nv-mile.lock .pic{filter:grayscale(1);opacity:.85}
-.nv-mileitem.lock .flag{background:#9AA3AD;box-shadow:0 3px 0 #7D868F}
+.nv-mile.lock .pic{filter:saturate(.45);opacity:.9}
+.nv-mileitem.lock .flag{background:#B79F78;box-shadow:0 3px 0 #9A8460}
+.nv-mile.open .pic{box-shadow:0 0 0 4px #BFD0F5,0 8px 18px rgba(36,41,56,.18)}
 .nv-mile.pop{animation:stPop .6s cubic-bezier(.3,1.6,.5,1) both}
 /* step node: food picture (or an icon) in a round button */
 .nv-node{border-radius:50%;background:#fff}
-.nv-node img{position:absolute;inset:16%;width:68%;height:68%;object-fit:contain}
+.nv-node img{position:absolute;inset:15%;width:70%;height:70%;object-fit:contain}
 .nv-node .ico{position:absolute;inset:27%;display:grid;color:var(--blue)}
 .nv-node .ico svg{width:100%;height:100%}
 .nv-node.done{box-shadow:0 0 0 4px var(--gold),0 5px 0 4px var(--gold-d)}
 .nv-node.now{box-shadow:0 0 0 4px var(--red),0 5px 0 4px var(--red-d),0 0 0 12px rgba(224,88,72,.22);animation:nvNow 2.2s ease-in-out infinite}
 .nv-node.now .ico{color:var(--red)}
-.nv-node.open{box-shadow:0 0 0 4px #D6DBE1,0 5px 0 4px #B9C0C8}
-.nv-node.lock{box-shadow:0 0 0 4px #D6DBE1,0 5px 0 4px #B9C0C8}
-.nv-node.lock img,.nv-node.lock .ico{filter:grayscale(1);opacity:.55}
-.nv-node.lock .ico{color:var(--mute)}
+.nv-node.done{background:#FFF8E6}
+.nv-node.open{background:#F4F7FE;box-shadow:0 0 0 4px #BFD0F5,0 5px 0 4px #9DB3E8}
+.nv-node.lock{background:#FBF5EA;box-shadow:0 0 0 4px #EADCC0,0 5px 0 4px #D8C6A2}
+.nv-node.lock img,.nv-node.lock .ico{filter:saturate(.4);opacity:.7}
+.nv-node.lock .ico{color:#B79F78}
 .nv-chk{position:absolute;z-index:3;top:-5px;right:-5px;width:24px;height:24px;border-radius:50%;background:var(--gold);color:#fff;font-size:13px;font-weight:800;display:grid;place-items:center;border:2px solid #fff}
 .nv-no{animation:pxShake .45s ease}
 .nv-starttag{position:absolute;z-index:4;background:var(--red);color:#fff;border-radius:12px;padding:6px 12px;font-weight:800;font-size:14px;letter-spacing:.4px;box-shadow:0 3px 0 var(--red-d);pointer-events:none;white-space:nowrap}
@@ -762,13 +869,13 @@ button.px-card:active{transform:translateY(2px)}
 .nv-kim.talk .kh{animation:stTalk .5s ease-in-out infinite alternate}
 
 /* -- 9. units (N2) -- */
-.nv-units{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;background:#fff;
+.nv-units{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;background:var(--paper);
   padding:calc(env(safe-area-inset-top,0px) + 14px) max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 20px) max(16px,env(safe-area-inset-left,0px))}
 .nv-uhead{max-width:1060px;margin:0 auto 12px;display:flex;align-items:center}
 .nv-uhead h1{flex:1;margin:0;font-size:26px;font-weight:800}
 .nv-ugrid{max-width:1060px;margin:0 auto;display:grid;gap:22px}
 .nv-ucard{border-radius:22px;border:1.5px solid var(--line);background:#fff;overflow:hidden;box-shadow:0 2px 0 var(--line)}
-.nv-ucover{display:block;width:100%;height:clamp(150px,24vh,230px);background:center 30%/cover no-repeat}
+.nv-ucover{display:block;width:100%;height:clamp(150px,calc(24 * var(--vh)),230px);background:center 30%/cover no-repeat}
 .nv-ubody{display:flex;flex-direction:column;gap:6px;padding:14px 16px 16px}
 .nv-utitle{font-size:24px;font-weight:800}
 .nv-bar{display:block;height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:4px}
@@ -781,7 +888,16 @@ button.px-card:active{transform:translateY(2px)}
 .nv-stile span{font-size:12px;font-weight:700;line-height:1.2}
 @media (min-width:760px) and (orientation:landscape){
   .nv-ugrid{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:start}
-  .nv-ucover{height:clamp(170px,34vh,300px)}
+  .nv-ucover{height:clamp(170px,calc(34 * var(--vh)),300px)}
+}
+/* wide stage: the page sits in the middle of the screen (no empty lower half) */
+@media (orientation:landscape) and (min-height:521px){
+  .nv-units{display:flex;flex-direction:column;justify-content:flex-start}
+  .nv-uhead,.nv-ugrid{width:100%}
+  .nv-ucover{height:clamp(220px,calc(52 * var(--vh)),420px)}
+  .nv-stile{min-height:92px}
+  .nv-stile b{font-size:28px}
+  .nv-stile span{font-size:13px}
 }
 @media (orientation:landscape) and (max-height:520px){
   .nv-ugrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}
@@ -789,21 +905,21 @@ button.px-card:active{transform:translateY(2px)}
   .nv-stile{min-height:56px}
 }
 @media (orientation:portrait) and (min-width:700px){
-  .nv-units{padding-left:max(40px,8vw);padding-right:max(40px,8vw)}
+  .nv-units{padding-left:max(40px,calc(8 * var(--vw)));padding-right:max(40px,calc(8 * var(--vw)))}
   .nv-uhead h1{font-size:32px}
-  .nv-ucover{height:clamp(220px,28vh,320px)}
+  .nv-ucover{height:clamp(220px,calc(28 * var(--vh)),320px)}
   .nv-utitle{font-size:30px}
   .nv-soon{grid-template-columns:repeat(5,minmax(0,1fr))}
 }
 
 /* -- 10. splash (N1) -- */
-.nv-splash{position:fixed;inset:0;z-index:50;background:#fff;font-family:var(--ui);color:var(--ink)}
+.nv-splash{position:fixed;inset:0;z-index:50;background:var(--paper);font-family:var(--ui);color:var(--ink)}
 .nv-splash-in{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;text-align:center;
   padding:calc(env(safe-area-inset-top,0px) + 24px) max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 22px) max(16px,env(safe-area-inset-left,0px))}
 .nv-kimfull{flex:1 1 0;min-height:0;width:100%;max-width:440px;object-fit:contain;object-position:center bottom;animation:nvWave 2.6s ease-in-out infinite;transform-origin:50% 100%}
 .nv-splash-txt{flex:none;display:flex;flex-direction:column;gap:6px;margin:20px 0 26px}
 .nv-splash-txt .nv-tag{font-size:14px}
-.nv-splash h1{margin:0;font-size:clamp(32px,5vh,46px);font-weight:800;line-height:1.1}
+.nv-splash h1{margin:0;font-size:clamp(32px,calc(5 * var(--vh)),46px);font-weight:800;line-height:1.1}
 .nv-splash-right{flex:none;width:100%;max-width:420px;display:flex;flex-direction:column;align-items:center}
 .nv-startbtn{flex:none}
 @media (orientation:landscape) and (max-height:520px){
@@ -815,13 +931,13 @@ button.px-card:active{transform:translateY(2px)}
 
 /* -- 11. teachers' menu, audio list -- */
 .overlay{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:rgba(36,41,56,.45);padding:16px}
-.nv-menubox{width:100%;max-width:420px;max-height:84vh;overflow:auto;display:flex;flex-direction:column;gap:6px;padding:16px;border-radius:20px;background:#fff;font-family:var(--ui)}
+.nv-menubox{width:100%;max-width:420px;max-height:calc(84 * var(--vh));overflow:auto;display:flex;flex-direction:column;gap:6px;padding:16px;border-radius:20px;background:#fff;font-family:var(--ui)}
 .nv-menubox h3{margin:0;font-size:20px;font-weight:800}
 .nv-menubox small{color:var(--mute);font-weight:600}
 .nv-menubox .warn{color:var(--red-d)}
 .nv-menubox button{text-align:left;padding:10px 12px;border-radius:12px;border:1.5px solid var(--line);font-weight:700;background:#fff}
 .nv-menubox button:hover{background:var(--surf)}
-.nv-voices{position:absolute;inset:0;overflow:auto;padding:20px max(16px,calc(50vw - 440px));font-family:var(--ui);background:#fff}
+.nv-voices{position:absolute;inset:0;overflow:auto;padding:20px max(16px,calc(calc(50 * var(--vw)) - 440px));font-family:var(--ui);background:#fff}
 .nv-voices h2{margin:8px 0}
 .nv-voices h3{margin:18px 0 6px;font-size:16px}
 .nv-vctl{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:8px 0}
@@ -952,7 +1068,7 @@ button.px-card:active{transform:translateY(2px)}
 .rw-sarrow{position:absolute;z-index:4;top:50%;width:44px;height:44px;margin-top:-22px;border-radius:50%;background:rgba(36,41,56,.7);color:#fff;display:grid;place-items:center;box-shadow:0 2px 8px rgba(0,0,0,.2)}
 .rw-sarrow svg{width:22px;height:22px}
 .rw-sarrow.l{left:8px}.rw-sarrow.r{right:8px}.rw-sarrow.r svg{transform:scaleX(-1)}
-.rw-bub{position:absolute;z-index:5;transform:translate(-50%,-100%);display:flex;align-items:center;gap:8px;width:max-content;max-width:min(320px,82vw);background:#fff;border-radius:14px;
+.rw-bub{position:absolute;z-index:5;transform:translate(-50%,-100%);display:flex;align-items:center;gap:8px;width:max-content;max-width:min(320px,calc(82 * var(--vw)));background:#fff;border-radius:14px;
   padding:7px 12px 7px 7px;box-shadow:0 4px 14px rgba(36,41,56,.22)}
 .rw-bub::after{content:"";position:absolute;top:100%;left:var(--tail,50%);margin-left:-8px;border:8px solid transparent;border-top-color:#fff}
 .rw-bub.in{animation:rwBubIn .3s cubic-bezier(.3,1.5,.5,1) both}
@@ -992,18 +1108,18 @@ button.px-card:active{transform:translateY(2px)}
 .rw-logoov{z-index:70}
 .rw-logobox{width:min(100%,380px);max-height:100%;overflow:auto;display:flex;flex-direction:column;align-items:center;gap:8px;padding:22px 20px 18px;border-radius:24px;background:#fff;
   text-align:center;font-family:var(--ui);color:var(--ink);animation:stPop .35s ease both}
-.rw-lwrap{position:relative;width:min(230px,42vh);aspect-ratio:1;margin:6px 0 8px}
+.rw-lwrap{position:relative;width:min(230px,calc(42 * var(--vh)));aspect-ratio:1;margin:6px 0 8px}
 .rw-logo.big{animation:rwLogoIn .9s cubic-bezier(.3,1.45,.5,1) .15s both}
 .rw-rays{position:absolute;inset:-14%;pointer-events:none}
 .rw-rays i{position:absolute;left:50%;top:50%;width:10px;height:20px;margin:-10px -5px;border-radius:5px;background:var(--gold);
-  transform:rotate(var(--a)) translateY(calc(-1 * min(146px,27vh)));animation:stRays 1.4s ease-in-out infinite alternate}
+  transform:rotate(var(--a)) translateY(calc(-1 * min(146px,calc(27 * var(--vh)))));animation:stRays 1.4s ease-in-out infinite alternate}
 .rw-rays i:nth-child(even){background:var(--red);height:13px}
 .rw-rays i:nth-child(n+5):nth-child(-n+9){display:none}
 .rw-logobox h2{margin:0 0 6px;font-size:22px;font-weight:800;line-height:1.25}
 .rw-logobox h2 b{color:var(--red-d)}
 @media (orientation:landscape) and (max-height:520px){ .rw-logobox{padding:12px 18px}.rw-lwrap{width:150px;margin:0 0 4px}.rw-rays i{transform:rotate(var(--a)) translateY(-94px)}.rw-logobox h2{font-size:19px;margin:0}.rw-logobox .px-btn{height:46px} }
 /* -- 7. R3 passport cover: a logo per unit -- */
-.rw-pscroll{background:#fff;padding:16px max(16px,calc(50vw - 400px)) calc(env(safe-area-inset-bottom,0px) + 20px)}
+.rw-pscroll{background:var(--paper);padding:16px max(16px,calc(calc(50 * var(--vw)) - 400px)) calc(env(safe-area-inset-bottom,0px) + 20px)}
 .rw-pass{display:flex;flex-direction:column;align-items:center;padding:18px 14px 22px;border-radius:18px;background:#FBF4E4;border:1.5px solid #E6D9BC;box-shadow:0 2px 0 #E6D9BC}
 .rw-pcount{margin:4px 0 16px;font-size:20px;font-weight:800}
 .rw-pgrid{--cols:3;--disc:104px;width:100%;display:flex;flex-wrap:wrap;justify-content:center;gap:16px 10px}
@@ -1024,9 +1140,9 @@ button.px-card:active{transform:translateY(2px)}
 @media (orientation:landscape),(min-width:700px){ .rw-pgrid{--cols:5;--disc:112px} }
 @media (orientation:landscape) and (max-height:520px){ .rw-pscroll{padding-top:10px}.rw-pass{padding:10px 14px 14px}.rw-pcount{margin:2px 0 8px;font-size:17px}.rw-pgrid{--disc:76px;gap:10px}.rw-unit{gap:4px}.rw-unit b{font-size:12px} }
 @media (orientation:landscape) and (min-height:521px){
-  .st-done.has-stamp .st-dmain{flex-direction:row;flex-wrap:nowrap;justify-content:center;align-items:center;gap:calc(36 * var(--u))}
-  .st-done.has-stamp .st-dhead{flex:0 1 280px}
-  .st-done.has-stamp .st-dres{flex:0 1 360px}
+  /* v5: one centred column from the top (Kim · title · passport page · scores), like the phone */
+  .st-done.has-stamp .st-dmain{flex-direction:column;flex-wrap:nowrap;justify-content:flex-start;align-items:center;gap:calc(14 * var(--u));padding-top:calc(env(safe-area-inset-top,0px) + 4.5 * var(--vh))}
+  .st-done.has-stamp .st-dhead,.st-done.has-stamp .st-dres{flex:none}
   .st-done.has-stamp .rw-page{flex:none;width:calc(360 * var(--u) + 24px)}
   .st-done.has-stamp .rw-prow{--sz:calc(92 * var(--u))}
   .st-done.has-stamp .rw-prow .rw-stamp.cur{--sz:calc(120 * var(--u))}
@@ -1061,8 +1177,9 @@ button.px-card:active{transform:translateY(2px)}
 @keyframes stMerge{0%{letter-spacing:.3em;transform:scale(.92)}60%{letter-spacing:-.02em;transform:scale(1.1)}100%{letter-spacing:0;transform:none}}
 @keyframes stTalk{from{transform:translateY(0) rotate(-2deg)}to{transform:translateY(-3px) rotate(2deg)}}
 @keyframes stGo{0%,100%{box-shadow:0 3px 0 var(--red-d),0 0 0 0 rgba(224,88,72,.45)}50%{box-shadow:0 3px 0 var(--red-d),0 0 0 12px rgba(224,88,72,0)}}
-@keyframes stRing{0%,100%{box-shadow:0 0 0 4px rgba(74,111,214,.55)}50%{box-shadow:0 0 0 10px rgba(74,111,214,.25)}}
-@keyframes stHot{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}50%{box-shadow:0 0 0 6px rgba(255,255,255,.45)}}
+@keyframes stRing{0%,100%{box-shadow:0 0 0 4px rgba(242,179,61,.6)}50%{box-shadow:0 0 0 10px rgba(242,179,61,.22)}}
+@keyframes stPin{0%,100%{transform:translateY(-4px) rotate(-45deg)}50%{transform:translateY(6px) rotate(-45deg)}}
+@keyframes stHot{0%,100%{box-shadow:0 2px 6px rgba(36,41,56,.2),0 0 0 0 rgba(255,255,255,.9)}50%{box-shadow:0 2px 6px rgba(36,41,56,.2),0 0 0 7px rgba(255,255,255,.55)}}
 @keyframes stBounce{0%,100%{transform:none}35%{transform:translateY(-12%) scale(1.06)}70%{transform:translateY(2%)}}
 @keyframes stRays{from{opacity:.35}to{opacity:1}}
 @keyframes nvNow{0%,100%{transform:none}50%{transform:translateY(-4px)}}
@@ -1071,6 +1188,92 @@ button.px-card:active{transform:translateY(2px)}
 </style>
 
 <div id="app"><main id="main"></main></div>
+<script>
+/* Stage (2026-11-20, rule A): one fixed logical stage, scaled uniformly, so nothing stays tiny on big screens.
+   Landscape ≥ 900×521 (laptops, iPad sideways): the stage is 1024×720 at its smallest, s = min(W/1024, H/720); the extra
+   width / height of the window becomes extra logical room, so the stage always fills the window (no letterbox).
+   Upright tablets (≥ 700 wide): the phone layout, 600×860 logical, scaled up the same way. Phones: untouched (s = 1). */
+(function () {
+  var R = document.documentElement;
+  function stage() {
+    var W = window.innerWidth, H = window.innerHeight, s = 0;
+    if (W > H && W >= 900 && H >= 521) s = Math.min(W / 1024, H / 720);
+    else if (H >= W && W >= 700) s = Math.min(W / 600, H / 860);
+    var b = document.body;
+    if (!s) {
+      window.STAGE = 1; R.classList.remove("staged"); R.style.removeProperty("--vw"); R.style.removeProperty("--vh");
+      b.style.width = b.style.height = b.style.transform = ""; return;
+    }
+    var w = W / s, h = H / s;
+    window.STAGE = s; R.classList.add("staged");
+    R.style.setProperty("--vw", (w / 100) + "px"); R.style.setProperty("--vh", (h / 100) + "px");
+    b.style.width = w + "px"; b.style.height = h + "px"; b.style.transform = "scale(" + s + ")";
+  }
+  window.addEventListener("resize", stage); stage();
+})();
+/* Picture normaliser (2026-11-20, rule D): every food / item / icon picture is drawn at the same visual size whatever
+   empty margin its source file has. The picture's opaque box is measured once (alpha > 10%); the img then gets
+   `scale` + `translate` (separate CSS properties, so they add to any transform animation) so that the drawing's longest
+   side fills its box — or less for chunky shapes (area balance: a square plate of meat must not look heavier than a
+   long thin loaf). data-fit="bottom" on a parent (the cart counter) stands the drawing on the box's bottom edge. */
+(function () {
+  var RX = /(^|\/)(food|item|icon)-[^\/]*$/, cache = {};
+  function box(src, cb) {
+    if (cache[src]) return cache[src].then ? cache[src].then(cb) : cb(cache[src]);
+    cache[src] = new Promise(function (res) {
+      var im = new Image();
+      im.onload = function () {
+        try {
+          var N = 96, c = document.createElement("canvas"); c.width = c.height = N;
+          var g = c.getContext("2d"), k = Math.min(N / im.naturalWidth, N / im.naturalHeight), w = im.naturalWidth * k, h = im.naturalHeight * k;
+          g.drawImage(im, 0, 0, w, h);
+          var d = g.getImageData(0, 0, Math.ceil(w), Math.ceil(h)).data, W = Math.ceil(w), H = Math.ceil(h), x0 = W, y0 = H, x1 = -1, y1 = -1;
+          for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) if (d[(y * W + x) * 4 + 3] > 26) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+          if (x1 < 0) return res(null);
+          /* in fractions of the img's own (square, object-fit: contain) box */
+          var A = Math.max(W, H), ox = (A - W) / 2, oy = (A - H) / 2;
+          res({ cx: (ox + (x0 + x1 + 1) / 2) / A, cy: (oy + (y0 + y1 + 1) / 2) / A, w: (x1 - x0 + 1) / A, h: (y1 - y0 + 1) / A });
+        } catch (e) { res(null); }
+      };
+      im.onerror = function () { res(null); };
+      im.src = src;
+    }).then(function (b) { cache[src] = b; return b; });
+    cache[src].then(cb);
+  }
+  function fit(img) {
+    var src = img.getAttribute("src") || "";
+    if (!RX.test(src.split("?")[0].replace(/\.\w+$/, ""))) { img.style.scale = img.style.translate = ""; return; }
+    box(img.src, function (b) {
+      if (!b || img.getAttribute("src") !== src) return;
+      var s = Math.min(1 / Math.max(b.w, b.h), 0.84 / Math.sqrt(b.w * b.h), 1.6);
+      var bottom = img.closest("[data-fit='bottom']");
+      var tx = 0.5 - (0.5 + (b.cx - 0.5) * s), ty = (bottom ? 1 - (b.h * s) / 2 : 0.5) - (0.5 + (b.cy - 0.5) * s);
+      img.style.scale = s.toFixed(3);
+      img.style.translate = (tx * 100).toFixed(2) + "% " + (ty * 100).toFixed(2) + "%";
+      /* the drawing's height as a share of its box: a ring around it can then hug the drawing, not the empty box */
+      if (bottom && img.parentElement) img.parentElement.style.setProperty("--dh", Math.min(1, b.h * s).toFixed(3));
+      img.classList.add("normed");
+    });
+  }
+  function scan(n) {
+    if (n.nodeType !== 1) return;
+    if (n.tagName === "IMG") fit(n); else if (n.querySelectorAll) n.querySelectorAll("img").forEach(fit);
+  }
+  window.normPic = fit;
+  new MutationObserver(function (ms) {
+    ms.forEach(function (m) { if (m.type === "attributes") fit(m.target); else m.addedNodes.forEach(scan); });
+  }).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["src"] });
+  scan(document.body);
+})();
+/* v5 (2026-11-23): a picture prompt's box takes its picture's shape (--par = width / height), so the box is exactly as tall as
+   the picture and the content under it follows directly (no empty band above or below the picture: content stays high). */
+document.addEventListener("load", function (e) {
+  var i = e.target;
+  if (!i || i.tagName !== "IMG" || !i.naturalWidth || !i.parentElement || !i.parentElement.classList.contains("px-scene")) return;
+  var box = i.parentElement.parentElement;
+  if (box && (box.classList.contains("px-pic") || box.classList.contains("px-stage"))) box.style.setProperty("--par", (i.naturalWidth / i.naturalHeight).toFixed(3));
+}, true);
+</script>
 
 <!-- splash (N1): Kim waving + START; the background is set from the catalog (bg) -->
 <div class="nv-splash" id="start">

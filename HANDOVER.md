@@ -7,8 +7,8 @@
 
 | Mục | Trạng thái |
 |---|---|
-| Site chính `explore-homework.dol.vn` | Unit I (I1–I5), giao diện v3 + phần thưởng (dấu chặng, chọn xe, con phố, hộ chiếu) |
-| `/preview/` | Giao diện v4 + v5 (tỉ lệ Duolingo ABC) — **Thanh đã duyệt**. Chưa đưa lên trang chính |
+| Site chính `explore-homework.dol.vn` | (2026-11-25) Unit H (H1–H5) + Unit I (I1–I5), giao diện v4+v5 + phần thưởng (dấu chặng, chọn món, con phố / cửa hàng, hộ chiếu) |
+| `/preview/` | Bản sao để thử giao diện kế tiếp (hiện = trang chính) |
 | Unit H | Map đã chốt (mục 3), slide đã tải về máy, **chưa viết code** |
 
 ## 2. Việc kế tiếp (theo thứ tự)

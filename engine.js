@@ -263,12 +263,14 @@
       const pts = [];
       let total;
       if (!land) {
-        const cx = W / 2, amp = Math.min(W * cfg.amp, cfg.ampMax);
-        let y = cfg.padTop, side = cfg.firstSide || 1, prev = null;
+        /* a gentle S-curve (rule E, 2026-11-20): x follows a sine, so the road bends smoothly instead of zigzagging;
+           a big item sits on the centre line and the wave restarts from it */
+        const cx = W / 2, amp = Math.min(W * cfg.amp, cfg.ampMax), step = cfg.wave || Math.PI / 3;
+        let y = cfg.padTop, ph = 0, dir = cfg.firstSide || 1, prev = null;
         items.forEach((it) => {
           if (prev) y += prev.d / 2 + (prev.bottom || 0) + cfg.gap(prev, it) + it.d / 2 + (it.top || 0);
           else y += it.d / 2 + (it.top || 0);
-          if (it.big) { it.x = cx; side = 1; } else { it.x = cx + side * amp; side = -side; }
+          if (it.big) { it.x = cx; ph = 0; dir = -dir; } else { ph += step; it.x = cx + dir * amp * Math.sin(ph); }
           it.y = y; prev = it;
         });
         total = y + prev.d / 2 + (prev.bottom || 0) + cfg.padBottom;
@@ -294,7 +296,7 @@
             const p = pitch(it) * scale;
             it.x = x + p / 2; x += p;
             if (k % 2) it.x = W - it.x;   /* snake */
-            it.y = y + (it.big ? 0 : (s++ % 2 ? wob : -wob));
+            it.y = y + (it.big ? 0 : -wob * Math.sin(++s * (cfg.waveLand || Math.PI / 2.5)));   /* a soft wave, not a zigzag */
           });
           y += down + (k < rows.length - 1 ? cfg.rowGap : 0);
         });
@@ -345,23 +347,29 @@
     pin.onclick = () => { pin.classList.add("talk"); playSafe(() => kimVoice(say())).then(() => pin.classList.remove("talk")); };
     return pin;
   }
-  /* place the pin beside an item: "side" (outer side, falls back to the other one), "above", or "corner" (top-right, overlapping) */
-  function placePin(pin, it, where, W) {
-    const kd = pin.offsetWidth || 60, gap = 8;
-    let left, top, side = it.x < W / 2 ? -1 : 1;
-    if (where === "side") {
-      if (side > 0 && it.x + it.d / 2 + gap + kd > W - 6) side = -1;
-      if (side < 0 && it.x - it.d / 2 - gap - kd < 6) side = 1;
-      left = side > 0 ? it.x + it.d / 2 + gap : it.x - it.d / 2 - gap - kd;
-      top = it.y - kd * 0.92;
-    } else if (where === "above") { left = it.x - kd / 2; top = it.y - it.d / 2 - kd - 14; side = 0; }
-    else {
-      side = it.x + it.d * 0.2 + kd > W - 6 ? -1 : 1;
-      left = side > 0 ? it.x + it.d * 0.2 : it.x - it.d * 0.2 - kd; top = it.y - it.d / 2 - kd * 0.8;
-    }
-    pin.style.left = left + "px"; pin.style.top = top + "px";
-    pin.dataset.side = side > 0 ? "r" : side < 0 ? "l" : "c";
-    return side;
+  /* place the pin beside an item (rule E: never on top of a node): candidates in order of preference — "side" (outer
+     side, then inner side, then above), "above" (above, then right, then left), "corner" (top-right / top-left) — the
+     first one that stays on screen and clears every other item (others: [{x, y, d}]) wins; else the least covered. */
+  function placePin(pin, it, where, W, others) {
+    const kd = pin.offsetWidth || 60, gap = 10, out = it.x < W / 2 ? -1 : 1;
+    const at = (k) => k === "r" ? { left: it.x + it.d / 2 + gap, top: it.y - kd * 0.92, side: 1 }
+      : k === "l" ? { left: it.x - it.d / 2 - gap - kd, top: it.y - kd * 0.92, side: -1 }
+      : k === "a" ? { left: it.x - kd / 2, top: it.y - it.d / 2 - kd - 14, side: 0 }
+      : k === "cr" ? { left: it.x + it.d * 0.2, top: it.y - it.d / 2 - kd * 0.8, side: 1 } : { left: it.x - it.d * 0.2 - kd, top: it.y - it.d / 2 - kd * 0.8, side: -1 };
+    const o = out > 0 ? "r" : "l", i = out > 0 ? "l" : "r";
+    const order = where === "side" ? [o, i, "a"] : where === "above" ? ["a", "r", "l"] : ["cr", "cl", "a"];
+    const cost = (c) => {
+      let v = (c.left < 6 || c.left + kd > W - 6 || c.top < 4) ? 1e6 : 0;
+      (others || []).forEach((q) => { if (q === it) return; const r = q.d / 2 + 6;
+        const ix = Math.min(c.left + kd, q.x + r) - Math.max(c.left, q.x - r), iy = Math.min(c.top + kd + 12, q.y + r) - Math.max(c.top, q.y - r);
+        if (ix > 0 && iy > 0) v += ix * iy; });
+      return v;
+    };
+    let best = null;
+    for (const k of order) { const c = at(k), v = cost(c); if (!best || v < best.v) best = { ...c, v }; if (v === 0) break; }
+    pin.style.left = best.left + "px"; pin.style.top = best.top + "px";
+    pin.dataset.side = best.side > 0 ? "r" : best.side < 0 ? "l" : "c";
+    return best.side;
   }
 
   /* ======================= Units (N2) ======================= */
@@ -438,7 +446,7 @@
         it.label.style.maxWidth = (R.land ? Math.min(220, W / items.length - 16) : side === "r" ? W - it.x - it.d / 2 - 30 : it.x - it.d / 2 - 30) + "px";
       });
       const c = items.find((it) => it.now);
-      pin.hidden = !c; if (c) placePin(pin, c, "corner", W);
+      pin.hidden = !c; if (c) placePin(pin, c, "corner", W, items);
     };
     R.layout();
     const c = items.find((it) => it.now);
@@ -532,12 +540,12 @@
     main.append(navBg(L.bg || (meta && meta.bg)), navTop(L.subtitle || L.title, () => showUnit(L.id.charAt(0)), badge), scroller);
     const R = road(scroller, items, {
       size(its, W, H, land) {
-        const dM = land ? clampN(96, H * 0.19, 170) : clampN(120, W * 0.38, 190), dn = land ? clampN(52, H * 0.095, 80) : clampN(56, W * 0.17, 80);
+        const dM = land ? clampN(104, H * 0.2, 170) : clampN(120, W * 0.36, 190), dn = land ? clampN(64, H * 0.115, 96) : clampN(66, W * 0.2, 96);
         its.forEach((it) => { it.d = it.big ? dM : dn; it.bottom = it.big ? 30 : 0; it.top = 0; });
       },
-      amp: 0.2, ampMax: 150, firstSide: 1, padTop: 26, padBottom: 40,
-      gap: (a, b) => (a.big || b.big ? 30 : a.d * 0.32),
-      padX: (W) => Math.max(44, W * 0.05), padTopLand: 76, padBottomLand: 20, bigGap: 70, smallGap: (it) => it.d * 0.75, stretch: 1.6, rowGap: 30,
+      amp: 0.22, ampMax: 150, firstSide: 1, padTop: 26, padBottom: 40, wave: Math.PI / 2.6,
+      gap: (a, b) => (a.big || b.big ? 34 : a.d * 0.36),
+      padX: (W) => Math.max(44, W * 0.05), padTopLand: 96, padBottomLand: 20, bigGap: 70, smallGap: (it) => it.d * 0.75, stretch: 1.6, rowGap: 30,
       wobble: (r) => Math.min(...r.map((it) => it.d)) * 0.25, roadW: (its) => clampN(24, its.find((x) => !x.big) ? its.find((x) => !x.big).d * 0.46 : 30, 40)
     });
     /* START tag + Kim pin at the current step */
@@ -558,15 +566,20 @@
       if (!at) return;
       const where = R.land ? "above" : "side";
       if (first && from && from !== at) {
-        placePin(pin, from, where, W); sliding = true;
-        setTimeout(() => { pin.classList.add("slide"); placePin(pin, at, where, R.wrap.clientWidth); setTimeout(() => { sliding = false; pin.classList.remove("slide"); }, 950); }, 600);
-      } else if (!sliding) placePin(pin, at, where, W);
+        placePin(pin, from, where, W, items); sliding = true;
+        setTimeout(() => { pin.classList.add("slide"); placePin(pin, at, where, R.wrap.clientWidth, items); setTimeout(() => { sliding = false; pin.classList.remove("slide"); }, 950); }, 600);
+      } else if (!sliding) placePin(pin, at, where, W, items);
       first = false;
       /* START: on the inner side of the node (portrait), under it (landscape) */
       const tw = tag.offsetWidth || 70, th = tag.offsetHeight || 30;
       const side = pin.dataset.side;
       if (R.land) { tag.style.left = at.x - tw / 2 + "px"; tag.style.top = at.y + at.d / 2 + 10 + "px"; tag.dataset.side = "b"; }
-      else { const s = side === "r" ? -1 : 1; tag.style.left = (s > 0 ? at.x + at.d / 2 + 12 : at.x - at.d / 2 - 12 - tw) + "px"; tag.style.top = at.y - th / 2 + "px"; tag.dataset.side = s > 0 ? "r" : "l"; }
+      else {
+        const s = side === "r" ? -1 : 1, x = s > 0 ? at.x + at.d / 2 + 12 : at.x - at.d / 2 - 12 - tw;
+        /* no room on that side (the node is near the screen edge) → under the node */
+        if (x < 6 || x + tw > W - 6) { tag.style.left = at.x - tw / 2 + "px"; tag.style.top = at.y + at.d / 2 - th * 0.45 + "px"; tag.dataset.side = "b"; }
+        else { tag.style.left = x + "px"; tag.style.top = at.y - th / 2 + "px"; tag.dataset.side = s > 0 ? "r" : "l"; }
+      }
     };
     R.layout();
     if (at) requestAnimationFrame(() => scrollToItem(scroller, at));
@@ -635,7 +648,12 @@
       /* Kim's voice only (no avatar, no text) */
       voice(text) { return text ? playSafe(() => Audio_.speak(text, "kim")) : Promise.resolve(); },
       /* the first item is already on screen, dimmed and not tappable, while Kim reads the instruction */
-      async intro(text) { root.classList.add("pre"); await P.voice(text); root.classList.remove("pre"); },
+      async intro(text) {
+        root.classList.add("pre");
+        const spk = root.querySelector(".px-main .px-spk"); if (spk) spk.classList.add("playing");
+        await P.voice(text);
+        root.classList.remove("pre"); if (spk && !spk.dataset.busy) spk.classList.remove("playing");
+      },
       wrong(el) {
         Audio_.sfx("practice-wrong");
         el.classList.remove("px-wrong"); void el.offsetWidth; el.classList.add("px-wrong");
@@ -735,8 +753,21 @@
     const cam = h("div", { class: "st-cam" }, blur, h("div", { class: "st-wash" }), canvas);
     root.append(cam);
     let front = a, back = b, scene = null, ar = 16 / 9, focus = WHOLE, margins = () => ({ top: 0, bottom: 0 }), token = 0;
+    /* pan (rule G, upright screens only): the picture fills the screen's height and the child swipes sideways;
+       the view snaps to snap points (.st-snap in the layer). panAt = where it starts (x in % of the picture). */
+    let pan = false, panAt = null;
     function fit(animate) {
       const W = cam.clientWidth, H = cam.clientHeight; if (!W || !H) return;
+      if (pan && H > W) {
+        const cw = H * ar, first = cam.dataset.mode !== "pan";
+        canvas.classList.remove("anim");
+        Object.assign(canvas.style, { width: cw + "px", height: H + "px", left: "0px", top: "0px" });
+        cam.dataset.mode = "pan";
+        if (first && panAt != null) cam.scrollLeft = clampN(0, (panAt / 100) * cw - W / 2, cw - W);
+        if (api.onFrame) api.onFrame({ W, H, left: 0, right: 0, top: 0, bottom: 0, mode: "pan", animate: false });
+        return;
+      }
+      if (cam.dataset.mode === "pan") cam.scrollLeft = 0;
       const m = margins(), y0 = m.top, y1 = H - m.bottom, side = m.side || 0, vw = W - 2 * side, vh = Math.max(80, y1 - y0);
       const fx = focus.x / 100, fy = focus.y / 100, fw = focus.w / 100, fh = focus.h / 100;
       /* where the canvas may go on one axis: the focus inside the free band [v0, v1] and, when possible, the screen covered
@@ -778,6 +809,12 @@
       cam, layer, canvas,
       /* margins(): the free area — { top, bottom, side } in px */
       margins(fn) { margins = fn; },
+      pan(on, at) { pan = !!on; panAt = at != null ? at : null; if (!pan && cam.dataset.mode === "pan") { cam.dataset.mode = ""; cam.scrollLeft = 0; } },
+      panBy(dir) {
+        const W = cam.clientWidth, xs = [...layer.querySelectorAll(".st-snap")].map((e) => e.offsetLeft - W / 2).sort((p, q) => p - q);
+        const now = cam.scrollLeft, t = dir > 0 ? xs.find((x) => x > now + 8) : xs.reverse().find((x) => x < now - 8);
+        if (t != null) cam.scrollTo({ left: t, behavior: "smooth" });
+      },
       watch(el) { if (ro && el) ro.observe(el); },
       fit,
       async show(name, f) {
@@ -830,11 +867,13 @@
   }
 
   /* the foods of a cart on its counter (Explore vocab and Watch use the same row: same places, same labels) */
+  /* a long word shrinks a little so it stays on one line inside its card (≤ 8 letters: full size) */
+  const lfit = (t) => { const n = String(t).replace(/<[^>]+>/g, "").length; return n > 8 ? (8 / n).toFixed(2) : 1; };
   function cartCounter(c, tag) {
-    const counter = h("div", { class: "st-counter", "data-n": c.foods.length });
+    const counter = h("div", { class: "st-counter", "data-n": c.foods.length, "data-fit": "bottom", style: `--n:${c.foods.length}` });
     const items = {};
     c.foods.forEach((f, n) => {
-      const el = h(tag, { class: "st-cfood", style: `animation-delay:${n * 90}ms` }, h("img", { src: img(L.words[f].img), alt: "" }), h("span", { class: "lbl px-read", html: wlabel(L.words[f]) }));
+      const el = h(tag, { class: "st-cfood", style: `animation-delay:${n * 90}ms` }, h("img", { src: img(L.words[f].img), alt: "" }), h("span", { class: "lbl px-read", html: wlabel(L.words[f]), style: `--lf:${lfit(L.words[f].label)}` }));
       if (tag === "button") { el.type = "button"; el.setAttribute("aria-label", L.words[f].label); }
       items[f] = el; counter.append(el);
     });
@@ -918,7 +957,8 @@
       }
       if (c.point) {
         const [kind, id] = c.point.split(":");
-        if (kind === "cart") { const k = L.street.carts.find((x) => x.id === id).hot; return pad(k, 3); }
+        /* the cart AND the children standing in front of it, down to the picture's bottom: never a face cut in half */
+        if (kind === "cart") { const k = pad(L.street.carts.find((x) => x.id === id).hot, 3); return { x: k.x, y: k.y, w: k.w, h: 100 - k.y }; }
         const p = L.street.signRice[id]; return { x: p.x - 10, y: Math.max(0, p.y - 15), w: 20, h: 30 };
       }
       if (c.actors && c.actors.length) {
@@ -1020,6 +1060,10 @@
     const backBtn = h("button", { class: "st-back", type: "button", hidden: true }, h("span", { html: UI.back }), L.street.name || "Food Street");
     const top = h("div", { class: "st-etop" }, h("div", { class: "st-eleft" }, close, backBtn), bar);
     const ready = h("button", { class: "st-ready px-btn red", type: "button", hidden: true }, "I'M READY");
+    /* upright street (pan mode): ‹ › step to the previous / next cart */
+    const panL = h("button", { class: "st-pan l", type: "button", "aria-label": "Previous cart", html: UI.back, onclick: () => cam.panBy(-1) });
+    const panR = h("button", { class: "st-pan r", type: "button", "aria-label": "Next cart", html: UI.back, onclick: () => cam.panBy(1) });
+    root.append(panL, panR);
     /* upright screens: the foods of an open cart sit as big cards under the picture (landscape: on the cart's counter) */
     const tray = h("div", { class: "st-tray", hidden: true });
     root.append(top, tray, ready);
@@ -1049,7 +1093,9 @@
       const pic = h("img", { src: img(L.words[w].img), alt: "" });
       s.append(pic); s.classList.add("on");
       if (fromEl && fromEl.animate) {
-        const a = fromEl.getBoundingClientRect(), b = s.getBoundingClientRect();
+        /* visual rects → the stage's logical px (the body is scaled on big screens) */
+        const k = window.STAGE || 1, sc = (r) => ({ left: r.left / k, top: r.top / k, width: r.width / k, height: r.height / k });
+        const a = sc(fromEl.getBoundingClientRect()), b = sc(s.getBoundingClientRect());
         if (a.width && b.width) {
           const fly = h("img", { class: "st-fly", src: img(L.words[w].img), alt: "" });
           Object.assign(fly.style, { left: a.left + "px", top: a.top + "px", width: a.width + "px", height: a.height + "px" });
@@ -1072,21 +1118,27 @@
         const b = h("button", { class: "st-hot" + (visited.has(c.id) ? " visited" : ""), type: "button", "aria-label": c.name });
         Object.assign(b.style, { left: c.hot.x + "%", top: c.hot.y + "%", width: c.hot.w + "%", height: c.hot.h + "%" });
         const name = h("span", { class: "st-hotname px-read" + (visited.has(c.id) ? " visited" : ""), "aria-hidden": "true" }, c.name);
-        Object.assign(name.style, { left: c.hot.x + c.hot.w / 2 + "%", top: c.hot.y + c.hot.h + "%" });
+        Object.assign(name.style, { left: c.hot.x + c.hot.w / 2 + "%", top: c.hot.y + c.hot.h * 0.66 + "%" });
         cam.layer.append(name);
         b.onclick = () => {
           /* the ring sits exactly on the cart's hotspot, then the cart opens */
           cam.layer.querySelectorAll(".st-hot").forEach((x) => x.classList.toggle("sel", x === b));
+          cam.layer.querySelectorAll(".st-hotname").forEach((x) => x.classList.toggle("sel", x === name));
           Audio_.sfx("region-enter");
           const r = run; setTimeout(() => alive(r) && cartView(c), 520);
         };
+        name.onclick = () => b.click();
         cam.layer.append(b);
       });
       const hots = L.street.carts.map((c) => c.hot).reduce((f, k) => union(f, k));
+      /* upright: the street fills the screen's height; swipe from cart to cart (each cart is a snap point) */
+      L.street.carts.forEach((c) => { const sn = h("span", { class: "st-snap", "aria-hidden": "true" }); sn.style.left = c.hot.x + c.hot.w / 2 + "%"; cam.layer.append(sn); });
+      const c0 = L.street.carts[0].hot;
+      cam.pan(true, c0.x + c0.w / 2);
       cam.show(L.street.scene, L.street.focus || pad(hots, 4));
     }
     function cartView(c) {
-      visited.add(c.id); cart = c;
+      visited.add(c.id); cart = c; cam.pan(false);
       backBtn.hidden = false;
       cam.layer.innerHTML = ""; tray.innerHTML = "";
       const row = cartCounter(c, "button");
@@ -1106,10 +1158,9 @@
     backBtn.onclick = () => { Audio_.stop(); streetView(); };
     /* panel: every word card; tap = hear */
     function panel() {
-      const grid = h("div", { class: "st-grid" });
+      const grid = tileGrid(all.length);
       all.forEach((w) => {
-        const t = h("button", { class: "st-tile" + (heard.has(w) ? " heard" : ""), type: "button" }, h("img", { src: img(L.words[w].img), alt: "" }),
-          h("span", { class: "t" }, h("i", { html: ICON3.speaker }), h("span", { class: "px-read", html: wlabel(L.words[w]) })));
+        const t = wordTile(w); if (heard.has(w)) t.classList.add("heard");
         t.onclick = () => { t.classList.add("heard"); t.classList.remove("bounce"); void t.offsetWidth; t.classList.add("bounce"); hear(w, null).then(() => syncP()); syncP(); };
         grid.append(t);
       });
@@ -1214,13 +1265,25 @@
   TYPES.chunks = (step, run) => cards(step, run, false);
   TYPES.qa = (step, run) => cards(step, run, true);
 
+  /* a word card (panel + recap, rule D): square white card · the picture centred in its box · the word under it ·
+     a small speaker badge in the corner (tap anywhere = hear) */
+  function wordTile(w) {
+    return h("button", { class: "st-tile", type: "button", "aria-label": L.words[w].label },
+      h("span", { class: "pic" }, h("img", { src: img(L.words[w].img), alt: "" })),
+      h("span", { class: "t px-read", html: wlabel(L.words[w]), style: `--lf:${lfit(L.words[w].label)}` }), h("i", { class: "spk", html: ICON3.speaker }));
+  }
+  /* a grid of word cards: equal cards on a grid, the group centred (columns / rows from the number of words) */
+  function tileGrid(n) {
+    const land = Math.min(6, n <= 6 ? n : Math.ceil(n / 2)), port = n <= 4 ? 2 : n <= 12 ? 3 : 4;
+    return h("div", { class: "st-grid", style: `--cl:${land};--rl:${Math.ceil(n / land)};--cp:${port};--rp:${Math.ceil(n / port)}` });
+  }
   /* ---------- RECAP (F3): every word of the part; PLAY AGAIN · CONTINUE ---------- */
   TYPES.recap = function (step) {
     const root = h("div", { class: "st st-recap" });
-    const grid = h("div", { class: "st-grid" });
-    (step.words || Object.keys(L.words)).forEach((w) => {
-      const t = h("button", { class: "st-tile", type: "button" }, h("img", { src: img(L.words[w].img), alt: "" }),
-        h("span", { class: "t" }, h("i", { html: ICON3.speaker }), h("span", { class: "px-read", html: wlabel(L.words[w]) })));
+    const words = step.words || Object.keys(L.words);
+    const grid = tileGrid(words.length);
+    words.forEach((w) => {
+      const t = wordTile(w);
       t.onclick = () => { t.classList.remove("bounce"); void t.offsetWidth; t.classList.add("bounce"); Audio_.word(w); };
       grid.append(t);
     });

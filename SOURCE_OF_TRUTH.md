@@ -126,8 +126,8 @@ Start → MAP → [VOCAB] Watch → Explore → Practice ×2 → Ôn lại từ
 | 8c | Lên web bản 1 (mốc 1–4) | ✅ 2026-11-18 — build 20261118065359 |
 | 8d | Image Pipeline (nền không người, món thưởng, logo unit) | ✅ 2026-11-18 — Gemini 3 Pro Image + tự chấm (gemini-flash-latest), chạy trong Chrome của Thanh, file về `Downloads/explore-pipeline/` → `assets/unit-i/` |
 | 8e | Phần thưởng: dấu chặng, chọn món, con phố, hộ chiếu | ✅ 2026-11-18 |
-| 8f | Giao diện v4 (dịu mắt) + v5 (tỉ lệ kiểu Duolingo ABC) | ✅ 2026-11-23 — đang chạy thử ở `/preview/` (build 20261123082031), Thanh duyệt "ok rồi". Trang chính vẫn là bản v3 + phần thưởng |
-| 9 | Unit H (thử nghiệm quy trình làm unit) | 🔄 2026-11-24 — map đã chốt (xem HANDOVER.md), 5 file slide ở `explore-unit-h/` (cạnh repo); ✅ đã tách hình thô → `explore-unit-h/_extract/` (599 hình + contact sheet); 🔄 H1–H5 đã viết (`lessons/h1.js`…`h5.js`; hình `assets/h1…h5/img/`); H1–H5 có giọng ElevenLabs; ✅ 2026-11-25 nền roadmap + phần thưởng (trang phục hoá trang → "My Dress-up Shop") + logo DRESS-UP (`assets/unit-h/`); bước kế: deploy (đưa v4+v5 lên trang chính cùng Unit H) |
+| 8f | Giao diện v4 (dịu mắt) + v5 (tỉ lệ kiểu Duolingo ABC) | ✅ 2026-11-23 — đang chạy thử ở `/preview/` (build 20261123082031), Thanh duyệt "ok rồi". Trang chính vẫn là bản v3 + phần thưởng · ✅ 2026-11-25 lên trang chính (copy `preview/index.html` + `preview/engine.js` ra gốc; `/preview/` giữ lại để thử bản sau) |
+| 9 | Unit H (thử nghiệm quy trình làm unit) | 🔄 2026-11-24 — map đã chốt (xem HANDOVER.md), 5 file slide ở `explore-unit-h/` (cạnh repo); ✅ đã tách hình thô → `explore-unit-h/_extract/` (599 hình + contact sheet); 🔄 H1–H5 đã viết (`lessons/h1.js`…`h5.js`; hình `assets/h1…h5/img/`); H1–H5 có giọng ElevenLabs; ✅ 2026-11-25 nền roadmap + phần thưởng (trang phục hoá trang → "My Dress-up Shop") + logo DRESS-UP (`assets/unit-h/`); ✅ 2026-11-25 deploy cùng v4+v5 |
 | 7 | Unit A → G, J, K… | Sau Unit H — dùng số token/thời gian thật của H để ước lượng |
 
 ## 7. Map I1 (bản 2)
@@ -233,3 +233,4 @@ Start → MAP → [VOCAB] Watch → Explore → Practice ×2 → Ôn lại từ
 | 11-25 | Giọng logo Unit H | — | `collect-unit-lines.js` thêm `logoSay` của unit vào lesson cuối của unit → u325 "Hooray! You finished Dress-up!" (ElevenLabs, 1/1 ổn) → `h5.voice.js` 170/170 |
 | 11-25 | Kiểm tra im lặng | Playwright audit phát tiếng ra loa | Thanh: chạy ngầm, không phát tiếng → mọi `chromium.launch` trong `tools/audit/` thêm `--mute-audio` |
 | 11-25 | Image Pipeline · ảnh mẫu | Unit I: ảnh mẫu lấy từ raw.githubusercontent | ảnh mẫu Unit H chưa push → trang cầu nối `127.0.0.1` gửi ảnh mẫu + jobs + script sang tab example.com bằng `postMessage` (fetch thẳng localhost bị Chrome chặn — Local Network Access). Key Gemini dùng lại key Voice Pipeline đã nhớ trên example.com |
+| 11-25 | Deploy (Unit H + v4/v5) | Trang chính: v3 + Unit I | `index.html` / `engine.js` gốc = bản `/preview/` (v4+v5); Dockerfile: theme-color trang chính `#FBF6EC`; audit trang gốc H1–H5 + I1–I5 ở 10 cỡ màn trước khi push; push `main`, Thanh bấm Deploy trên Dokploy |
