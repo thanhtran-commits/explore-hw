@@ -36,10 +36,10 @@ for (const id of lessons) {
   const label = (w) => L.words[w].label;
   add("kim", L.finishLine);
   /* words with no recording of their own (Unit H on): the engine speaks the label (narrator) */
-  Object.values(L.words).forEach((w) => { if (!w.audio) add("narrator", w.label); });
+  Object.values(L.words).forEach((w) => { if (!w.audio && !w.phrase) add("narrator", w.label); });   /* phrase: answer-only words (H5 "a red T-shirt") */
   for (const b of L.blocks) for (const s of b.steps) {
     add("kim", s.intro); add("kim", s.instruction); add("kim", s.doneLine);
-    add("kim", s.ask); add("kim", s.verbLine); add("kim", s.moreLine);   /* say: Kim's question · answer: hints */
+    add("kim", s.ask); add("kim", s.verbLine); add("kim", s.moreLine); add("kim", s.foodLine);   /* say: Kim's question · answer: hints */
     (s.rounds || []).forEach((r) => { add("narrator", r.q); add("kim", r.a); });   /* names: question, then Kim's answer */
     if (s.type === "done") add("kim", s.title);
     (s.cues || []).forEach((c) => sayLine(c.line));
@@ -57,7 +57,7 @@ for (const id of lessons) {
         const parts = it.short ? [] : it.parts || [{ verb: it.verb || L.words[(it.foods || it.plate)[0]].verb || "eating", foods: it.foods || it.plate }];
         add("narrator", it.short || parts.map((p) => `${PRON[it.s]} ${p.verb} ${join(p.foods)}.`).join(" "));
         /* the "full sentence, please" hint uses the verb of the first thing (engine: answer judge) */
-        if (!it.short) { const f0 = (it.foods || it.plate || parts[0].foods)[0]; add("kim", `Full sentence, please! ${PRON[it.s]} ${L.words[f0].verb || "eating"}…`); }
+        if (!it.short) add("kim", `Full sentence, please! ${PRON[it.s]} ${parts[0].verb}…`);
       }
     });
     if (s.type === "lid") for (const sub of new Set(s.subjects)) for (const f of s.foods)

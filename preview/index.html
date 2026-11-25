@@ -186,6 +186,7 @@ button.px-card:active{transform:translateY(2px)}
 
 /* -- 7. choose: word → pictures (P4) · picture + sentence → ✓ ✗ (P5) · picture → words / sentences · picture + sound → pictures -- */
 .px-word-chip{font-size:max(34px,calc(42 * var(--u)));padding:calc(10 * var(--u)) calc(30 * var(--u));border-radius:16px}
+.px-word-chip.long{font-size:max(28px,calc(34 * var(--u)))}
 /* a sound + ✓ ✗ only (no picture): the pair right under the bar, the marks under it (top-anchored, v5) */
 .px-main[data-lay="marks"]:not(:has(.px-pic)){gap:calc(32 * var(--u))}
 .px-main[data-lay="marks"]:not(:has(.px-pic)) .px-bubble{padding:calc(14 * var(--u)) calc(30 * var(--u)) calc(14 * var(--u)) calc(14 * var(--u))}
@@ -443,6 +444,7 @@ button.px-card:active{transform:translateY(2px)}
 .px-main[data-lay="pics"]{padding-top:4px;gap:24px}
   .px-spk.xl{width:96px;height:90px}
   .px-word-chip{font-size:30px}
+  .px-word-chip.long{font-size:24px;padding-left:16px;padding-right:16px}
   .px-sent{font-size:20px}
   .px.has-btn .px-foot{padding:6px 0 10px}
   .px-btn{height:48px}
@@ -653,6 +655,8 @@ button.px-card:active{transform:translateY(2px)}
 .st-tile .pic{position:relative;flex:1;min-height:0;width:100%}
 .st-tile .pic img{position:absolute;inset:0;margin:auto;height:100%;width:auto;max-width:100%;aspect-ratio:1;object-fit:contain}
 .st-tile .t{flex:none;max-width:100%;font-size:max(10px,calc(var(--C) * .155 * var(--lf,1)));line-height:1.15;text-align:center;white-space:nowrap}
+/* H5: a long label ("a baseball cap") on a small tile hits the 10px floor → wrap at the space instead of spilling out */
+.st-tile .t{white-space:normal;text-wrap:balance}
 .st-tile .spk{position:absolute;top:calc(var(--C) * .06);right:calc(var(--C) * .06);width:max(16px,calc(var(--C) * .13));height:max(16px,calc(var(--C) * .13));color:#9DB0E6;display:grid}
 .st-tile .spk svg{width:100%;height:100%}
 .st-tile.heard .spk{color:var(--blue)}

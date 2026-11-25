@@ -24,7 +24,7 @@
       { id: "F", title: "People around us", nick: "People", badge: "👪" },
       { id: "G", title: "Appearance & body", nick: "Looks", badge: "👀" },
       {
-        /* Unit H — in progress (H1–H4 built 2026-11-24). No unit backgrounds / rewards / logo yet (Image Pipeline, HANDOVER §2.3). */
+        /* Unit H — in progress (H1–H5 built 2026-11-24/25). No unit backgrounds / rewards / logo yet (Image Pipeline, HANDOVER §2.3). */
         id: "H", title: "Clothes", nick: "Dress-up", badge: "👕", ready: true,
         cover: "assets/h1/img/scene-main.webp",
         lessons: [
@@ -32,7 +32,7 @@
           { id: "H2", title: "Read and dress", skills: ["R", "W"], file: "lessons/h2.js", ready: true, cover: "assets/h2/img/g-jill-pink-skirt.webp" },
           { id: "H3", title: "Wearing or holding?", skills: ["L", "S"], file: "lessons/h3.js", ready: true, cover: "assets/h3/img/scene-main.webp" },
           { id: "H4", title: "Lost and Found", skills: ["R", "W"], file: "lessons/h4.js", ready: true, cover: "assets/h4/img/scene-box.webp" },
-          { id: "H5", title: "Photo Day", skills: ["L", "S", "R", "W"], file: "lessons/h5.js", review: true }
+          { id: "H5", title: "Photo Day", skills: ["L", "S", "R", "W"], file: "lessons/h5.js", review: true, ready: true, cover: "assets/h5/img/scene-main.webp" }
         ]
       },
       {

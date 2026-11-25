@@ -1810,8 +1810,8 @@
         /* alsoOk: other things in the picture that are right too (H1: "He's wearing a T-shirt" when the model says trousers) */
         if (!it.short && it.alsoOk && it.alsoOk.some((f) => judgeSentence(alts, it.s, [f], verbs, step.verbSet) === "ok")) return true;
         return v === "verb" ? (step.verbLine || "Eating or drinking? Try again!") : v === "yn" ? "Yes or no? Look again!" : v === "short" ? (it.short.startsWith("Yes") ? `Say: Yes, ${it.s} is!` : `Say: No, ${it.s} isn't!`)
-          : v === "be" ? `Full sentence, please! ${PRON[it.s]} ${vOf(it.foods[0])}…`
-          : v === "more" ? (step.moreLine || "Good! Say all the food on the plate!") : "Look at the picture again. Try again!";
+          : v === "be" ? `Full sentence, please! ${PRON[it.s]} ${partsOf(it)[0].verb}…`
+          : v === "more" ? (step.moreLine || "Good! Say all the food on the plate!") : (step.foodLine || "Look at the picture again. Try again!");
       },
       model, playModel: (it) => Audio_.speak(model(it), "narrator"),
       onReveal: (it, good) => { if (good) movePawn(); }

@@ -180,6 +180,7 @@ button.px-card:active{transform:translateY(2px)}
 /* -- 7. choose: word → pictures (P4) · picture + sentence → ✓ ✗ (P5) · picture → words / sentences · picture + sound → pictures -- */
 .px-choose .px-main{padding-top:calc(24 * var(--u))}
 .px-word-chip{font-size:max(34px,calc(42 * var(--u)));padding:calc(10 * var(--u)) calc(30 * var(--u));border-radius:16px}
+.px-word-chip.long{font-size:max(28px,calc(34 * var(--u)))}
 /* a sound + ✓ ✗ only (no picture): the pair sits in the middle of the screen */
 .px-main[data-lay="marks"]:not(:has(.px-pic)){justify-content:center;padding-bottom:calc(60 * var(--u));gap:calc(40 * var(--u))}
 .px-main[data-lay="pics"]{padding-top:calc(36 * var(--u));gap:calc(28 * var(--u))}
@@ -390,6 +391,7 @@ button.px-card:active{transform:translateY(2px)}
 .px-main[data-lay="pics"]{padding-top:4px;gap:24px}
   .px-spk.xl{width:96px;height:90px}
   .px-word-chip{font-size:30px}
+  .px-word-chip.long{font-size:24px;padding-left:16px;padding-right:16px}
   .px-sent{font-size:20px}
   .px.has-btn .px-foot{padding:6px 0 10px}
   .px-btn{height:48px}

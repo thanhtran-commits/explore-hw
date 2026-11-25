@@ -95,7 +95,7 @@
         }
       } else if (p.text) {
         spk = P.speaker("sm", spkPlay);
-        head.className = "px-head row"; head.append(spk, h("span", { class: "px-chip px-word-chip", html: marked(p.text) }));
+        head.className = "px-head row"; head.append(spk, h("span", { class: "px-chip px-word-chip" + (plain(p.text).length > 11 ? " long" : ""), html: marked(p.text) }));   /* long: "a baseball cap" fits a phone */
       } else if (marks && [].concat(p.say || []).length === 2) {
         /* sound only, a question and an answer ("Does it match?"): two speech bubbles, each replays its own line; the words only via Aa */
         const [qL, aL] = p.say;
